@@ -4,15 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 
 /**
  * Navbar.jsx — Top Navigation Bar
- *
- * WHY: Global navigation rendered on every page via AppRouter.jsx.
- * Adapts based on auth state — shows different links for
- * logged-out users vs logged-in users vs admins.
- *
- * Features:
- *  - Responsive (hamburger menu on mobile)
- *  - Active link highlighting
- *  - User dropdown menu
+ * Features responsive layout, auth-aware links, and a user dropdown.
  */
 
 const navLinks = [
@@ -23,143 +15,135 @@ const navLinks = [
 ]
 
 export default function Navbar() {
-  const { isAuthenticated, user, logout } = useAuth()
-  const navigate  = useNavigate()
-  const [isOpen, setIsOpen]         = useState(false)  // mobile menu
-  const [dropdownOpen, setDropdown] = useState(false)  // user dropdown
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const [isOpen, setIsOpen] = useState(false)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
 
   const handleLogout = () => {
     logout()
-    navigate('/')
-    setDropdown(false)
+    setDropdownOpen(false)
+    setIsOpen(false)
+    navigate('/login')
   }
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-100">
-      <div className="container-section">
-        <div className="flex items-center justify-between h-16">
+    <header className="bg-white border-b border-gray-100 sticky top-0 z-[1000] shadow-sm">
+      <div className="container h-16 flex items-center justify-between">
+        
+        {/* Logo */}
+        <Link to="/" className="flex items-center group">
+          <span className="text-2xl mr-2 group-hover:rotate-12 transition-transform">🐾</span>
+          <span className="text-2xl font-black text-gray-900 tracking-tighter">
+            Paw<span className="text-primary-500">Link</span>
+          </span>
+        </Link>
 
-          {/* ── Logo ── */}
-          <Link to="/" className="flex items-center gap-2 font-extrabold text-xl text-primary-600">
-            <span className="text-2xl">🐾</span>
-            <span>PawLink</span>
-          </Link>
+        {/* Desktop Nav Links */}
+        <nav className="hidden md:flex items-center space-x-8">
+          {navLinks.map(link => (
+            <NavLink 
+              key={link.to} 
+              to={link.to}
+              className={({ isActive }) => 
+                `text-sm font-bold transition-colors ${
+                  isActive ? 'text-primary-600' : 'text-gray-500 hover:text-primary-500'
+                }`
+              }
+            >
+              {link.label}
+            </NavLink>
+          ))}
+        </nav>
 
-          {/* ── Desktop Nav Links ── */}
-          <nav className="hidden md:flex items-center gap-6">
-            {navLinks.map(link => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                className={({ isActive }) =>
-                  `text-sm font-medium transition-colors duration-150 ${
-                    isActive
-                      ? 'text-primary-600 font-semibold'
-                      : 'text-gray-600 hover:text-primary-500'
-                  }`
-                }
+        {/* Desktop Auth Section */}
+        <div className="hidden md:flex items-center space-x-4">
+          {user ? (
+            <div className="relative">
+              <button 
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="flex items-center space-x-2 bg-gray-50 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors"
               >
-                {link.label}
-              </NavLink>
-            ))}
-          </nav>
+                <div className="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white text-xs font-bold uppercase">
+                  {user.name.charAt(0)}
+                </div>
+                <span className="text-sm font-bold text-gray-700">{user.name.split(' ')[0]}</span>
+                <svg className={`w-4 h-4 text-gray-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
 
-          {/* ── Auth Section ── */}
-          <div className="hidden md:flex items-center gap-3">
-            {isAuthenticated ? (
-              <div className="relative">
-                {/* User avatar button */}
-                <button
-                  id="user-menu-btn"
-                  onClick={() => setDropdown(!dropdownOpen)}
-                  className="flex items-center gap-2 bg-primary-50 hover:bg-primary-100 rounded-xl px-3 py-2 transition-colors"
-                >
-                  <div className="w-7 h-7 bg-primary-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                    {user?.name?.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="text-sm font-medium text-gray-700">{user?.name}</span>
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                {/* Dropdown menu */}
-                {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50">
-                    <Link to="/dashboard" onClick={() => setDropdown(false)}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50">My Dashboard</Link>
-                    <Link to="/profile" onClick={() => setDropdown(false)}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50">Profile</Link>
-                    <Link to="/add-animal" onClick={() => setDropdown(false)}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50">Post an Animal</Link>
-                    {user?.role === 'admin' && (
-                      <Link to="/admin" onClick={() => setDropdown(false)}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50">Admin Panel</Link>
+              {/* Dropdown Menu */}
+              {dropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-0" onClick={() => setDropdownOpen(false)}></div>
+                  <div className="absolute right-0 w-48 mt-2 py-2 bg-white rounded-2xl shadow-xl border border-gray-100 z-10 animate-fade-in-up">
+                    <div className="px-4 py-2 border-b border-gray-50 mb-2">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Signed in as</p>
+                      <p className="text-xs font-bold text-gray-900 truncate">{user.email}</p>
+                    </div>
+                    <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 font-medium">Dashboard</Link>
+                    <Link to="/profile" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 font-medium">Profile</Link>
+                    {user.role === 'admin' && (
+                      <Link to="/admin" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-bold">Admin Panel</Link>
                     )}
-                    {(user?.role === 'shelter' || user?.role === 'admin') && (
-                      <Link to="/shelter-dashboard" onClick={() => setDropdown(false)}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50">Shelter Dashboard</Link>
-                    )}
-                    <hr className="my-1 border-gray-100" />
-                    <button onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50">
-                      Logout
+                    <button 
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-500 hover:text-red-500 font-medium"
+                    >
+                      Sign Out
                     </button>
                   </div>
-                )}
-              </div>
-            ) : (
-              <>
-                <Link to="/login"    className="text-sm font-medium text-gray-600 hover:text-primary-500 transition-colors">Login</Link>
-                <Link to="/register" className="btn-primary text-sm">Get Started</Link>
-              </>
-            )}
-          </div>
-
-          {/* ── Mobile Hamburger ── */}
-          <button
-            id="mobile-menu-btn"
-            className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {isOpen
-                ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              }
-            </svg>
-          </button>
+                </>
+              )}
+            </div>
+          ) : (
+            <>
+              <Link to="/login" className="text-sm font-bold text-gray-600 hover:text-primary-600">Login</Link>
+              <Link to="/register" className="btn-primary px-6 py-2 rounded-full text-sm">
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
 
-        {/* ── Mobile Menu ── */}
-        {isOpen && (
-          <nav className="md:hidden border-t border-gray-100 py-3 flex flex-col gap-1">
-            {navLinks.map(link => (
-              <NavLink key={link.to} to={link.to}
-                onClick={() => setIsOpen(false)}
-                className={({ isActive }) =>
-                  `px-3 py-2 rounded-lg text-sm font-medium ${isActive ? 'bg-primary-50 text-primary-600' : 'text-gray-700 hover:bg-gray-50'}`
-                }
-              >
-                {link.label}
-              </NavLink>
-            ))}
-            <hr className="my-2 border-gray-100" />
-            {isAuthenticated ? (
-              <>
-                <Link to="/dashboard" onClick={() => setIsOpen(false)} className="px-3 py-2 text-sm text-gray-700">Dashboard</Link>
-                <button onClick={() => { handleLogout(); setIsOpen(false) }}
-                  className="px-3 py-2 text-sm text-red-500 text-left">Logout</button>
-              </>
+        {/* Mobile Menu Button */}
+        <button 
+          className="md:hidden text-gray-500 p-2"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            {isOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             ) : (
-              <>
-                <Link to="/login"    onClick={() => setIsOpen(false)} className="px-3 py-2 text-sm text-gray-700">Login</Link>
-                <Link to="/register" onClick={() => setIsOpen(false)} className="px-3 py-2 text-sm text-primary-600 font-semibold">Register</Link>
-              </>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             )}
-          </nav>
-        )}
+          </svg>
+        </button>
       </div>
+
+      {/* Mobile Menu */}
+      {isOpen && (
+        <div className="md:hidden bg-white border-t border-gray-50 p-4 space-y-4 animate-fade-in">
+          {navLinks.map(link => (
+            <Link key={link.to} to={link.to} onClick={() => setIsOpen(false)} className="block text-gray-700 font-bold px-2 py-1">
+              {link.label}
+            </Link>
+          ))}
+          <hr className="border-gray-50" />
+          {user ? (
+            <>
+              <Link to="/dashboard" onClick={() => setIsOpen(false)} className="block text-gray-700 font-bold px-2 py-1">Dashboard</Link>
+              <button onClick={handleLogout} className="block text-red-500 font-bold px-2 py-1">Sign Out</button>
+            </>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <Link to="/login" onClick={() => setIsOpen(false)} className="block text-center text-gray-600 font-bold">Login</Link>
+              <Link to="/register" onClick={() => setIsOpen(false)} className="btn-primary text-center">Register</Link>
+            </div>
+          )}
+        </div>
+      )}
     </header>
   )
 }
