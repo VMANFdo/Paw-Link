@@ -33,10 +33,11 @@ export default function Navbar() {
         
         {/* Logo */}
         <Link to="/" className="flex items-center group">
-          <span className="text-2xl mr-2 group-hover:rotate-12 transition-transform">🐾</span>
-          <span className="text-2xl font-black text-gray-900 tracking-tighter">
-            Paw<span className="text-primary-500">Link</span>
-          </span>
+          <img 
+            src="/logo.png" 
+            alt="PawLink Logo" 
+            className="h-14 w-auto group-hover:scale-105 transition-transform"
+          />
         </Link>
 
         {/* Desktop Nav Links */}
