@@ -1,0 +1,105 @@
+/* ==============================================
+   PawLink — Global Stylesheet
+   ==============================================
+   WHY: This file imports Tailwind's core layers
+   and defines global base styles (fonts, scrollbar,
+   smooth scrolling, resets).
+   ============================================== */
+
+/* 1. Import Tailwind CSS layers */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 2. Import Leaflet CSS (required for map to render correctly) */
+@import 'leaflet/dist/leaflet.css';
+
+/* 3. Global base styles */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-sans bg-gray-50 text-gray-800 antialiased;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary-400 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary-500;
+  }
+}
+
+/* 4. Reusable component classes */
+@layer components {
+  /* Primary button */
+  .btn-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-white font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg active:scale-95;
+  }
+
+  /* Secondary/outline button */
+  .btn-secondary {
+    @apply border-2 border-primary-500 text-primary-600 hover:bg-primary-50 font-semibold px-5 py-2.5 rounded-xl transition-all duration-200;
+  }
+
+  /* Card container */
+  .card {
+    @apply bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden;
+  }
+
+  /* Form input field */
+  .input-field {
+    @apply w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all duration-150;
+  }
+
+  /* Form label */
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+
+  /* Badge / status pill */
+  .badge {
+    @apply inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  .badge-available {
+    @apply badge bg-green-100 text-green-700;
+  }
+
+  .badge-adopted {
+    @apply badge bg-blue-100 text-blue-700;
+  }
+
+  .badge-rescued {
+    @apply badge bg-purple-100 text-purple-700;
+  }
+
+  .badge-pending {
+    @apply badge bg-yellow-100 text-yellow-700;
+  }
+
+  .badge-urgent {
+    @apply badge bg-red-100 text-red-700;
+  }
+
+  /* Section container */
+  .container-section {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
