@@ -202,20 +202,23 @@ CREATE TABLE IF NOT EXISTS medical_records (
 
 -- ================================================================
 -- SEED DATA: Default Users
--- Password for all seeded users: Admin@1234
+-- Passwords:
+-- Admin:   Admin@123
+-- User:    User@123
+-- Shelter: Shelter@123
 -- ================================================================
 
 -- 1. Admin User
 INSERT IGNORE INTO users (name, email, password, role) VALUES
-('PawLink Admin', 'admin@pawlink.com', '$2a$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
+('PawLink Admin', 'admin@pawlink.com', '$2a$12$K.sQpRtYwB9NPDJwOZWmqevIuTsvyl/hzQzpSvO3N5mBxy8h8FluC', 'admin');
 
 -- 2. Public User
 INSERT IGNORE INTO users (name, email, password, role) VALUES
-('John Doe', 'user@pawlink.com', '$2a$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user');
+('John Doe', 'user@pawlink.com', '$2a$12$LFGIvP3wnvSFj4DB2wpnROu3EF3lUAHo3xxWE/Nxymx63rb28L.Ui', 'user');
 
 -- 3. Shelter Organization
 INSERT IGNORE INTO users (name, email, password, role) VALUES
-('Happy Paws Rescue', 'shelter@pawlink.com', '$2a$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'shelter');
+('Happy Paws Rescue', 'shelter@pawlink.com', '$2a$12$3Gm.idPBi8O9zefP5ta9v..fs59wjMlBcBehee5W4Op3kZLevk.xG', 'shelter');
 
 -- Insert the shelter profile details (linked dynamically to the shelter user)
 INSERT IGNORE INTO shelters (user_id, org_name, address, verified) 
