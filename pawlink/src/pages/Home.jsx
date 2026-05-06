@@ -28,9 +28,10 @@ export default function Home() {
 
         <div className="container relative z-20 text-white">
           <div className="max-w-2xl animate-fade-in-up">
-            <span className="inline-block px-4 py-1 rounded-full bg-primary-500/20 text-primary-400 text-sm font-bold mb-6 border border-primary-500/30">
-              🐾 Connecting Paws with Homes
-            </span>
+            <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-primary-500/10 text-primary-400 text-sm font-bold mb-6 border border-primary-500/20">
+              <img src="/logo.png" alt="Logo" className="h-7 w-auto" />
+              <span>Connecting Paws with Homes</span>
+            </div>
             <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6">
               Give Them a <span className="text-primary-500">Second Chance</span>
             </h1>
