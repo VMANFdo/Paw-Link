@@ -19,31 +19,21 @@ import Profile          from '../pages/Profile'
 import RescueRequests   from '../pages/RescueRequests'
 import AdoptionRequests from '../pages/AdoptionRequests'
 import MapView          from '../pages/MapView'
+import Messages         from '../pages/Messages'
 import About            from '../pages/About'
 import Contact          from '../pages/Contact'
 import NotFound         from '../pages/NotFound'
 
 /**
  * AppRouter.jsx — Central Route Configuration
- *
- * WHY: All routes defined in ONE place makes it easy to see
- * the full navigation structure of the app at a glance.
- *
- * Route types:
- *  - Public routes:  accessible without login
- *  - Private routes: wrapped in <ProtectedRoute>
- *  - Role routes:    protected AND restricted by user role
  */
-
 export default function AppRouter() {
   return (
     <BrowserRouter>
-      {/* Navbar appears on all pages */}
       <Navbar />
-
       <main className="min-h-screen">
         <Routes>
-          {/* ── Public Routes ── */}
+          {/* Public Routes */}
           <Route path="/"              element={<Home />} />
           <Route path="/animals"       element={<BrowseAnimals />} />
           <Route path="/animals/:id"   element={<AnimalDetails />} />
@@ -53,31 +43,29 @@ export default function AppRouter() {
           <Route path="/login"         element={<Login />} />
           <Route path="/register"      element={<Register />} />
 
-          {/* ── Private Routes (any logged-in user) ── */}
+          {/* Private Routes */}
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard"         element={<Dashboard />} />
             <Route path="/add-animal"        element={<AddAnimal />} />
             <Route path="/profile"           element={<Profile />} />
             <Route path="/adoptions"         element={<AdoptionRequests />} />
             <Route path="/rescues"           element={<RescueRequests />} />
+            <Route path="/messages"          element={<Messages />} />
           </Route>
 
-          {/* ── Organization-only Routes ── */}
+          {/* Organization-only Routes */}
           <Route element={<ProtectedRoute allowedRoles={['organization', 'admin']} />}>
             <Route path="/org-dashboard" element={<OrganizationDashboard />} />
           </Route>
 
-          {/* ── Admin-only Routes ── */}
+          {/* Admin-only Routes */}
           <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
             <Route path="/admin" element={<AdminDashboard />} />
           </Route>
 
-          {/* ── 404 Fallback ── */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-
-      {/* Footer appears on all pages */}
       <Footer />
     </BrowserRouter>
   )
