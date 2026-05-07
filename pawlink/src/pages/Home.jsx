@@ -11,8 +11,10 @@
  *  5. Call to Action banner
  */
 import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 export default function Home() {
+  const { user } = useAuth()
   return (
     <div className="space-y-20 pb-20">
       {/* Hero Section */}
@@ -43,9 +45,15 @@ export default function Home() {
               <Link to="/animals" className="btn-primary text-lg px-8 py-4 text-center">
                 Browse Animals
               </Link>
-              <Link to="/register" className="btn-secondary text-lg px-8 py-4 text-center border-none">
-                Join the Mission
-              </Link>
+              {user ? (
+                <Link to="/dashboard" className="btn-secondary text-lg px-8 py-4 text-center border-none">
+                  Go to Dashboard
+                </Link>
+              ) : (
+                <Link to="/register" className="btn-secondary text-lg px-8 py-4 text-center border-none">
+                  Join the Mission
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -57,7 +65,7 @@ export default function Home() {
           {[
             { label: 'Active Rescues', value: '150+' },
             { label: 'Happy Adoptions', value: '1,200+' },
-            { label: 'Verified Shelters', value: '45' },
+            { label: 'Organizations', value: '45' },
             { label: 'Lives Saved', value: '3K+' },
           ].map((stat, i) => (
             <div key={i} className="text-center">
@@ -90,8 +98,8 @@ export default function Home() {
               color: 'bg-secondary-50'
             },
             {
-              title: 'Shelter Support',
-              desc: 'Shelters can manage their rescues, medical records, and adoption requests in one dashboard.',
+              title: 'Organization Support',
+              desc: 'Organizations can manage their rescues, medical records, and adoption requests in one dashboard.',
               icon: '🏥',
               color: 'bg-teal-50'
             }
@@ -117,9 +125,15 @@ export default function Home() {
             <h2 className="text-4xl md:text-5xl font-black mb-6">Ready to make a difference?</h2>
             <p className="text-xl text-primary-100 mb-10">Join thousands of others in building a safer world for our furry friends.</p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Link to="/register" className="bg-white text-primary-600 px-10 py-4 rounded-2xl font-black hover:bg-gray-100 transition-colors shadow-lg">
-                Get Started Now
-              </Link>
+              {user ? (
+                <Link to="/dashboard" className="bg-white text-primary-600 px-10 py-4 rounded-2xl font-black hover:bg-gray-100 transition-colors shadow-lg">
+                  View My Dashboard
+                </Link>
+              ) : (
+                <Link to="/register" className="bg-white text-primary-600 px-10 py-4 rounded-2xl font-black hover:bg-gray-100 transition-colors shadow-lg">
+                  Get Started Now
+                </Link>
+              )}
             </div>
           </div>
         </div>
