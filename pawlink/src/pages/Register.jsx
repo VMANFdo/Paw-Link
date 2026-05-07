@@ -14,7 +14,7 @@ export default function Register() {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'user', // Default role
+    role: 'person', // Default role
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -80,20 +80,20 @@ export default function Register() {
           <button
             type="button"
             className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
-              formData.role === 'user' ? 'bg-white shadow-md text-primary-600' : 'text-gray-500'
+              formData.role === 'person' ? 'bg-white shadow-md text-primary-600' : 'text-gray-500'
             }`}
-            onClick={() => handleRoleToggle('user')}
+            onClick={() => handleRoleToggle('person')}
           >
-            I am a Rescuer
+            I am a Person
           </button>
           <button
             type="button"
             className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
-              formData.role === 'shelter' ? 'bg-white shadow-md text-secondary-600' : 'text-gray-500'
+              formData.role === 'organization' ? 'bg-white shadow-md text-secondary-600' : 'text-gray-500'
             }`}
-            onClick={() => handleRoleToggle('shelter')}
+            onClick={() => handleRoleToggle('organization')}
           >
-            I am a Shelter
+            I am an Organization
           </button>
         </div>
 
@@ -105,12 +105,12 @@ export default function Register() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="form-label">{formData.role === 'shelter' ? 'Organization Name' : 'Full Name'}</label>
+            <label className="form-label">{formData.role === 'organization' ? 'Organization Name' : 'Full Name'}</label>
             <input
               type="text"
               name="name"
               className="input-field"
-              placeholder={formData.role === 'shelter' ? 'e.g. Happy Paws Rescue' : 'e.g. John Doe'}
+              placeholder={formData.role === 'organization' ? 'e.g. Happy Paws Rescue' : 'e.g. John Doe'}
               value={formData.name}
               onChange={handleChange}
               required
@@ -198,7 +198,7 @@ export default function Register() {
           <button
             type="submit"
             className={`w-full py-3 mt-4 flex items-center justify-center font-bold text-white rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 ${
-              formData.role === 'shelter' ? 'bg-secondary-500 hover:bg-secondary-600' : 'bg-primary-500 hover:bg-primary-600'
+              formData.role === 'organization' ? 'bg-secondary-500 hover:bg-secondary-600' : 'bg-primary-500 hover:bg-primary-600'
             }`}
             disabled={loading}
           >

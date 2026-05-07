@@ -8,6 +8,7 @@ const roleMiddleware   = require('../middleware/roleMiddleware')
 
 router.post('/',               authMiddleware, rescueController.create)
 router.get('/',                rescueController.getAll)
-router.patch('/:id/status',    authMiddleware, roleMiddleware('shelter', 'admin'), rescueController.updateStatus)
+router.get('/my',              authMiddleware, rescueController.getMine)
+router.patch('/:id/status',    authMiddleware, roleMiddleware(['organization', 'admin']), rescueController.updateStatus)
 
 module.exports = router

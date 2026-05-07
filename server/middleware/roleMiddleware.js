@@ -2,7 +2,7 @@
  * middleware/roleMiddleware.js — Role-Based Access Control
  *
  * WHY: Some routes should only be accessible by certain user roles.
- * For example, only admins can delete any post, only shelters
+ * For example, only admins can delete any post, only organizations
  * can update rescue case status.
  *
  * Usage (always use AFTER authMiddleware):
@@ -14,11 +14,11 @@
  *
  *   router.patch('/rescues/:id/status',
  *     authMiddleware,
- *     roleMiddleware('shelter', 'admin'),
+ *     roleMiddleware(['organization', 'admin']),
  *     rescueController.updateStatus
  *   )
  *
- * @param {...string} roles - Allowed roles (e.g., 'admin', 'shelter', 'user')
+ * @param {...string} roles - Allowed roles (e.g., 'admin', 'organization', 'person')
  */
 
 const roleMiddleware = (...roles) => {

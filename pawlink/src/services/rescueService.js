@@ -12,4 +12,7 @@ export const rescueService = {
   /** Update rescue status (shelter/admin only) */
   updateStatus: (id, status) =>
     api.patch(`/rescues/${id}/status`, { status }),
+
+  /** Get rescue requests reported by the current user */
+  getMyRescues: () => api.get('/rescues/my'),
 }

@@ -43,4 +43,18 @@ const updateStatus = async (req, res, next) => {
   } catch (err) { next(err) }
 }
 
-module.exports = { create, getAll, updateStatus }
+const getMine = async (req, res, next) => {
+  try {
+    const [requests] = await pool.query(`
+      SELECT rr.*, a.type, a.breed, a.status AS animal_status,
+        (SELECT image_url FROM animal_images WHERE animal_id = a.id LIMIT 1) AS thumbnail
+      FROM rescue_requests rr
+      JOIN animals a ON rr.animal_id = a.id
+      WHERE rr.reported_by = ?
+      ORDER BY rr.created_at DESC
+    `, [req.user.id])
+    sendSuccess(res, { requests })
+  } catch (err) { next(err) }
+}
+
+module.exports = { create, getAll, updateStatus, getMine }

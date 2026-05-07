@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
     name            VARCHAR(100) NOT NULL,
     email           VARCHAR(150) NOT NULL UNIQUE,
     password        VARCHAR(255) NOT NULL,
-    role            ENUM('user', 'shelter', 'admin') NOT NULL DEFAULT 'user',
+    role            ENUM('person', 'organization', 'admin') NOT NULL DEFAULT 'person',
     profile_picture VARCHAR(255) DEFAULT NULL,
     bio             TEXT DEFAULT NULL,
     phone           VARCHAR(20) DEFAULT NULL,
@@ -212,13 +212,13 @@ CREATE TABLE IF NOT EXISTS medical_records (
 INSERT IGNORE INTO users (name, email, password, role) VALUES
 ('PawLink Admin', 'admin@pawlink.com', '$2a$12$K.sQpRtYwB9NPDJwOZWmqevIuTsvyl/hzQzpSvO3N5mBxy8h8FluC', 'admin');
 
--- 2. Public User
+-- 2. Public Person
 INSERT IGNORE INTO users (name, email, password, role) VALUES
-('John Doe', 'user@pawlink.com', '$2a$12$LFGIvP3wnvSFj4DB2wpnROu3EF3lUAHo3xxWE/Nxymx63rb28L.Ui', 'user');
+('John Doe', 'user@pawlink.com', '$2a$12$LFGIvP3wnvSFj4DB2wpnROu3EF3lUAHo3xxWE/Nxymx63rb28L.Ui', 'person');
 
 -- 3. Shelter Organization
 INSERT IGNORE INTO users (name, email, password, role) VALUES
-('Happy Paws Rescue', 'shelter@pawlink.com', '$2a$12$3Gm.idPBi8O9zefP5ta9v..fs59wjMlBcBehee5W4Op3kZLevk.xG', 'shelter');
+('Happy Paws Rescue', 'shelter@pawlink.com', '$2a$12$3Gm.idPBi8O9zefP5ta9v..fs59wjMlBcBehee5W4Op3kZLevk.xG', 'organization');
 
 -- Insert the shelter profile details (linked dynamically to the shelter user)
 INSERT IGNORE INTO shelters (user_id, org_name, address, verified) 
