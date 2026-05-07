@@ -29,4 +29,7 @@ export const animalService = {
   /** Update only the status field */
   updateStatus: (id, status) =>
     api.patch(`/animals/${id}/status`, { status }),
+
+  /** Get animals posted by the current user */
+  getMyAnimals: () => api.get('/animals/my'),
 }
