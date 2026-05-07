@@ -151,4 +151,21 @@ const updateStatus = async (req, res, next) => {
   }
 }
 
-module.exports = { getAll, getById, create, update, remove, updateStatus }
+// GET /api/animals/my — Get animals posted by the logged-in user
+const getMine = async (req, res, next) => {
+  try {
+    const [animals] = await pool.query(`
+      SELECT a.*,
+        (SELECT image_url FROM animal_images WHERE animal_id = a.id LIMIT 1) AS thumbnail
+      FROM animals a
+      WHERE a.posted_by = ?
+      ORDER BY a.created_at DESC
+    `, [req.user.id])
+
+    sendSuccess(res, { animals, count: animals.length })
+  } catch (err) {
+    next(err)
+  }
+}
+
+module.exports = { getAll, getById, create, update, remove, updateStatus, getMine }

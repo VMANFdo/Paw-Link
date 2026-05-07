@@ -36,4 +36,30 @@ const getPublicProfile = async (req, res, next) => {
   } catch (err) { next(err) }
 }
 
-module.exports = { getMyProfile, updateProfile, getPublicProfile }
+const getStats = async (req, res, next) => {
+  try {
+    const userId = req.user.id
+
+    // Count posts
+    const [posts] = await pool.query('SELECT COUNT(*) AS count FROM animals WHERE posted_by = ?', [userId])
+    
+    // Count sent requests
+    const [sent] = await pool.query('SELECT COUNT(*) AS count FROM adoption_requests WHERE requester_id = ?', [userId])
+    
+    // Count received requests (requests for animals posted by this user)
+    const [received] = await pool.query(`
+      SELECT COUNT(*) AS count 
+      FROM adoption_requests ar
+      JOIN animals a ON ar.animal_id = a.id
+      WHERE a.posted_by = ?
+    `, [userId])
+
+    sendSuccess(res, {
+      totalPosts: posts[0].count,
+      requestsSent: sent[0].count,
+      requestsReceived: received[0].count
+    })
+  } catch (err) { next(err) }
+}
+
+module.exports = { getMyProfile, updateProfile, getPublicProfile, getStats }

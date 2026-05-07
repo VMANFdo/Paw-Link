@@ -8,4 +8,7 @@ export const userService = {
 
   /** Update logged-in user's profile */
   updateProfile: (data) => api.put('/users/profile', data),
+
+  /** Get dashboard statistics for the logged-in user */
+  getStats: () => api.get('/users/stats'),
 }

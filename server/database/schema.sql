@@ -202,7 +202,7 @@ CREATE TABLE IF NOT EXISTS medical_records (
 
 -- ================================================================
 -- SEED DATA: Default Users
--- Passwords:
+-- Passwords: 
 -- Admin:   Admin@123
 -- User:    User@123
 -- Shelter: Shelter@123

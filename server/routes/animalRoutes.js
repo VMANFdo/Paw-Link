@@ -12,6 +12,9 @@ const upload         = require('../config/multer')
 // GET /api/animals         — Public: list all (with filters)
 router.get('/', animalController.getAll)
 
+// GET /api/animals/my      — Private: list user's own posts
+router.get('/my', authMiddleware, animalController.getMine)
+
 // GET /api/animals/:id     — Public: single animal
 router.get('/:id', animalController.getById)
 
