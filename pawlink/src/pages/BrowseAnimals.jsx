@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { animalService } from '../services/animalService'
 import AnimalCard from '../components/animals/AnimalCard'
 
@@ -59,9 +60,16 @@ export default function BrowseAnimals() {
             <option value="critical">Critical Only</option>
             <option value="high">High Urgency</option>
             <option value="medium">Medium</option>
-            <option value="low">Low</option>
           </select>
         </div>
+
+        <Link 
+          to="/add-animal" 
+          className="btn-primary flex items-center gap-2 px-8 py-4 shadow-lg hover:shadow-xl transition-all"
+        >
+          <span className="text-xl">+</span>
+          <span>Post New Animal</span>
+        </Link>
       </div>
 
       {loading ? (
