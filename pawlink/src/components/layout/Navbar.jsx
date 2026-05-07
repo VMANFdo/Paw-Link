@@ -85,6 +85,9 @@ export default function Navbar() {
                     </div>
                     <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 font-medium">Dashboard</Link>
                     <Link to="/profile" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 font-medium">Profile</Link>
+                    {user.role === 'organization' && (
+                      <Link to="/shelter-dashboard" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-primary-600 hover:bg-primary-50 font-bold">Org Dashboard</Link>
+                    )}
                     {user.role === 'admin' && (
                       <Link to="/admin" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-bold">Admin Panel</Link>
                     )}

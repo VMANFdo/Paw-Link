@@ -17,7 +17,7 @@ const { sendSuccess, sendError } = require('../utils/responseHelper')
 // ─────────────────────────────────────────
 const register = async (req, res, next) => {
   try {
-    const { name, email, password, role = 'user' } = req.body
+    const { name, email, password, role = 'person' } = req.body
 
     // 1. Check if email already exists
     const [existing] = await pool.query(
