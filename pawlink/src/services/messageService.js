@@ -1,17 +1,11 @@
 import api from './api'
 
-/** messageService.js — Messaging API calls (REST-based) */
-
+/**
+ * messageService.js — Messaging API calls
+ */
 export const messageService = {
-  /** Send a message to another user */
-  send: (data) => api.post('/messages', data),
-
-  /** Get received messages (inbox) */
-  getInbox: () => api.get('/messages/inbox'),
-
-  /** Get sent messages */
-  getSent: () => api.get('/messages/sent'),
-
-  /** Get a conversation thread with a specific user */
+  getInbox:  () => api.get('/messages/inbox'),
+  getSent:   () => api.get('/messages/sent'),
   getThread: (userId) => api.get(`/messages/${userId}`),
+  send:      (data) => api.post('/messages', data), // data: { receiver_id, subject, body }
 }
