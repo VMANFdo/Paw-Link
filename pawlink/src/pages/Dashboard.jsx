@@ -107,7 +107,7 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <p className="text-xs text-gray-500 mb-2">Applied for {req.type} ({req.breed})</p>
-                  <Link to="/adoptions" className="text-[11px] font-bold text-primary-600 hover:underline">View Details</Link>
+                  <Link to="/messages" state={{ defaultTab: 'requests' }} className="text-[11px] font-bold text-primary-600 hover:underline">View Details</Link>
                 </div>
               ))
             ) : (
@@ -116,7 +116,7 @@ export default function Dashboard() {
               </div>
             )}
           </div>
-          <Link to="/adoptions" className="btn-secondary w-full text-center text-sm py-2 block">
+          <Link to="/messages" state={{ defaultTab: 'requests' }} className="btn-secondary w-full text-center text-sm py-2 block">
             Manage All Requests
           </Link>
         </div>

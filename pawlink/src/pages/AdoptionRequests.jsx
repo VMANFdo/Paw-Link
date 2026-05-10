@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'
  * AdoptionRequests.jsx — Management page for adoption requests
  * Features two tabs: Requests Sent (by the user) and Requests Received (for the user's animals).
  */
-export default function AdoptionRequests() {
+export default function AdoptionRequests({ isNested = false }) {
   const [tab, setTab] = useState('received') // 'sent' or 'received'
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
@@ -50,8 +50,8 @@ export default function AdoptionRequests() {
   }
 
   return (
-    <div className="container-section py-10">
-      <h1 className="text-3xl font-black text-gray-900 mb-8">Adoption Requests</h1>
+    <div className={isNested ? "" : "container-section py-10"}>
+      {!isNested && <h1 className="text-3xl font-black text-gray-900 mb-8">Adoption Requests</h1>}
 
       {/* Tabs */}
       <div className="flex space-x-1 bg-gray-100 p-1 rounded-2xl w-fit mb-10">
