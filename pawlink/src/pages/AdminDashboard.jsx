@@ -13,6 +13,7 @@ export default function AdminDashboard() {
   const [tab, setTab] = useState('stats')
   const [data, setData] = useState({ stats: null, users: [], animals: [], reports: [] })
   const [loading, setLoading] = useState(true)
+  const [showUserModal, setShowUserModal] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -61,6 +62,17 @@ export default function AdminDashboard() {
     } catch (err) { showToast('Delete failed', 'error') }
   }
 
+  const handleCreateUser = async (userData) => {
+    try {
+      await adminService.createUser(userData)
+      showToast('User created successfully')
+      setShowUserModal(false)
+      fetchData()
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to create user', 'error')
+    }
+  }
+
   return (
     <div className="container-section py-10">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
@@ -83,11 +95,119 @@ export default function AdminDashboard() {
       ) : (
         <div className="animate-fade-in">
           {tab === 'stats' && <StatsOverview stats={data.stats} />}
-          {tab === 'users' && <UsersTable users={data.users} onToggle={handleToggleUser} />}
+          {tab === 'users' && (
+            <div>
+              <div className="flex justify-end mb-6">
+                <button 
+                  onClick={() => setShowUserModal(true)}
+                  className="btn-primary px-6 py-3 flex items-center gap-2 shadow-lg shadow-primary-500/20"
+                >
+                  <span className="text-xl">+</span> Add New User
+                </button>
+              </div>
+              <UsersTable users={data.users} onToggle={handleToggleUser} />
+            </div>
+          )}
           {tab === 'animals' && <AnimalsList animals={data.animals} onDelete={handleDeleteAnimal} />}
           {tab === 'reports' && <ReportsList reports={data.reports} />}
         </div>
       )}
+
+      {showUserModal && (
+        <AddUserModal 
+          onClose={() => setShowUserModal(false)} 
+          onSubmit={handleCreateUser} 
+        />
+      )}
+    </div>
+  )
+}
+
+function AddUserModal({ onClose, onSubmit }) {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'person'
+  })
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    await onSubmit(formData)
+    setLoading(false)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-[2.5rem] w-full max-w-md shadow-2xl animate-scale-up overflow-hidden">
+        <div className="p-8 md:p-10">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-black text-gray-900">Add New User</h2>
+            <button onClick={onClose} className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-all">&times;</button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">Full Name</label>
+              <input 
+                type="text" 
+                required 
+                className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                placeholder="e.g. John Doe"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">Email Address</label>
+              <input 
+                type="email" 
+                required 
+                className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold"
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                placeholder="email@example.com"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">Password</label>
+              <input 
+                type="password" 
+                required 
+                minLength="8"
+                className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold"
+                value={formData.password}
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                placeholder="Min. 8 characters"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">User Role</label>
+              <select 
+                className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold appearance-none"
+                value={formData.role}
+                onChange={(e) => setFormData({...formData, role: e.target.value})}
+              >
+                <option value="person">Person (Individual)</option>
+                <option value="organization">Organization (Shelter)</option>
+                <option value="admin">Administrator</option>
+              </select>
+            </div>
+
+            <div className="pt-4">
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full btn-primary py-4 text-lg shadow-lg shadow-primary-500/20 disabled:opacity-50"
+              >
+                {loading ? 'Creating...' : 'Create User Account'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   )
 }

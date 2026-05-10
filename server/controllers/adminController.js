@@ -1,4 +1,5 @@
 const pool = require('../config/db')
+const bcrypt = require('bcryptjs')
 const { sendSuccess, sendError } = require('../utils/responseHelper')
 
 /** adminController.js — Admin Management */
@@ -27,6 +28,34 @@ const updateUserStatus = async (req, res, next) => {
     const { is_active } = req.body
     await pool.query('UPDATE users SET is_active = ? WHERE id = ?', [is_active, req.params.id])
     sendSuccess(res, {}, `User ${is_active ? 'activated' : 'banned'}`)
+  } catch (err) { next(err) }
+}
+
+const createUser = async (req, res, next) => {
+  try {
+    const { name, email, password, role } = req.body
+
+    // 1. Basic validation
+    if (!name || !email || !password || !role) {
+      return sendError(res, 'All fields are required', 400)
+    }
+
+    // 2. Check if email exists
+    const [existing] = await pool.query('SELECT id FROM users WHERE email = ?', [email])
+    if (existing.length > 0) {
+      return sendError(res, 'Email already exists', 409)
+    }
+
+    // 3. Hash password
+    const hashedPassword = await bcrypt.hash(password, 12)
+
+    // 4. Insert user
+    await pool.query(
+      'INSERT INTO users (name, email, password, role, is_active) VALUES (?, ?, ?, ?, 1)',
+      [name, email, hashedPassword, role]
+    )
+
+    sendSuccess(res, {}, 'User created successfully', 201)
   } catch (err) { next(err) }
 }
 
@@ -59,4 +88,4 @@ const getReports = async (req, res, next) => {
   } catch (err) { next(err) }
 }
 
-module.exports = { getStats, getUsers, updateUserStatus, getAnimals, deleteAnimal, getReports }
+module.exports = { getStats, getUsers, updateUserStatus, createUser, getAnimals, deleteAnimal, getReports }

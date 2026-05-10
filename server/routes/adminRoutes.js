@@ -11,6 +11,7 @@ router.use(authMiddleware, roleMiddleware('admin'))
 
 router.get('/stats',             adminController.getStats)
 router.get('/users',             adminController.getUsers)
+router.post('/users',            adminController.createUser)
 router.patch('/users/:id/status', adminController.updateUserStatus)
 router.get('/animals',           adminController.getAnimals)
 router.delete('/animals/:id',    adminController.deleteAnimal)

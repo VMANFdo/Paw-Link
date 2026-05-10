@@ -6,6 +6,7 @@ import api from './api'
 export const adminService = {
   getStats:         () => api.get('/admin/stats'),
   getUsers:         () => api.get('/admin/users'),
+  createUser:       (data) => api.post('/admin/users', data),
   updateUserStatus: (id, isActive) => api.patch(`/admin/users/${id}/status`, { is_active: isActive }),
   getAnimals:       () => api.get('/admin/animals'),
   deleteAnimal:     (id) => api.delete(`/admin/animals/${id}`),
