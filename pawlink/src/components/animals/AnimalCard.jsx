@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 export default function AnimalCard({ animal }) {
   // Use a default image if none is provided
   const imageUrl = animal.thumbnail 
-    ? `http://localhost:5000${animal.thumbnail}` 
+    ? animal.thumbnail 
     : 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
 
   const urgencyColors = {
@@ -38,12 +38,28 @@ export default function AnimalCard({ animal }) {
 
       {/* Content */}
       <div className="p-5">
-        <div className="flex justify-between items-start mb-2">
+        <div className="flex justify-between items-start mb-1">
           <h3 className="text-xl font-bold text-gray-900 truncate pr-2">{animal.breed || animal.type}</h3>
           <span className="text-xs font-bold text-primary-600 bg-primary-50 px-2 py-1 rounded capitalize">
             {animal.type}
           </span>
         </div>
+        
+        {animal.city && (
+          <a 
+            href={`https://www.google.com/maps/search/?api=1&query=${animal.latitude},${animal.longitude}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider hover:text-primary-600 transition-colors"
+          >
+            <svg className="w-3.5 h-3.5 mr-1 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            {animal.city}
+          </a>
+        )}
         
         <p className="text-gray-500 text-sm line-clamp-2 mb-4 h-10">
           {animal.description || 'No description provided.'}

@@ -16,7 +16,8 @@ export default function AddAnimal() {
     rescue_urgency: 'medium',
     description: '',
     latitude: 6.9271,
-    longitude: 79.8612
+    longitude: 79.8612,
+    city: ''
   })
   const [images, setImages] = useState([])
 
@@ -152,6 +153,16 @@ export default function AddAnimal() {
               position={[formData.latitude, formData.longitude]}
               onPositionChange={(pos) => setFormData({ ...formData, latitude: pos[0], longitude: pos[1] })}
             />
+            <div className="mt-6">
+              <label className="form-label">Nearest City</label>
+              <input 
+                type="text" name="city" className="input-field" 
+                placeholder="e.g. Colombo, Kandy, Galle..." 
+                value={formData.city} onChange={handleChange}
+                required
+              />
+              <p className="text-[10px] text-gray-400 mt-2 italic">This helps people find the animal faster on the browse page.</p>
+            </div>
           </div>
 
           <div className="card p-8">
