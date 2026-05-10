@@ -17,7 +17,7 @@ const { sendSuccess, sendError } = require('../utils/responseHelper')
 // ─────────────────────────────────────────
 const register = async (req, res, next) => {
   try {
-    const { name, email, password, role = 'person' } = req.body
+    const { name, email, password, role = 'person', phone } = req.body
 
     // 1. Check if email already exists
     const [existing] = await pool.query(
@@ -32,8 +32,8 @@ const register = async (req, res, next) => {
 
     // 3. Insert new user
     const [result] = await pool.query(
-      'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-      [name, email, hashedPassword, role]
+      'INSERT INTO users (name, email, password, role, phone) VALUES (?, ?, ?, ?, ?)',
+      [name, email, hashedPassword, role, phone]
     )
 
     // 4. Generate JWT token
