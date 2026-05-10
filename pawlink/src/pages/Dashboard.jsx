@@ -166,7 +166,7 @@ function AnimalListItem({ animal }) {
       <div className="flex items-center space-x-4">
         <div className="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
           {animal.thumbnail ? (
-            <img src={`${import.meta.env.VITE_API_BASE_URL}${animal.thumbnail}`} alt={animal.breed} className="w-full h-full object-cover" />
+            <img src={animal.thumbnail} alt={animal.breed} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">No image</div>
           )}
@@ -175,7 +175,10 @@ function AnimalListItem({ animal }) {
           <h4 className="font-bold text-gray-800 text-sm">{animal.breed || animal.type}</h4>
           <div className="flex items-center space-x-2 mt-1">
             <span className={`badge-${animal.status}`}>{animal.status}</span>
-            <span className="text-[10px] text-gray-400 font-medium">{new Date(animal.created_at).toLocaleDateString()}</span>
+            <span className="text-[10px] text-gray-400 font-medium">
+              {animal.city ? `${animal.city} • ` : ''}
+              {new Date(animal.created_at).toLocaleDateString()}
+            </span>
           </div>
         </div>
       </div>

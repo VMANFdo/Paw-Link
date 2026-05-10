@@ -170,7 +170,16 @@ export default function AnimalDetails() {
             <h1 className="text-5xl font-black text-gray-900 leading-tight mb-2">
               {animal.breed || animal.type}
             </h1>
-            <p className="text-xl text-gray-400 font-medium">📍 Located at {animal.latitude}, {animal.longitude}</p>
+            <a 
+              href={`https://www.google.com/maps/search/?api=1&query=${animal.latitude},${animal.longitude}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xl text-gray-400 font-medium hover:text-primary-600 transition-colors inline-flex items-center group"
+            >
+              <span className="group-hover:scale-110 transition-transform mr-2">📍</span>
+              {animal.city ? `${animal.city}, ` : ''} 
+              Located at {Number(animal.latitude).toFixed(4)}, {Number(animal.longitude).toFixed(4)}
+            </a>
           </div>
 
           <div className="grid grid-cols-3 gap-6 p-8 bg-gray-50 rounded-3xl border border-gray-100">

@@ -11,7 +11,7 @@ const getAll = async (req, res, next) => {
     const { type, status, urgency, lat, lng, radius } = req.query
 
     let query = `
-      SELECT a.*, u.name AS poster_name,
+      SELECT a.*, a.city, u.name AS poster_name,
         (SELECT image_url FROM animal_images WHERE animal_id = a.id LIMIT 1) AS thumbnail
       FROM animals a
       JOIN users u ON a.posted_by = u.id
@@ -60,7 +60,7 @@ const getAll = async (req, res, next) => {
 const getById = async (req, res, next) => {
   try {
     const [animals] = await pool.query(`
-      SELECT a.*, u.name AS poster_name, u.email AS poster_email, u.phone AS poster_phone
+      SELECT a.*, a.city, u.name AS poster_name, u.email AS poster_email, u.phone AS poster_phone
       FROM animals a
       JOIN users u ON a.posted_by = u.id
       WHERE a.id = ?
@@ -85,14 +85,14 @@ const create = async (req, res, next) => {
   try {
     const {
       type, breed, age, gender, health_condition,
-      rescue_urgency, latitude, longitude, description,
+      rescue_urgency, latitude, longitude, city, description,
     } = req.body
 
     const [result] = await pool.query(
       `INSERT INTO animals
-        (type, breed, age, gender, health_condition, rescue_urgency, latitude, longitude, description, posted_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [type, breed, age, gender, health_condition, rescue_urgency, latitude, longitude, description, req.user.id]
+        (type, breed, age, gender, health_condition, rescue_urgency, latitude, longitude, city, description, posted_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [type, breed, age, gender, health_condition, rescue_urgency, latitude, longitude, city, description, req.user.id]
     )
 
     const animalId = result.insertId
@@ -118,10 +118,10 @@ const update = async (req, res, next) => {
       return sendError(res, 'Not authorised to edit this post', 403)
     }
 
-    const { type, breed, age, gender, health_condition, rescue_urgency, description } = req.body
+    const { type, breed, age, gender, health_condition, rescue_urgency, city, description } = req.body
     await pool.query(
-      `UPDATE animals SET type=?, breed=?, age=?, gender=?, health_condition=?, rescue_urgency=?, description=? WHERE id=?`,
-      [type, breed, age, gender, health_condition, rescue_urgency, description, req.params.id]
+      `UPDATE animals SET type=?, breed=?, age=?, gender=?, health_condition=?, rescue_urgency=?, city=?, description=? WHERE id=?`,
+      [type, breed, age, gender, health_condition, rescue_urgency, city, description, req.params.id]
     )
 
     sendSuccess(res, {}, 'Animal updated successfully')
@@ -165,7 +165,7 @@ const updateStatus = async (req, res, next) => {
 const getMine = async (req, res, next) => {
   try {
     const [animals] = await pool.query(`
-      SELECT a.*,
+      SELECT a.*, a.city,
         (SELECT image_url FROM animal_images WHERE animal_id = a.id LIMIT 1) AS thumbnail
       FROM animals a
       WHERE a.posted_by = ?

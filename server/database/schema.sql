@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS animals (
     rescue_urgency   ENUM('low', 'medium', 'high', 'critical') NOT NULL DEFAULT 'medium',
     latitude         DECIMAL(10, 8) NOT NULL,
     longitude        DECIMAL(11, 8) NOT NULL,
+    city             VARCHAR(100) DEFAULT NULL,
     description      TEXT DEFAULT NULL,
     status           ENUM('available', 'adopted', 'rescued', 'pending') NOT NULL DEFAULT 'available',
     posted_by        INT UNSIGNED NOT NULL,
