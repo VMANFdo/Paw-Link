@@ -70,6 +70,20 @@ export default function Navbar() {
               {link.label}
             </NavLink>
           ))}
+          
+          {/* Admin-only Nav Link */}
+          {user?.role === 'admin' && (
+            <NavLink 
+              to="/admin"
+              className={({ isActive }) => 
+                `text-sm font-black transition-colors px-3 py-1 rounded-lg ${
+                  isActive ? 'bg-red-50 text-red-600' : 'text-red-500 hover:bg-red-50'
+                }`
+              }
+            >
+              🛡️ Admin Panel
+            </NavLink>
+          )}
         </nav>
 
         {/* Desktop Auth Section */}
@@ -117,9 +131,6 @@ export default function Navbar() {
                     <Link to="/profile" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 font-medium">Profile</Link>
                     {(user.role === 'organization' || user.role === 'admin') && (
                       <Link to="/org-dashboard" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-primary-600 hover:bg-primary-50 font-bold">Org Dashboard</Link>
-                    )}
-                    {user.role === 'admin' && (
-                      <Link to="/admin" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-bold">Admin Panel</Link>
                     )}
                     <button 
                       onClick={handleLogout}
@@ -170,6 +181,9 @@ export default function Navbar() {
             <>
               <Link to="/messages" onClick={() => setIsOpen(false)} className="block text-gray-700 font-bold px-2 py-1">Inquiries / Messages</Link>
               <Link to="/dashboard" onClick={() => setIsOpen(false)} className="block text-gray-700 font-bold px-2 py-1">Dashboard</Link>
+              {user.role === 'admin' && (
+                <Link to="/admin" onClick={() => setIsOpen(false)} className="block text-red-600 font-black px-2 py-1">🛡️ Admin Panel</Link>
+              )}
               <button onClick={handleLogout} className="block text-red-500 font-bold px-2 py-1">Sign Out</button>
             </>
           ) : (
