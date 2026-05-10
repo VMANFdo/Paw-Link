@@ -181,7 +181,12 @@ export default function AnimalDetails() {
 
             {animal.poster_phone && (
               <a 
-                href={`https://wa.me/${animal.poster_phone.replace(/\D/g, '')}`} 
+                href={(function() {
+                  let cleaned = animal.poster_phone.replace(/\D/g, '');
+                  if (cleaned.startsWith('0') && cleaned.length === 10) cleaned = '94' + cleaned.substring(1);
+                  const message = `Hi, I would like to adopt this animal: ${animal.breed || animal.type}`;
+                  return `https://wa.me/${cleaned}?text=${encodeURIComponent(message)}`;
+                })()} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white px-5 py-2.5 rounded-2xl font-bold transition-colors shadow-sm"
