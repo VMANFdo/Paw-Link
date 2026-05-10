@@ -127,7 +127,9 @@ export default function Navbar() {
                       <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Signed in as</p>
                       <p className="text-xs font-bold text-gray-900 truncate">{user.email}</p>
                     </div>
-                    <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 font-medium">Dashboard</Link>
+                    {user.role !== 'admin' && (
+                      <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 font-medium">Dashboard</Link>
+                    )}
                     <Link to="/profile" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 font-medium">Profile</Link>
                     {(user.role === 'organization' || user.role === 'admin') && (
                       <Link to="/org-dashboard" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-primary-600 hover:bg-primary-50 font-bold">Org Dashboard</Link>
@@ -180,7 +182,9 @@ export default function Navbar() {
           {user ? (
             <>
               <Link to="/messages" onClick={() => setIsOpen(false)} className="block text-gray-700 font-bold px-2 py-1">Inquiries / Messages</Link>
-              <Link to="/dashboard" onClick={() => setIsOpen(false)} className="block text-gray-700 font-bold px-2 py-1">Dashboard</Link>
+              {user.role !== 'admin' && (
+                <Link to="/dashboard" onClick={() => setIsOpen(false)} className="block text-gray-700 font-bold px-2 py-1">Dashboard</Link>
+              )}
               {user.role === 'admin' && (
                 <Link to="/admin" onClick={() => setIsOpen(false)} className="block text-red-600 font-black px-2 py-1">🛡️ Admin Panel</Link>
               )}
