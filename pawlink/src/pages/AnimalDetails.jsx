@@ -20,6 +20,7 @@ export default function AnimalDetails() {
   const [adoptionMessage, setAdoptionMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [requestSent, setRequestSent] = useState(false)
+  const [myRequest, setMyRequest] = useState(null) // { id, status } or null
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 
@@ -30,7 +31,18 @@ export default function AnimalDetails() {
   const fetchAnimal = async () => {
     try {
       const response = await animalService.getById(id)
-      setAnimal(response.data.data.animal)
+      const fetchedAnimal = response.data.data.animal
+      setAnimal(fetchedAnimal)
+
+      // Check if logged-in user already has a request for this animal
+      if (user && fetchedAnimal && user.id !== fetchedAnimal.posted_by) {
+        try {
+          const checkRes = await adoptionService.check(id)
+          setMyRequest(checkRes.data.data.existing)
+        } catch (_) {
+          // Not fatal — just won't show status badge
+        }
+      }
     } catch (err) {
       console.error('Failed to fetch animal details:', err)
     } finally {
@@ -168,19 +180,41 @@ export default function AnimalDetails() {
             </div>
           </div>
 
-          {!isOwner && animal.status === 'available' && (
-            <button 
+          {/* ── Adoption Action Area ── */}
+          {isOwner ? (
+            <div className="p-4 bg-primary-50 rounded-2xl text-center text-primary-700 font-bold text-sm">
+              This is your post. You can manage it from your
+              <a href="/dashboard" className="underline ml-1">dashboard</a>.
+            </div>
+          ) : animal.status === 'adopted' ? (
+            <div className="w-full py-5 text-center rounded-[2rem] font-black text-xl bg-gray-100 text-gray-400 border-2 border-gray-200">
+              🏠 This animal has already been adopted
+            </div>
+          ) : animal.status === 'rescued' ? (
+            <div className="w-full py-5 text-center rounded-[2rem] font-black text-xl bg-blue-50 text-blue-400 border-2 border-blue-100">
+              🚑 This animal has been rescued and is in care
+            </div>
+          ) : myRequest ? (
+            // User already has a request — show status badge
+            <div className={`w-full py-5 px-6 text-center rounded-[2rem] font-black text-xl border-2 ${
+              myRequest.status === 'pending'
+                ? 'bg-yellow-50 text-yellow-600 border-yellow-200'
+                : myRequest.status === 'approved'
+                ? 'bg-green-50 text-green-600 border-green-200'
+                : 'bg-red-50 text-red-500 border-red-200'
+            }`}>
+              {myRequest.status === 'pending' && '⏳ Request Pending — Waiting for approval'}
+              {myRequest.status === 'approved' && '🎉 Your adoption has been approved!'}
+              {myRequest.status === 'rejected' && '✗ Your request was not approved this time'}
+            </div>
+          ) : (
+            // Available + no prior request — show Adopt button
+            <button
               onClick={handleAdoptClick}
               className="btn-primary w-full py-5 text-xl font-black rounded-[2rem] shadow-xl hover:shadow-2xl transition-all active:scale-[0.98]"
             >
-              I want to Adopt {animal.breed || animal.type}
+              I want to Adopt {animal.breed || animal.type} 🐾
             </button>
-          )}
-
-          {isOwner && (
-            <div className="p-4 bg-primary-50 rounded-2xl text-center text-primary-700 font-bold text-sm">
-              This is your post. You can manage it from your dashboard.
-            </div>
           )}
         </div>
       </div>
@@ -226,8 +260,8 @@ export default function AnimalDetails() {
             ) : (
               <div className="text-center py-10">
                 <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">✓</div>
-                <h2 className="text-3xl font-black text-gray-900 mb-2">Success!</h2>
-                <p className="text-gray-500">Your adoption request has been sent to the poster.</p>
+                <h2 className="text-3xl font-black text-gray-900 mb-2">Request Sent!</h2>
+                <p className="text-gray-500">Your adoption request has been sent to the poster. You'll be notified when they respond.</p>
               </div>
             )}
           </div>

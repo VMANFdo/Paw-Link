@@ -39,6 +39,16 @@ export default function AdoptionRequests() {
     }
   }
 
+  const handleCancel = async (requestId) => {
+    if (!window.confirm('Cancel this adoption request? This cannot be undone.')) return
+    try {
+      await adoptionService.cancel(requestId)
+      fetchRequests() // Refresh list
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to cancel request')
+    }
+  }
+
   return (
     <div className="container-section py-10">
       <h1 className="text-3xl font-black text-gray-900 mb-8">Adoption Requests</h1>
@@ -76,6 +86,7 @@ export default function AdoptionRequests() {
                 request={req} 
                 isReceived={tab === 'received'} 
                 onStatusUpdate={handleStatusUpdate}
+                onCancel={handleCancel}
               />
             ))
           ) : (
@@ -90,7 +101,7 @@ export default function AdoptionRequests() {
   )
 }
 
-function RequestCard({ request, isReceived, onStatusUpdate }) {
+function RequestCard({ request, isReceived, onStatusUpdate, onCancel }) {
   const statusColors = {
     pending: 'bg-yellow-100 text-yellow-700',
     approved: 'bg-green-100 text-green-700',
@@ -132,27 +143,50 @@ function RequestCard({ request, isReceived, onStatusUpdate }) {
       </div>
 
       <div className="flex flex-col gap-3 min-w-[150px]">
+        {/* Received tab: Approve / Reject buttons */}
         {isReceived && request.status === 'pending' && (
           <>
             <button 
               onClick={() => onStatusUpdate(request.id, 'approved')}
               className="bg-green-500 hover:bg-green-600 text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-sm shadow-green-200"
             >
-              Approve
+              ✓ Approve
             </button>
             <button 
               onClick={() => onStatusUpdate(request.id, 'rejected')}
               className="bg-white border-2 border-red-500 text-red-600 hover:bg-red-50 text-xs font-bold py-2.5 rounded-xl transition-all"
             >
-              Reject
+              ✗ Reject
             </button>
           </>
         )}
+
+        {/* Received tab: Message the requester */}
+        {isReceived && (
+          <Link
+            to="/messages"
+            className="text-center text-xs font-bold text-blue-500 hover:text-blue-700 py-2 border-2 border-blue-100 rounded-xl hover:bg-blue-50 transition-all"
+          >
+            💬 Message
+          </Link>
+        )}
+
+        {/* Sent tab: Cancel if still pending */}
+        {!isReceived && request.status === 'pending' && (
+          <button
+            onClick={() => onCancel(request.id)}
+            className="bg-white border-2 border-red-200 text-red-500 hover:bg-red-50 text-xs font-bold py-2.5 rounded-xl transition-all"
+          >
+            Cancel Request
+          </button>
+        )}
+
+        {/* View Animal link */}
         <Link 
           to={`/animals/${request.animal_id}`}
           className="text-center text-xs font-bold text-gray-400 hover:text-primary-600 py-1 transition-colors"
         >
-          View Animal
+          View Animal →
         </Link>
       </div>
     </div>

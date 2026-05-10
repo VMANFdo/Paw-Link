@@ -20,8 +20,18 @@ const getAll = async (req, res, next) => {
     const params = []
 
     if (type)    { query += ' AND a.type = ?';             params.push(type) }
-    if (status)  { query += ' AND a.status = ?';           params.push(status) }
     if (urgency) { query += ' AND a.rescue_urgency = ?';   params.push(urgency) }
+
+    // Status filter:
+    // - If a specific status is requested (e.g. admin view), honour it.
+    // - If no status is given (public browse), only show 'available' and 'pending'.
+    //   Adopted/rescued animals are hidden from the public browse list.
+    if (status) {
+      query += ' AND a.status = ?'
+      params.push(status)
+    } else {
+      query += " AND a.status IN ('available', 'pending')"
+    }
 
     // Haversine formula for geo radius search
     if (lat && lng && radius) {
