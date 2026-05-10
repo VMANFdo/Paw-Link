@@ -15,6 +15,7 @@ export default function Register() {
     password: '',
     confirmPassword: '',
     role: 'person', // Default role
+    phone: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -52,7 +53,8 @@ export default function Register() {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        role: formData.role
+        role: formData.role,
+        phone: formData.phone
       })
       
       // 2. Automatically log them in after registration
@@ -125,6 +127,21 @@ export default function Register() {
               className="input-field"
               placeholder="you@example.com"
               value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="form-label flex justify-between">
+              Phone Number <span className="text-[10px] text-gray-400 font-normal">WhatsApp preferred</span>
+            </label>
+            <input
+              type="tel"
+              name="phone"
+              className="input-field"
+              placeholder="Ex: 071 012 3456"
+              value={formData.phone}
               onChange={handleChange}
               required
             />

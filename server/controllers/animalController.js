@@ -60,7 +60,7 @@ const getAll = async (req, res, next) => {
 const getById = async (req, res, next) => {
   try {
     const [animals] = await pool.query(`
-      SELECT a.*, u.name AS poster_name, u.email AS poster_email
+      SELECT a.*, u.name AS poster_name, u.email AS poster_email, u.phone AS poster_phone
       FROM animals a
       JOIN users u ON a.posted_by = u.id
       WHERE a.id = ?

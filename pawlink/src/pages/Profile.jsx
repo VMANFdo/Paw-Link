@@ -187,7 +187,7 @@ export default function Profile() {
                   value={formData.phone} 
                   onChange={handleInputChange}
                   className="input-field" 
-                  placeholder="e.g. +1 234 567 8900"
+                  placeholder="Ex: 071 012 3456"
                 />
               </div>
             </div>
