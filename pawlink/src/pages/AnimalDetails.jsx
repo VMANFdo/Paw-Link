@@ -4,6 +4,7 @@ import { animalService } from '../services/animalService'
 import { adoptionService } from '../services/adoptionService'
 import { messageService } from '../services/messageService'
 import { useAuth } from '../context/AuthContext'
+import { useUI } from '../context/UIContext'
 
 /**
  * AnimalDetails.jsx — Detailed view for a single animal
@@ -12,6 +13,7 @@ import { useAuth } from '../context/AuthContext'
 export default function AnimalDetails() {
   const { id } = useParams()
   const { user } = useAuth()
+  const { showToast, confirm: uiConfirm } = useUI()
   const navigate = useNavigate()
 
   const [animal, setAnimal] = useState(null)
@@ -28,6 +30,14 @@ export default function AnimalDetails() {
   const [inquiryBody, setInquiryBody] = useState('')
   const [sendingInquiry, setSendingInquiry] = useState(false)
   const [inquirySent, setInquirySent] = useState(false)
+
+  // Edit Mode state
+  const [isEditing, setIsEditing] = useState(false)
+  const [editData, setEditData] = useState({
+    type: '', breed: '', age: '', gender: '', 
+    rescue_urgency: '', city: '', description: ''
+  })
+  const [updating, setUpdating] = useState(false)
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 
@@ -57,6 +67,59 @@ export default function AnimalDetails() {
     }
   }
 
+  const handleEditToggle = () => {
+    if (!isEditing) {
+      setEditData({
+        type: animal.type,
+        breed: animal.breed || '',
+        age: animal.age || '',
+        gender: animal.gender,
+        rescue_urgency: animal.rescue_urgency,
+        city: animal.city || '',
+        description: animal.description || ''
+      })
+    }
+    setIsEditing(!isEditing)
+  }
+
+  const handleEditChange = (e) => {
+    setEditData({ ...editData, [e.target.name]: e.target.value })
+  }
+
+  const handleUpdate = async (e) => {
+    e.preventDefault()
+    setUpdating(true)
+    try {
+      await animalService.update(id, editData)
+      setIsEditing(false)
+      fetchAnimal()
+      showToast('Changes saved successfully!', 'success')
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to update animal', 'error')
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    const isConfirmed = await uiConfirm({
+      title: 'Delete Post?',
+      message: 'This action will permanently remove this post and all associated images. This cannot be undone.',
+      confirmText: 'Delete Now',
+      type: 'danger'
+    })
+
+    if (!isConfirmed) return
+
+    try {
+      await animalService.remove(id)
+      showToast('Post deleted successfully', 'success')
+      navigate('/browse')
+    } catch (err) {
+      showToast('Failed to delete post. Please try again.', 'error')
+    }
+  }
+
   const handleSendInquiry = async (e) => {
     e.preventDefault()
     if (!inquiryBody.trim() || !user) return
@@ -73,8 +136,9 @@ export default function AnimalDetails() {
         setShowInquiryModal(false)
         setInquirySent(false)
       }, 2000)
+      showToast('Inquiry sent successfully!')
     } catch (err) {
-      alert('Failed to send inquiry. Please try again.')
+      showToast('Failed to send inquiry. Please try again.', 'error')
     } finally {
       setSendingInquiry(false)
     }
@@ -96,7 +160,7 @@ export default function AnimalDetails() {
       setRequestSent(true)
       setTimeout(() => setShowModal(false), 2000)
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to submit request')
+      showToast(err.response?.data?.message || 'Failed to submit request', 'error')
     } finally {
       setSubmitting(false)
     }
@@ -121,7 +185,8 @@ export default function AnimalDetails() {
     ? animal.images.map(img => img.image_url)
     : ['https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80']
 
-  const isOwner = user?.id === animal.posted_by
+  const isAuthor = user?.id === animal.posted_by
+  const canManage = isAuthor || user?.role === 'admin'
 
   return (
     <div className="container py-12">
@@ -156,42 +221,117 @@ export default function AnimalDetails() {
 
         {/* Info */}
         <div className="space-y-8">
+          {/* Manage Actions (Owner Only) */}
+          {canManage && (
+            <div className="flex gap-3 p-4 bg-gray-50 rounded-3xl border border-gray-100">
+              {isEditing ? (
+                <>
+                  <button onClick={handleUpdate} disabled={updating} className="btn-primary flex-1 py-3 text-sm">
+                    {updating ? 'Saving...' : 'Save Changes'}
+                  </button>
+                  <button onClick={handleEditToggle} className="btn-outline flex-1 py-3 text-sm">Cancel</button>
+                </>
+              ) : (
+                <>
+                  <button onClick={handleEditToggle} className="btn-outline flex-1 py-3 text-sm flex items-center justify-center gap-2">
+                    <span>✏️</span> Edit Post
+                  </button>
+                  <button onClick={handleDelete} className="btn-outline flex-1 py-3 text-sm text-red-500 hover:bg-red-50 hover:border-red-200 flex items-center justify-center gap-2">
+                    <span>🗑️</span> Delete
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
           <div>
             <div className="flex flex-wrap gap-2 mb-4">
-              <span className="px-4 py-1.5 rounded-full text-sm font-black uppercase tracking-wider bg-primary-50 text-primary-600">
-                {animal.type}
-              </span>
-              <span className={`px-4 py-1.5 rounded-full text-sm font-black uppercase tracking-wider ${
-                animal.rescue_urgency === 'critical' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'
-              }`}>
-                {animal.rescue_urgency} Urgency
-              </span>
+              {isEditing ? (
+                <>
+                  <select name="type" value={editData.type} onChange={handleEditChange} className="input-field py-1 px-3 w-auto text-xs font-bold uppercase tracking-wider">
+                    <option value="dog">Dog</option>
+                    <option value="cat">Cat</option>
+                    <option value="other">Other</option>
+                  </select>
+                  <select name="rescue_urgency" value={editData.rescue_urgency} onChange={handleEditChange} className="input-field py-1 px-3 w-auto text-xs font-bold uppercase tracking-wider">
+                    <option value="low">Low Urgency</option>
+                    <option value="medium">Medium Urgency</option>
+                    <option value="high">High Urgency</option>
+                    <option value="critical">Critical Urgency</option>
+                  </select>
+                </>
+              ) : (
+                <>
+                  <span className="px-4 py-1.5 rounded-full text-sm font-black uppercase tracking-wider bg-primary-50 text-primary-600">
+                    {animal.type}
+                  </span>
+                  <span className={`px-4 py-1.5 rounded-full text-sm font-black uppercase tracking-wider ${
+                    animal.rescue_urgency === 'critical' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'
+                  }`}>
+                    {animal.rescue_urgency} Urgency
+                  </span>
+                </>
+              )}
             </div>
-            <h1 className="text-5xl font-black text-gray-900 leading-tight mb-2">
-              {animal.breed || animal.type}
-            </h1>
-            <a 
-              href={`https://www.google.com/maps/search/?api=1&query=${animal.latitude},${animal.longitude}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xl text-gray-400 font-medium hover:text-primary-600 transition-colors inline-flex items-center group"
-            >
-              <span className="group-hover:scale-110 transition-transform mr-2">📍</span>
-              {animal.city ? `${animal.city}, ` : ''} 
-              Located at {Number(animal.latitude).toFixed(4)}, {Number(animal.longitude).toFixed(4)}
-            </a>
+
+            {isEditing ? (
+              <div className="space-y-4">
+                <input 
+                  type="text" name="breed" value={editData.breed} onChange={handleEditChange}
+                  className="text-4xl font-black text-gray-900 border-b-2 border-primary-500 w-full focus:outline-none bg-transparent"
+                  placeholder="Breed Name"
+                />
+                <input 
+                  type="text" name="city" value={editData.city} onChange={handleEditChange}
+                  className="text-xl text-gray-900 border-b border-gray-200 w-full focus:outline-none bg-transparent"
+                  placeholder="Nearest City"
+                />
+              </div>
+            ) : (
+              <>
+                <h1 className="text-5xl font-black text-gray-900 leading-tight mb-2">
+                  {animal.breed || animal.type}
+                </h1>
+                <a 
+                  href={`https://www.google.com/maps/search/?api=1&query=${animal.latitude},${animal.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xl text-gray-400 font-medium hover:text-primary-600 transition-colors inline-flex items-center group"
+                >
+                  <span className="group-hover:scale-110 transition-transform mr-2">📍</span>
+                  {animal.city ? `${animal.city}, ` : ''} 
+                  Located at {Number(animal.latitude).toFixed(4)}, {Number(animal.longitude).toFixed(4)}
+                </a>
+              </>
+            )}
           </div>
 
           <div className="grid grid-cols-3 gap-6 p-8 bg-gray-50 rounded-3xl border border-gray-100">
             <div className="text-center">
               <div className="text-2xl mb-1">🎂</div>
               <div className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">Age</div>
-              <div className="text-lg font-black text-gray-900">{animal.age || 'Unknown'}</div>
+              {isEditing ? (
+                <input 
+                  type="text" name="age" value={editData.age} onChange={handleEditChange}
+                  className="text-sm font-bold text-gray-900 w-full text-center bg-white rounded-lg p-1 border border-gray-200"
+                  placeholder="e.g. 2 yrs"
+                />
+              ) : (
+                <div className="text-lg font-black text-gray-900">{animal.age || 'Unknown'}</div>
+              )}
             </div>
             <div className="text-center border-x border-gray-200">
               <div className="text-2xl mb-1">⚧</div>
               <div className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">Gender</div>
-              <div className="text-lg font-black text-gray-900 capitalize">{animal.gender}</div>
+              {isEditing ? (
+                <select name="gender" value={editData.gender} onChange={handleEditChange} className="text-sm font-bold text-gray-900 w-full bg-white rounded-lg p-1 border border-gray-200">
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="unknown">Unknown</option>
+                </select>
+              ) : (
+                <div className="text-lg font-black text-gray-900 capitalize">{animal.gender}</div>
+              )}
             </div>
             <div className="text-center">
               <div className="text-2xl mb-1">🏥</div>
@@ -202,9 +342,17 @@ export default function AnimalDetails() {
 
           <div className="space-y-4">
             <h3 className="text-2xl font-black text-gray-900">About this {animal.type}</h3>
-            <p className="text-gray-600 text-lg leading-relaxed">
-              {animal.description || 'No detailed description provided for this animal.'}
-            </p>
+            {isEditing ? (
+              <textarea 
+                name="description" value={editData.description} onChange={handleEditChange}
+                className="input-field min-h-[150px] pt-4"
+                placeholder="Describe the animal..."
+              ></textarea>
+            ) : (
+              <p className="text-gray-600 text-lg leading-relaxed">
+                {animal.description || 'No detailed description provided for this animal.'}
+              </p>
+            )}
           </div>
 
           <div className="p-8 bg-white rounded-3xl shadow-lg border border-gray-100 flex items-center justify-between flex-wrap gap-4">
@@ -250,10 +398,14 @@ export default function AnimalDetails() {
           </div>
 
           {/* ── Adoption Action Area ── */}
-          {isOwner ? (
+          {isAuthor ? (
             <div className="p-4 bg-primary-50 rounded-2xl text-center text-primary-700 font-bold text-sm">
               This is your post. You can manage it from your
               <a href="/dashboard" className="underline ml-1">dashboard</a>.
+            </div>
+          ) : user?.role === 'admin' ? (
+            <div className="p-4 bg-blue-50 rounded-2xl text-center text-blue-700 font-bold text-sm">
+              You are viewing this post as an <strong>Administrator</strong>.
             </div>
           ) : animal.status === 'adopted' ? (
             <div className="w-full py-5 text-center rounded-[2rem] font-black text-xl bg-gray-100 text-gray-400 border-2 border-gray-200">

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { animalService } from '../services/animalService'
+import { useAuth } from '../context/AuthContext'
 import AnimalCard from '../components/animals/AnimalCard'
 
 export default function BrowseAnimals() {
+  const { user } = useAuth()
   const [animals, setAnimals] = useState([])
   const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState({ type: '', urgency: '' })
@@ -63,13 +65,15 @@ export default function BrowseAnimals() {
           </select>
         </div>
 
-        <Link 
-          to="/add-animal" 
-          className="btn-primary flex items-center gap-2 px-8 py-4 shadow-lg hover:shadow-xl transition-all"
-        >
-          <span className="text-xl">+</span>
-          <span>Post New Animal</span>
-        </Link>
+        {user?.role !== 'admin' && (
+          <Link 
+            to="/add-animal" 
+            className="btn-primary flex items-center gap-2 px-8 py-4 shadow-lg hover:shadow-xl transition-all"
+          >
+            <span className="text-xl">+</span>
+            <span>Post New Animal</span>
+          </Link>
+        )}
       </div>
 
       {loading ? (

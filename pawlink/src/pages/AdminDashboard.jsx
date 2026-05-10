@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { adminService } from '../services/adminService'
 import { useAuth } from '../context/AuthContext'
+import { useUI } from '../context/UIContext'
 
 /**
  * AdminDashboard.jsx — Master Platform Moderation
@@ -8,6 +9,7 @@ import { useAuth } from '../context/AuthContext'
  */
 export default function AdminDashboard() {
   const { user } = useAuth()
+  const { showToast, confirm } = useUI()
   const [tab, setTab] = useState('stats')
   const [data, setData] = useState({ stats: null, users: [], animals: [], reports: [] })
   const [loading, setLoading] = useState(true)
@@ -37,16 +39,26 @@ export default function AdminDashboard() {
   const handleToggleUser = async (uId, currentStatus) => {
     try {
       await adminService.updateUserStatus(uId, !currentStatus)
-      fetchData() // Refresh list
-    } catch (err) { alert('Action failed') }
+      showToast(`User ${currentStatus ? 'banned' : 'unbanned'} successfully`)
+      fetchData()
+    } catch (err) { showToast('Action failed', 'error') }
   }
 
   const handleDeleteAnimal = async (aId) => {
-    if (!window.confirm('Delete this animal post forever?')) return
+    const isConfirmed = await confirm({
+      title: 'Delete Post?',
+      message: 'Are you sure you want to delete this animal post forever? This action cannot be undone.',
+      confirmText: 'Delete Permanently',
+      type: 'danger'
+    })
+
+    if (!isConfirmed) return
+
     try {
       await adminService.deleteAnimal(aId)
+      showToast('Post deleted successfully')
       fetchData()
-    } catch (err) { alert('Delete failed') }
+    } catch (err) { showToast('Delete failed', 'error') }
   }
 
   return (
