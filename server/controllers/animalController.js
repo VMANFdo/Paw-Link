@@ -182,4 +182,29 @@ const getMine = async (req, res, next) => {
   }
 }
 
-module.exports = { getAll, getById, create, update, remove, updateStatus, getMine }
+// GET /api/animals/cities — Get all unique cities
+const getCities = async (req, res, next) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT DISTINCT city 
+      FROM animals 
+      WHERE city IS NOT NULL AND city != '' 
+      ORDER BY city ASC
+    `)
+    const cities = rows.map(r => r.city)
+    sendSuccess(res, { cities })
+  } catch (err) {
+    next(err)
+  }
+}
+
+module.exports = {
+  getAll,
+  getById,
+  create,
+  update,
+  remove,
+  updateStatus,
+  getMine,
+  getCities
+}

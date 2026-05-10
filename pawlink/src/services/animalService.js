@@ -32,4 +32,7 @@ export const animalService = {
 
   /** Get animals posted by the current user */
   getMyAnimals: () => api.get('/animals/my'),
+
+  /** Get unique cities */
+  getCities: () => api.get('/animals/cities'),
 }
