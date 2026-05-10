@@ -9,25 +9,18 @@ const upload         = require('../config/multer')
  * Base: /api/animals
  */
 
-// GET /api/animals         — Public: list all (with filters)
+// 1. Static/Fixed Paths (MUST come before param paths like :id)
+router.get('/cities', animalController.getCities)
+router.get('/my', authMiddleware, animalController.getMine)
 router.get('/', animalController.getAll)
 
-// GET /api/animals/my      — Private: list user's own posts
-router.get('/my', authMiddleware, animalController.getMine)
-
-// GET /api/animals/:id     — Public: single animal
+// 2. Param Paths
 router.get('/:id', animalController.getById)
 
-// POST /api/animals        — Private: create post + up to 5 images
+// 3. Actions / Mutations
 router.post('/', authMiddleware, upload.array('images', 5), animalController.create)
-
-// PUT /api/animals/:id     — Private: update post
 router.put('/:id', authMiddleware, animalController.update)
-
-// DELETE /api/animals/:id  — Private: delete post
 router.delete('/:id', authMiddleware, animalController.remove)
-
-// PATCH /api/animals/:id/status — Private: update status only
 router.patch('/:id/status', authMiddleware, animalController.updateStatus)
 
 module.exports = router
