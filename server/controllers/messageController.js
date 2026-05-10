@@ -57,6 +57,13 @@ const getThread = async (req, res, next) => {
          OR (m.sender_id = ? AND m.receiver_id = ?)
       ORDER BY m.created_at ASC
     `, [req.user.id, req.params.userId, req.params.userId, req.user.id])
+
+    // Mark messages as read
+    await pool.query(
+      'UPDATE messages SET is_read = 1 WHERE receiver_id = ? AND sender_id = ? AND is_read = 0',
+      [req.user.id, req.params.userId]
+    )
+
     sendSuccess(res, { messages })
   } catch (err) { next(err) }
 }

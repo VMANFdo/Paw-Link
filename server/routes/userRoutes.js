@@ -8,6 +8,7 @@ const authMiddleware  = require('../middleware/authMiddleware')
 router.get('/profile',      authMiddleware, userController.getMyProfile)
 router.put('/profile',      authMiddleware, userController.updateProfile)
 router.get('/stats',        authMiddleware, userController.getStats)
+router.get('/notifications/count', authMiddleware, userController.getUnreadCount)
 router.get('/:id',          userController.getPublicProfile)
 
 module.exports = router

@@ -62,4 +62,30 @@ const getStats = async (req, res, next) => {
   } catch (err) { next(err) }
 }
 
-module.exports = { getMyProfile, updateProfile, getPublicProfile, getStats }
+const getUnreadCount = async (req, res, next) => {
+  try {
+    const userId = req.user.id
+
+    // 1. Count unread messages received by this user
+    const [unreadMessages] = await pool.query(
+      'SELECT COUNT(*) AS count FROM messages WHERE receiver_id = ? AND is_read = 0',
+      [userId]
+    )
+
+    // 2. Count pending adoption requests for animals posted by this user
+    const [pendingRequests] = await pool.query(`
+      SELECT COUNT(*) AS count 
+      FROM adoption_requests ar
+      JOIN animals a ON ar.animal_id = a.id
+      WHERE a.posted_by = ? AND ar.status = 'pending'
+    `, [userId])
+
+    sendSuccess(res, {
+      unreadMessages: unreadMessages[0].count,
+      pendingRequests: pendingRequests[0].count,
+      totalUnread: unreadMessages[0].count + pendingRequests[0].count
+    })
+  } catch (err) { next(err) }
+}
+
+module.exports = { getMyProfile, updateProfile, getPublicProfile, getStats, getUnreadCount }

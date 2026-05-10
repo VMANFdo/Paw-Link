@@ -14,4 +14,7 @@ export const userService = {
 
   /** Get dashboard statistics for the logged-in user */
   getStats: () => api.get('/users/stats'),
+
+  /** Get unread notification count */
+  getUnreadCount: () => api.get('/users/notifications/count'),
 }
