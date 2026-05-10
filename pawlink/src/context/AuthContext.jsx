@@ -58,12 +58,18 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('pawlink_user')
   }
 
+  const updateUser = (userData) => {
+    setUser(userData)
+    localStorage.setItem('pawlink_user', JSON.stringify(userData))
+  }
+
   const value = {
     user,
     token,
     isLoading,
     login,
     logout,
+    updateUser,
     isAuthenticated: !!token,
   }
 
