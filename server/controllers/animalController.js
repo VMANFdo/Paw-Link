@@ -198,6 +198,22 @@ const getCities = async (req, res, next) => {
   }
 }
 
+const getPublicStats = async (req, res, next) => {
+  try {
+    const [users] = await pool.query('SELECT COUNT(*) AS count FROM users')
+    const [available] = await pool.query("SELECT COUNT(*) AS count FROM animals WHERE status = 'available'")
+    const [orgs] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'organization'")
+    const [saved] = await pool.query("SELECT COUNT(*) AS count FROM animals WHERE status IN ('adopted', 'rescued')")
+
+    sendSuccess(res, {
+      activeUsers: users[0].count,
+      needShelter: available[0].count,
+      organizations: orgs[0].count,
+      livesSaved: saved[0].count
+    })
+  } catch (err) { next(err) }
+}
+
 module.exports = {
   getAll,
   getById,
@@ -206,5 +222,6 @@ module.exports = {
   remove,
   updateStatus,
   getMine,
-  getCities
+  getCities,
+  getPublicStats
 }

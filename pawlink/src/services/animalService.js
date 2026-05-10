@@ -35,4 +35,7 @@ export const animalService = {
 
   /** Get unique cities */
   getCities: () => api.get('/animals/cities'),
+
+  /** Get global public statistics */
+  getPublicStats: () => api.get('/animals/stats'),
 }

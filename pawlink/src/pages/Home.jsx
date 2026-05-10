@@ -10,11 +10,25 @@
  *  4. How It Works
  *  5. Call to Action banner
  */
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { animalService } from '../services/animalService'
 
 export default function Home() {
   const { user } = useAuth()
+  const [stats, setStats] = useState({
+    activeUsers: 0,
+    needShelter: 0,
+    organizations: 0,
+    livesSaved: 0
+  })
+
+  useEffect(() => {
+    animalService.getPublicStats()
+      .then(res => setStats(res.data.data))
+      .catch(err => console.error('Failed to fetch stats', err))
+  }, [])
   return (
     <div className="space-y-20 pb-20">
       {/* Hero Section */}
@@ -68,13 +82,15 @@ export default function Home() {
       <section className="container">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 bg-white p-10 rounded-3xl shadow-xl -mt-32 relative z-30">
           {[
-            { label: 'Need Shelter', value: '150+' },
-            { label: 'Happy Adoptions', value: '1,200+' },
-            { label: 'Organizations', value: '45' },
-            { label: 'Lives Saved', value: '3K+' },
+            { label: 'Active Users',   value: stats.activeUsers },
+            { label: 'Need Shelter',   value: stats.needShelter },
+            { label: 'Organizations',  value: stats.organizations },
+            { label: 'Saved Lives',    value: stats.livesSaved },
           ].map((stat, i) => (
             <div key={i} className="text-center">
-              <div className="text-3xl font-black text-gray-900 mb-1">{stat.value}</div>
+              <div className="text-3xl font-black text-gray-900 mb-1">
+                {stat.value.toLocaleString()}
+              </div>
               <div className="text-sm text-gray-500 font-medium uppercase tracking-wider">{stat.label}</div>
             </div>
           ))}

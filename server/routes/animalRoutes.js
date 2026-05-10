@@ -10,6 +10,7 @@ const upload         = require('../config/multer')
  */
 
 // 1. Static/Fixed Paths (MUST come before param paths like :id)
+router.get('/stats', animalController.getPublicStats)
 router.get('/cities', animalController.getCities)
 router.get('/my', authMiddleware, animalController.getMine)
 router.get('/', animalController.getAll)
