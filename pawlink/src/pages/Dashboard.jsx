@@ -15,19 +15,23 @@ export default function Dashboard() {
   const [stats, setStats] = useState({ totalPosts: 0, requestsSent: 0, requestsReceived: 0 })
   const [myAnimals, setMyAnimals] = useState([])
   const [recentRequests, setRecentRequests] = useState([])
+  const [adoptedAnimals, setAdoptedAnimals] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [statsRes, animalsRes, requestsRes] = await Promise.all([
+        const [statsRes, animalsRes, requestsRes, sentRes] = await Promise.all([
           userService.getStats(),
           animalService.getMyAnimals(),
-          adoptionService.getReceived()
+          adoptionService.getReceived(),
+          adoptionService.getMine()
         ])
         setStats(statsRes.data.data)
         setMyAnimals(animalsRes.data.data.animals)
         setRecentRequests(requestsRes.data.data.requests.slice(0, 5)) // Show only top 5 recent
+        const approved = sentRes.data.data.requests.filter(req => req.status === 'approved')
+        setAdoptedAnimals(approved)
       } catch (err) {
         console.error('Failed to fetch dashboard data', err)
       } finally {
@@ -118,6 +122,24 @@ export default function Dashboard() {
         </div>
 
       </div>
+
+      {/* 4. My Adopted Animals Section */}
+      <div className="space-y-6 pt-6 border-t border-gray-100">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-black text-gray-900">My Adopted Furry Friends 🐾</h2>
+        </div>
+        
+        {adoptedAnimals.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {adoptedAnimals.map(req => (
+              <AdoptedAnimalCard key={req.id} request={req} />
+            ))}
+          </div>
+        ) : (
+          <EmptyState message="You haven't adopted any animals yet. Give a furry friend a forever home!" />
+        )}
+      </div>
+
     </div>
   )
 }
@@ -170,6 +192,28 @@ function EmptyState({ message }) {
   return (
     <div className="card p-10 flex flex-col items-center justify-center text-center bg-gray-50/50 border-dashed border-2">
       <p className="text-gray-400 text-sm font-medium">{message}</p>
+    </div>
+  )
+}
+
+function AdoptedAnimalCard({ request }) {
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
+  return (
+    <div className="card p-4 flex flex-col items-center text-center hover:shadow-md transition-shadow border-2 border-green-100 bg-green-50/30">
+      <div className="w-24 h-24 rounded-full bg-gray-100 overflow-hidden mb-3 border-4 border-white shadow-sm">
+        {request.thumbnail ? (
+          <img src={`${API_BASE}${request.thumbnail}`} alt={request.breed} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">No image</div>
+        )}
+      </div>
+      <h4 className="font-black text-gray-900">{request.breed || request.type}</h4>
+      <span className="text-[10px] font-black uppercase px-3 py-1 rounded-full mt-2 bg-green-500 text-white shadow-sm">
+        Adopted
+      </span>
+      <Link to={`/animals/${request.animal_id}`} className="text-xs font-bold text-primary-600 hover:underline mt-4">
+        View Post
+      </Link>
     </div>
   )
 }
