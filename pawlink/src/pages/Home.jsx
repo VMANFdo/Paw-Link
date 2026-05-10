@@ -66,7 +66,7 @@ export default function Home() {
       <section className="container">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 bg-white p-10 rounded-3xl shadow-xl -mt-32 relative z-30">
           {[
-            { label: 'Active Rescues', value: '150+' },
+            { label: 'Need Shelter', value: '150+' },
             { label: 'Happy Adoptions', value: '1,200+' },
             { label: 'Organizations', value: '45' },
             { label: 'Lives Saved', value: '3K+' },
@@ -79,42 +79,57 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Guidelines Section */}
       <section className="container py-10">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-4xl font-black text-gray-900 mb-4">How You Can Help</h2>
-          <p className="text-gray-600 text-lg">Whether you're an individual or an organization, there's a place for you at PawLink.</p>
+          <h2 className="text-4xl font-black text-gray-900 mb-4 tracking-tight">How it Works</h2>
+          <p className="text-gray-600 text-lg">Follow these simple steps to start your journey with PawLink.</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-10">
-          {[
-            {
-              title: 'Find & Report',
-              desc: 'Found a stray? Pin their location, upload photos, and help them get rescued quickly.',
-              icon: '📍',
-              color: 'bg-primary-50'
-            },
-            {
-              title: 'Adopt Forever',
-              desc: 'Browse verified animals looking for a home and start your adoption journey today.',
-              icon: '🏠',
-              color: 'bg-secondary-50'
-            },
-            {
-              title: 'Organization Support',
-              desc: 'Organizations can manage their rescues, medical records, and adoption requests in one dashboard.',
-              icon: '🏥',
-              color: 'bg-teal-50'
-            }
-          ].map((feature, i) => (
-            <div key={i} className="card p-8 hover:translate-y-[-8px] transition-all duration-300">
-              <div className={`w-16 h-16 rounded-2xl ${feature.color} flex items-center justify-center text-3xl mb-6`}>
-                {feature.icon}
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">{feature.title}</h3>
-              <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
+        <div className="grid md:grid-cols-2 gap-12">
+          {/* Adoption Guidelines */}
+          <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-500 group">
+            <div className="w-16 h-16 rounded-2xl bg-primary-100 text-primary-600 flex items-center justify-center text-3xl mb-8 group-hover:scale-110 transition-transform">
+              🐕
             </div>
-          ))}
+            <h3 className="text-3xl font-black text-gray-900 mb-8">Want to adopt a pet?</h3>
+            <ul className="space-y-6">
+              {[
+                { step: '1', text: 'Navigate to browse animals' },
+                { step: '2', text: 'Choose the animal' },
+                { step: '3', text: 'Send an image with the animals in the poster to author and an adoption request' },
+              ].map((item, i) => (
+                <li key={i} className="flex items-start gap-5">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center font-black text-sm">
+                    {item.step}
+                  </span>
+                  <p className="text-gray-600 font-medium pt-1">{item.text}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Rescue Guidelines */}
+          <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-500 group">
+            <div className="w-16 h-16 rounded-2xl bg-secondary-100 text-secondary-600 flex items-center justify-center text-3xl mb-8 group-hover:scale-110 transition-transform">
+              📢
+            </div>
+            <h3 className="text-3xl font-black text-gray-900 mb-8">Want to report a Rescue?</h3>
+            <ul className="space-y-6">
+              {[
+                { step: '1', text: 'Create a new account' },
+                { step: '2', text: 'Post about the animal' },
+                { step: '3', text: 'Confirm adoption request upon the proof' },
+              ].map((item, i) => (
+                <li key={i} className="flex items-start gap-5">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary-50 text-secondary-600 flex items-center justify-center font-black text-sm">
+                    {item.step}
+                  </span>
+                  <p className="text-gray-600 font-medium pt-1">{item.text}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 
