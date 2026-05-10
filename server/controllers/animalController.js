@@ -21,6 +21,7 @@ const getAll = async (req, res, next) => {
 
     if (type)    { query += ' AND a.type = ?';             params.push(type) }
     if (urgency) { query += ' AND a.rescue_urgency = ?';   params.push(urgency) }
+    if (req.query.city) { query += ' AND a.city LIKE ?';   params.push(`%${req.query.city}%`) }
 
     // Status filter:
     // - If a specific status is requested (e.g. admin view), honour it.
@@ -83,6 +84,9 @@ const getById = async (req, res, next) => {
 // POST /api/animals — Create new post
 const create = async (req, res, next) => {
   try {
+    if (req.user.role === 'admin') {
+      return res.status(403).json({ success: false, message: 'Admins are not allowed to post animals' })
+    }
     const {
       type, breed, age, gender, health_condition,
       rescue_urgency, latitude, longitude, city, description,

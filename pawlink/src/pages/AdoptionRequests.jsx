@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { adoptionService } from '../services/adoptionService'
 import { Link } from 'react-router-dom'
+import { useUI } from '../context/UIContext'
 
 /**
  * AdoptionRequests.jsx — Management page for adoption requests
@@ -10,6 +11,7 @@ export default function AdoptionRequests({ isNested = false }) {
   const [tab, setTab] = useState('received') // 'sent' or 'received'
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
+  const { showToast, confirm } = useUI()
 
   useEffect(() => {
     fetchRequests()
@@ -30,22 +32,40 @@ export default function AdoptionRequests({ isNested = false }) {
   }
 
   const handleStatusUpdate = async (requestId, status) => {
-    if (!window.confirm(`Are you sure you want to ${status} this request?`)) return
+    const isConfirmed = await confirm({
+      title: `${status.charAt(0).toUpperCase() + status.slice(1)} Request?`,
+      message: `Are you sure you want to ${status} this adoption request?`,
+      confirmText: `Yes, ${status}`,
+      type: status === 'approved' ? 'info' : 'danger'
+    })
+    
+    if (!isConfirmed) return
+
     try {
       await adoptionService.updateStatus(requestId, status)
-      fetchRequests() // Refresh list
+      showToast(`Request ${status} successfully`)
+      fetchRequests()
     } catch (err) {
-      alert('Failed to update status')
+      showToast('Failed to update status', 'error')
     }
   }
 
   const handleCancel = async (requestId) => {
-    if (!window.confirm('Cancel this adoption request? This cannot be undone.')) return
+    const isConfirmed = await confirm({
+      title: 'Cancel Request?',
+      message: 'Are you sure you want to cancel this adoption request? This cannot be undone.',
+      confirmText: 'Yes, Cancel',
+      type: 'danger'
+    })
+
+    if (!isConfirmed) return
+
     try {
       await adoptionService.cancel(requestId)
-      fetchRequests() // Refresh list
+      showToast('Request cancelled successfully')
+      fetchRequests()
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to cancel request')
+      showToast(err.response?.data?.message || 'Failed to cancel request', 'error')
     }
   }
 

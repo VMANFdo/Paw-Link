@@ -70,7 +70,9 @@ export default function Dashboard() {
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-800">My Animal Posts</h2>
-            <Link to="/add-animal" className="text-sm font-bold text-primary-600 hover:underline">+ New Post</Link>
+            {user?.role !== 'admin' && (
+              <Link to="/add-animal" className="text-sm font-bold text-primary-600 hover:underline">+ New Post</Link>
+            )}
           </div>
 
           <div className="space-y-4">

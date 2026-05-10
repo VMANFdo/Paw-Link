@@ -45,9 +45,11 @@ export default function Home() {
               <Link to="/animals" className="btn-primary text-lg px-8 py-4 text-center">
                 Browse Animals
               </Link>
-              <Link to="/add-animal" className="bg-white/10 backdrop-blur-md text-white border border-white/20 text-lg px-8 py-4 rounded-2xl font-bold hover:bg-white/20 transition-all text-center">
-                Post New Animal
-              </Link>
+              {user?.role !== 'admin' && (
+                <Link to="/add-animal" className="bg-white/10 backdrop-blur-md text-white border border-white/20 text-lg px-8 py-4 rounded-2xl font-bold hover:bg-white/20 transition-all text-center">
+                  Post New Animal
+                </Link>
+              )}
               {user ? (
                 <Link to="/dashboard" className="text-primary-400 text-lg px-8 py-4 text-center font-bold hover:underline">
                   Go to Dashboard &rarr;
@@ -143,12 +145,14 @@ export default function Home() {
             <h2 className="text-4xl md:text-5xl font-black mb-6">Ready to make a difference?</h2>
             <p className="text-xl text-primary-100 mb-10">Join thousands of others in building a safer world for our furry friends.</p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Link to="/add-animal" className="bg-primary-500 text-white px-10 py-4 rounded-2xl font-black hover:bg-primary-400 transition-colors shadow-lg">
-                Post New Animal
-              </Link>
+              {user?.role !== 'admin' && (
+                <Link to="/add-animal" className="bg-primary-500 text-white px-10 py-4 rounded-2xl font-black hover:bg-primary-400 transition-colors shadow-lg">
+                  Post New Animal
+                </Link>
+              )}
               {user ? (
                 <Link to="/dashboard" className="bg-white text-primary-600 px-10 py-4 rounded-2xl font-black hover:bg-gray-100 transition-colors shadow-lg">
-                  View My Dashboard
+                  {user.role === 'admin' ? 'Admin Dashboard' : 'View My Dashboard'}
                 </Link>
               ) : (
                 <Link to="/register" className="bg-white text-primary-600 px-10 py-4 rounded-2xl font-black hover:bg-gray-100 transition-colors shadow-lg">

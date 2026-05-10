@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { messageService } from '../services/messageService'
 import { useAuth } from '../context/AuthContext'
+import { useUI } from '../context/UIContext'
 import AdoptionRequests from './AdoptionRequests'
 
 /**
@@ -10,6 +11,7 @@ import AdoptionRequests from './AdoptionRequests'
  */
 export default function Messages() {
   const { user } = useAuth()
+  const { showToast } = useUI()
   const location = useLocation()
 
   // Main tab: 'requests' (default) or 'inquiries'
@@ -67,10 +69,10 @@ export default function Messages() {
         body: reply
       })
       setReply('')
-      const res = await messageService.getThread(currentThread.userId)
       setCurrentThread(prev => ({ ...prev, messages: res.data.data.messages }))
+      showToast('Message sent successfully')
     } catch (err) {
-      alert('Failed to send message')
+      showToast('Failed to send message', 'error')
     } finally {
       setSending(false)
     }
