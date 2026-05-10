@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { userService } from '../services/userService'
 
@@ -8,7 +8,7 @@ import { userService } from '../services/userService'
  * Access: Private
  */
 export default function Profile() {
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   
@@ -17,6 +17,9 @@ export default function Profile() {
   const [formData, setFormData] = useState({ name: '', bio: '', phone: '' })
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
+  const fileInputRef = useRef(null)
+  const [selectedFile, setSelectedFile] = useState(null)
+  const [previewUrl, setPreviewUrl] = useState(null)
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 
@@ -46,15 +49,38 @@ export default function Profile() {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      setSelectedFile(file)
+      setPreviewUrl(URL.createObjectURL(file))
+    }
+  }
+
+  const triggerFileInput = () => {
+    fileInputRef.current.click()
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
     setMessage({ type: '', text: '' })
 
+    const uploadData = new FormData()
+    uploadData.append('name', formData.name)
+    uploadData.append('bio', formData.bio)
+    uploadData.append('phone', formData.phone)
+    if (selectedFile) {
+      uploadData.append('profile_picture', selectedFile)
+    }
+
     try {
-      await userService.updateProfile(formData)
-      // Update local profile state with new data
-      setProfile({ ...profile, ...formData })
+      const response = await userService.updateProfile(uploadData)
+      const updatedUser = response.data.data.user
+      setProfile(updatedUser)
+      updateUser(updatedUser) // Update global auth state (Navbar avatar etc.)
+      setSelectedFile(null)
+      setPreviewUrl(null)
       setIsEditing(false)
       setMessage({ type: 'success', text: 'Profile updated successfully!' })
       
@@ -82,12 +108,31 @@ export default function Profile() {
       
       {/* Header Area */}
       <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-10 pb-10 border-b border-gray-100">
-        <div className="w-32 h-32 rounded-full bg-primary-100 flex items-center justify-center text-4xl font-black text-primary-600 shadow-inner flex-shrink-0">
-          {profile.profile_picture ? (
-            <img src={`${API_BASE}${profile.profile_picture}`} alt="Profile" className="w-full h-full rounded-full object-cover" />
+        <div 
+          onClick={isEditing ? triggerFileInput : undefined}
+          className={`w-32 h-32 rounded-full bg-primary-100 flex items-center justify-center text-4xl font-black text-primary-600 shadow-inner flex-shrink-0 relative group overflow-hidden ${isEditing ? 'cursor-pointer' : ''}`}
+        >
+          {previewUrl ? (
+            <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+          ) : profile.profile_picture ? (
+            <img src={profile.profile_picture} alt="Profile" className="w-full h-full object-cover" />
           ) : (
             profile.name.charAt(0).toUpperCase()
           )}
+          
+          {isEditing && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="text-white text-xs font-bold">Change Photo</span>
+            </div>
+          )}
+          
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileChange} 
+            className="hidden" 
+            accept="image/*"
+          />
         </div>
         
         <div className="flex-1 text-center md:text-left">

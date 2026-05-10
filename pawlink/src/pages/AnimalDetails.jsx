@@ -118,7 +118,7 @@ export default function AnimalDetails() {
   )
 
   const images = animal.images?.length > 0 
-    ? animal.images.map(img => `${API_BASE}${img.image_url}`)
+    ? animal.images.map(img => img.image_url)
     : ['https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80']
 
   const isOwner = user?.id === animal.posted_by

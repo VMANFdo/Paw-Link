@@ -32,7 +32,7 @@ const storage = multer.diskStorage({
     // e.g., "animal-1715000000000-123456789.jpg"
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`
     const ext = path.extname(file.originalname).toLowerCase()
-    cb(null, `animal-${uniqueSuffix}${ext}`)
+    cb(null, `file-${uniqueSuffix}${ext}`)
   },
 })
 
