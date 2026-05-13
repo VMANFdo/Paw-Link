@@ -16,5 +16,7 @@ router.patch('/users/:id/status', adminController.updateUserStatus)
 router.get('/animals',           adminController.getAnimals)
 router.delete('/animals/:id',    adminController.deleteAnimal)
 router.get('/reports',           adminController.getReports)
+router.get('/organizations',      adminController.getOrganizations)
+router.patch('/organizations/:id', adminController.updateOrgStatus)
 
 module.exports = router

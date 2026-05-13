@@ -60,8 +60,12 @@ export default function Register() {
       // 2. Automatically log them in after registration
       login(response.data.data)
 
-      // 3. Redirect to dashboard
-      navigate('/dashboard')
+      // 3. Redirect based on role
+      if (formData.role === 'organization') {
+        navigate('/org-setup')
+      } else {
+        navigate('/dashboard')
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.')
     } finally {

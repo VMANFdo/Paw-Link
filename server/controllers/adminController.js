@@ -88,4 +88,52 @@ const getReports = async (req, res, next) => {
   } catch (err) { next(err) }
 }
 
-module.exports = { getStats, getUsers, updateUserStatus, createUser, getAnimals, deleteAnimal, getReports }
+const getOrganizations = async (req, res, next) => {
+  try {
+    const [orgs] = await pool.query(`
+      SELECT o.*, u.email, 
+        (SELECT JSON_ARRAYAGG(document_url) FROM organization_documents WHERE organization_id = o.id) AS documents
+      FROM organizations o
+      JOIN users u ON o.user_id = u.id
+      ORDER BY o.created_at DESC
+    `)
+    sendSuccess(res, { organizations: orgs })
+  } catch (err) { next(err) }
+}
+
+const updateOrgStatus = async (req, res, next) => {
+  try {
+    const { status, rejection_reason, verified } = req.body
+    const validStatuses = ['pending', 'approved', 'rejected', 'more_docs_needed']
+    
+    if (status && !validStatuses.includes(status)) {
+      return sendError(res, 'Invalid status')
+    }
+
+    const updates = []
+    const params = []
+
+    if (status) { updates.push('status = ?'); params.push(status) }
+    if (rejection_reason !== undefined) { updates.push('rejection_reason = ?'); params.push(rejection_reason) }
+    if (verified !== undefined) { updates.push('verified = ?'); params.push(verified) }
+
+    if (updates.length === 0) return sendError(res, 'No updates provided')
+
+    params.push(req.params.id)
+    await pool.query(`UPDATE organizations SET ${updates.join(', ')} WHERE id = ?`, params)
+
+    sendSuccess(res, {}, 'Organization updated successfully')
+  } catch (err) { next(err) }
+}
+
+module.exports = { 
+  getStats, 
+  getUsers, 
+  updateUserStatus, 
+  createUser, 
+  getAnimals, 
+  deleteAnimal, 
+  getReports,
+  getOrganizations,
+  updateOrgStatus
+}

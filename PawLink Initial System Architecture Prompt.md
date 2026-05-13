@@ -11,7 +11,7 @@ I already initialized the frontend using:
 ```bash
 npm create vite@latest pawlink -- --template react
 ```
-
+hii
 I want you to generate the COMPLETE scalable project architecture and starter implementation for this system using the following technologies.
 
 # Tech Stack

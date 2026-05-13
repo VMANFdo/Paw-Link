@@ -1,5 +1,6 @@
 const pool = require('../config/db')
 const { sendSuccess, sendError } = require('../utils/responseHelper')
+const { updateOccupancy } = require('../utils/capacityHelper')
 
 /**
  * animalController.js — Animal Post CRUD
@@ -87,24 +88,49 @@ const create = async (req, res, next) => {
     if (req.user.role === 'admin') {
       return res.status(403).json({ success: false, message: 'Admins are not allowed to post animals' })
     }
-    const {
+
+    let {
       type, breed, age, gender, health_condition,
       rescue_urgency, latitude, longitude, city, description,
     } = req.body
 
+    let organizationId = null
+
+    // Logic for Organizations
+    if (req.user.role === 'organization') {
+      const [orgs] = await pool.query(
+        'SELECT id, latitude, longitude FROM organizations WHERE user_id = ? AND status = "approved"',
+        [req.user.id]
+      )
+
+      if (orgs.length === 0) {
+        return sendError(res, 'Approved organization profile not found', 403)
+      }
+
+      organizationId = orgs[0].id
+      // Auto-fill location from organization profile
+      latitude = orgs[0].latitude
+      longitude = orgs[0].longitude
+    }
+
     const [result] = await pool.query(
       `INSERT INTO animals
-        (type, breed, age, gender, health_condition, rescue_urgency, latitude, longitude, city, description, posted_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [type, breed, age, gender, health_condition, rescue_urgency, latitude, longitude, city, description, req.user.id]
+        (type, breed, age, gender, health_condition, rescue_urgency, latitude, longitude, city, description, posted_by, organization_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [type, breed, age, gender, health_condition, rescue_urgency, latitude, longitude, city, description, req.user.id, organizationId]
     )
 
     const animalId = result.insertId
 
-    // Save uploaded image paths to animal_images table
+    // Save uploaded image paths
     if (req.files && req.files.length > 0) {
       const imageValues = req.files.map(file => [animalId, `/uploads/${file.filename}`])
       await pool.query('INSERT INTO animal_images (animal_id, image_url) VALUES ?', [imageValues])
+    }
+
+    // Increment occupancy if posted by an org
+    if (organizationId) {
+      await updateOccupancy(organizationId, 1)
     }
 
     sendSuccess(res, { id: animalId }, 'Animal post created successfully', 201)

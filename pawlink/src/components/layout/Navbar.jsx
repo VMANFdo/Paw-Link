@@ -9,10 +9,11 @@ import { userService } from '../../services/userService'
  */
 
 const navLinks = [
-  { to: '/animals', label: 'Browse Animals' },
-  { to: '/map',     label: 'Map' },
-  { to: '/about',   label: 'About' },
-  { to: '/contact', label: 'Contact' },
+  { to: '/animals',  label: 'Browse Animals' },
+  { to: '/map',      label: 'Map' },
+  { to: '/shelters', label: 'Shelters' },
+  { to: '/about',    label: 'About' },
+  { to: '/contact',  label: 'Contact' },
 ]
 
 export default function Navbar() {

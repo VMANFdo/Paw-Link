@@ -22,6 +22,9 @@ import MapView          from '../pages/MapView'
 import Messages         from '../pages/Messages'
 import About            from '../pages/About'
 import Contact          from '../pages/Contact'
+import SheltersListing  from '../pages/SheltersListing'
+import ShelterDetails   from '../pages/ShelterDetails'
+import OrgSetup         from '../pages/OrgSetup'
 import NotFound         from '../pages/NotFound'
 
 /**
@@ -38,6 +41,8 @@ export default function AppRouter() {
           <Route path="/animals"       element={<BrowseAnimals />} />
           <Route path="/animals/:id"   element={<AnimalDetails />} />
           <Route path="/map"           element={<MapView />} />
+          <Route path="/shelters"      element={<SheltersListing />} />
+          <Route path="/shelters/:id"  element={<ShelterDetails />} />
           <Route path="/about"         element={<About />} />
           <Route path="/contact"       element={<Contact />} />
           <Route path="/login"         element={<Login />} />
@@ -56,6 +61,7 @@ export default function AppRouter() {
           {/* Organization-only Routes */}
           <Route element={<ProtectedRoute allowedRoles={['organization', 'admin']} />}>
             <Route path="/org-dashboard" element={<OrganizationDashboard />} />
+            <Route path="/org-setup"     element={<OrgSetup />} />
           </Route>
 
           {/* Admin-only Routes */}
