@@ -11,7 +11,8 @@ const rescueRoutes   = require('./routes/rescueRoutes')
 const messageRoutes  = require('./routes/messageRoutes')
 const userRoutes     = require('./routes/userRoutes')
 const adminRoutes    = require('./routes/adminRoutes')
-const shelterRoutes  = require('./routes/shelterRoutes')
+const organizationRoutes = require('./routes/organizationRoutes')
+const handoverRoutes = require('./routes/handoverRoutes')
 
 // Import global error handler (must be last)
 const errorHandler = require('./middleware/errorHandler')
@@ -61,7 +62,8 @@ app.use('/api/rescues',   rescueRoutes)
 app.use('/api/messages',  messageRoutes)
 app.use('/api/users',     userRoutes)
 app.use('/api/admin',     adminRoutes)
-app.use('/api/shelters',  shelterRoutes)
+app.use('/api/organizations', organizationRoutes)
+app.use('/api/handovers',     handoverRoutes)
 
 // ─────────────────────────────────────────
 // 5. Health Check Route

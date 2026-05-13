@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { userService } from '../services/userService'
 import { animalService } from '../services/animalService'
 import { adoptionService } from '../services/adoptionService'
+import handoverService from '../services/handoverService'
 
 /**
  * Dashboard.jsx — User Dashboard
@@ -16,22 +17,25 @@ export default function Dashboard() {
   const [myAnimals, setMyAnimals] = useState([])
   const [recentRequests, setRecentRequests] = useState([])
   const [adoptedAnimals, setAdoptedAnimals] = useState([])
+  const [myHandovers, setMyHandovers] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [statsRes, animalsRes, requestsRes, sentRes] = await Promise.all([
+        const [statsRes, animalsRes, requestsRes, sentRes, handoversRes] = await Promise.all([
           userService.getStats(),
           animalService.getMyAnimals(),
           adoptionService.getReceived(),
-          adoptionService.getMine()
+          adoptionService.getMine(),
+          handoverService.getMyRequests()
         ])
         setStats(statsRes.data.data)
         setMyAnimals(animalsRes.data.data.animals)
         setRecentRequests(requestsRes.data.data.requests.slice(0, 5)) // Show only top 5 recent
         const approved = sentRes.data.data.requests.filter(req => req.status === 'approved')
         setAdoptedAnimals(approved)
+        setMyHandovers(handoversRes.data.data.requests)
       } catch (err) {
         console.error('Failed to fetch dashboard data', err)
       } finally {
@@ -88,6 +92,31 @@ export default function Dashboard() {
                 View all posts
               </Link>
             )}
+          </div>
+
+          {/* Handover Requests Sent */}
+          <div className="pt-8">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">My Handover Requests</h2>
+            <div className="space-y-4">
+              {myHandovers.length > 0 ? (
+                myHandovers.map(req => (
+                  <div key={req.id} className="card p-4 flex items-center justify-between border-l-4 border-secondary-500">
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">{req.description.slice(0, 50)}...</p>
+                      <p className="text-[10px] text-gray-500 mt-1">To: <span className="font-bold">{req.organization_name}</span> • {new Date(req.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <span className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-full ${
+                      req.status === 'accepted' ? 'bg-green-100 text-green-700' : 
+                      req.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500'
+                    }`}>
+                      {req.status}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <EmptyState message="No handover requests sent yet." />
+              )}
+            </div>
           </div>
         </div>
 

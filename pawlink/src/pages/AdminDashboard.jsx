@@ -80,9 +80,10 @@ export default function AdminDashboard() {
           <h1 className="text-4xl font-black text-gray-900">Admin Control Panel</h1>
           <p className="text-gray-500 mt-1">Platform-wide moderation and analytics.</p>
         </div>
-        <div className="flex bg-gray-100 p-1.5 rounded-2xl">
+        <div className="flex bg-gray-100 p-1.5 rounded-2xl overflow-x-auto">
           <TabBtn active={tab === 'stats'} onClick={() => setTab('stats')} label="Overview" />
           <TabBtn active={tab === 'users'} onClick={() => setTab('users')} label="Users" />
+          <TabBtn active={tab === 'organizations'} onClick={() => setTab('organizations')} label="Shelters" />
           <TabBtn active={tab === 'animals'} onClick={() => setTab('animals')} label="Posts" />
           <TabBtn active={tab === 'reports'} onClick={() => setTab('reports')} label="Reports" />
         </div>
@@ -108,6 +109,7 @@ export default function AdminDashboard() {
               <UsersTable users={data.users} onToggle={handleToggleUser} />
             </div>
           )}
+          {tab === 'organizations' && <OrganizationsTable orgs={data.organizations} onUpdate={handleUpdateOrg} />}
           {tab === 'animals' && <AnimalsList animals={data.animals} onDelete={handleDeleteAnimal} />}
           {tab === 'reports' && <ReportsList reports={data.reports} />}
         </div>
@@ -337,6 +339,73 @@ function ReportsList({ reports }) {
       )) : (
         <div className="p-20 text-center text-gray-400">No active reports. All clear!</div>
       )}
+    </div>
+  )
+}
+
+function OrganizationsTable({ orgs, onUpdate }) {
+  return (
+    <div className="card overflow-hidden">
+      <table className="w-full text-left">
+        <thead className="bg-gray-50 border-b border-gray-100">
+          <tr>
+            <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase">Organization</th>
+            <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase">Status</th>
+            <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase">Verification</th>
+            <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-50">
+          {orgs?.map(o => (
+            <tr key={o.id} className="hover:bg-gray-50/50 transition-colors">
+              <td className="px-6 py-4">
+                <p className="font-bold text-gray-900">{o.name}</p>
+                <p className="text-xs text-gray-400">{o.email}</p>
+              </td>
+              <td className="px-6 py-4">
+                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
+                  o.status === 'approved' ? 'bg-green-50 text-green-700' : 
+                  o.status === 'pending' ? 'bg-yellow-50 text-yellow-700' : 
+                  o.status === 'more_docs_needed' ? 'bg-blue-50 text-blue-700' : 'bg-red-50 text-red-700'
+                }`}>
+                  {o.status.replace(/_/g, ' ')}
+                </span>
+              </td>
+              <td className="px-6 py-4">
+                 <span className={`text-sm font-medium ${o.verified ? 'text-blue-600' : 'text-gray-400'}`}>
+                   {o.verified ? 'Verified ✅' : 'Unverified'}
+                 </span>
+              </td>
+              <td className="px-6 py-4 text-right space-x-3">
+                {o.status !== 'approved' && (
+                  <button 
+                    onClick={() => onUpdate(o.id, 'approved')}
+                    className="text-xs font-black uppercase text-green-600 hover:underline"
+                  >
+                    Approve
+                  </button>
+                )}
+                {(o.status === 'pending' || o.status === 'approved') && (
+                  <button 
+                    onClick={() => onUpdate(o.id, 'more_docs_needed')}
+                    className="text-xs font-black uppercase text-blue-600 hover:underline"
+                  >
+                    Need Docs
+                  </button>
+                )}
+                {o.status !== 'rejected' && (
+                  <button 
+                    onClick={() => onUpdate(o.id, 'rejected')}
+                    className="text-xs font-black uppercase text-red-500 hover:underline"
+                  >
+                    Reject
+                  </button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
