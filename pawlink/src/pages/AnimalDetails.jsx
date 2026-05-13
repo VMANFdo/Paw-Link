@@ -357,12 +357,21 @@ export default function AnimalDetails() {
 
           <div className="p-8 bg-white rounded-3xl shadow-lg border border-gray-100 flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center">
-              <div className="w-12 h-12 rounded-full bg-secondary-500 flex items-center justify-center text-white font-bold mr-4 flex-shrink-0">
-                {animal.poster_name?.charAt(0)}
+              <div className="w-12 h-12 rounded-full bg-secondary-500 flex items-center justify-center text-white font-bold mr-4 flex-shrink-0 overflow-hidden">
+                {animal.org_logo ? (
+                  <img src={animal.org_logo} alt={animal.org_name} className="w-full h-full object-cover" />
+                ) : (
+                  (animal.org_name || animal.poster_name)?.charAt(0)
+                )}
               </div>
               <div>
                 <p className="text-xs text-gray-400 font-bold uppercase">Posted by</p>
-                <p className="text-lg font-black text-gray-900">{animal.poster_name}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-lg font-black text-gray-900">{animal.org_name || animal.poster_name}</p>
+                  {animal.org_verified === 1 && (
+                    <span className="text-blue-500 text-sm" title="Verified Organization">✓</span>
+                  )}
+                </div>
               </div>
             </div>
 

@@ -62,9 +62,11 @@ const getAll = async (req, res, next) => {
 const getById = async (req, res, next) => {
   try {
     const [animals] = await pool.query(`
-      SELECT a.*, a.city, u.name AS poster_name, u.email AS poster_email, u.phone AS poster_phone
+      SELECT a.*, a.city, u.name AS poster_name, u.email AS poster_email, u.phone AS poster_phone,
+             o.name AS org_name, o.logo_url AS org_logo, o.verified AS org_verified
       FROM animals a
       JOIN users u ON a.posted_by = u.id
+      LEFT JOIN organizations o ON a.organization_id = o.id
       WHERE a.id = ?
     `, [req.params.id])
 

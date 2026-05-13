@@ -70,6 +70,47 @@ export default function OrganizationDashboard() {
 
   const { profile, stats, handovers, animals } = data
 
+  // 1. GATE: Check if profile is approved
+  if (profile && profile.status !== 'approved') {
+    return (
+      <div className="container py-24 text-center max-w-2xl">
+        <div className="bg-white p-12 rounded-[3rem] shadow-xl border border-gray-100">
+           <div className="text-6xl mb-6">
+             {profile.status === 'pending' ? '⏳' : 
+              profile.status === 'rejected' ? '❌' : '📂'}
+           </div>
+           <h1 className="text-3xl font-black text-gray-900 mb-4">
+             {profile.status === 'pending' ? 'Application Under Review' : 
+              profile.status === 'rejected' ? 'Application Rejected' : 'More Documents Needed'}
+           </h1>
+           <p className="text-gray-500 text-lg mb-8">
+             {profile.status === 'pending' ? 
+              "We've received your shelter setup details. Our team is currently reviewing your application to ensure platform safety." : 
+              profile.status === 'rejected' ? 
+              "Unfortunately, your organization doesn't meet our current requirements for verified shelters." : 
+              "The admin has requested additional documentation to verify your organization."}
+           </p>
+           
+           <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 text-left mb-8">
+              <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Next Steps</h3>
+              <p className="text-sm text-gray-600">
+                {profile.status === 'pending' ? 
+                 "You'll be able to manage animals and receive handovers once an administrator approves your profile. Please check back later." : 
+                 profile.status === 'rejected' ? 
+                 "If you believe this is a mistake, please contact support@pawlink.com." : 
+                 "Please check your email for specific instructions on what documents are required."}
+              </p>
+           </div>
+
+           <div className="flex justify-center gap-4">
+             <Link to="/org-setup" className="btn-secondary px-6 py-2">Update Profile</Link>
+             <button onClick={() => window.location.reload()} className="btn-primary px-6 py-2">Check Status</button>
+           </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="container py-10 space-y-8">
       

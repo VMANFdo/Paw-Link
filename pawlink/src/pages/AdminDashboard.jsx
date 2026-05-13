@@ -365,9 +365,10 @@ function OrganizationsTable({ orgs, onUpdate }) {
               <td className="px-6 py-4">
                 <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
                   o.status === 'approved' ? 'bg-green-50 text-green-700' : 
-                  o.status === 'pending' ? 'bg-yellow-50 text-yellow-700' : 'bg-red-50 text-red-700'
+                  o.status === 'pending' ? 'bg-yellow-50 text-yellow-700' : 
+                  o.status === 'more_docs_needed' ? 'bg-blue-50 text-blue-700' : 'bg-red-50 text-red-700'
                 }`}>
-                  {o.status}
+                  {o.status.replace(/_/g, ' ')}
                 </span>
               </td>
               <td className="px-6 py-4">
@@ -376,29 +377,29 @@ function OrganizationsTable({ orgs, onUpdate }) {
                  </span>
               </td>
               <td className="px-6 py-4 text-right space-x-3">
-                {o.status === 'pending' && (
-                  <>
-                    <button 
-                      onClick={() => onUpdate(o.id, 'approved')}
-                      className="text-xs font-black uppercase text-green-600 hover:underline"
-                    >
-                      Approve
-                    </button>
-                    <button 
-                      onClick={() => onUpdate(o.id, 'rejected')}
-                      className="text-xs font-black uppercase text-red-500 hover:underline"
-                    >
-                      Reject
-                    </button>
-                  </>
+                {o.status !== 'approved' && (
+                  <button 
+                    onClick={() => onUpdate(o.id, 'approved')}
+                    className="text-xs font-black uppercase text-green-600 hover:underline"
+                  >
+                    Approve
+                  </button>
                 )}
-                {o.status === 'approved' && !o.verified && (
-                   <button 
-                     onClick={() => onUpdate(o.id, 'approved', true)} // Assume backend handles verified: true in body
-                     className="text-xs font-black uppercase text-blue-600 hover:underline"
-                   >
-                     Verify Org
-                   </button>
+                {(o.status === 'pending' || o.status === 'approved') && (
+                  <button 
+                    onClick={() => onUpdate(o.id, 'more_docs_needed')}
+                    className="text-xs font-black uppercase text-blue-600 hover:underline"
+                  >
+                    Need Docs
+                  </button>
+                )}
+                {o.status !== 'rejected' && (
+                  <button 
+                    onClick={() => onUpdate(o.id, 'rejected')}
+                    className="text-xs font-black uppercase text-red-500 hover:underline"
+                  >
+                    Reject
+                  </button>
                 )}
               </td>
             </tr>

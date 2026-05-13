@@ -42,6 +42,17 @@ export default function ShelterCard({ shelter }) {
             ))}
           </div>
 
+          <div className="flex justify-between items-center text-[11px] font-bold text-gray-500 bg-gray-50 p-3 rounded-xl">
+             <div className="flex items-center gap-1.5">
+                <span>🐾</span>
+                <span>{shelter.current_occupancy} Hosted</span>
+             </div>
+             <div className="flex items-center gap-1.5">
+                <span>📞</span>
+                <span>{shelter.contact_number || 'No contact'}</span>
+             </div>
+          </div>
+
           <CapacityBar current={shelter.current_occupancy} max={shelter.max_capacity} mini />
           
           <Link 

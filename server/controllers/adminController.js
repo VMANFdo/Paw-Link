@@ -91,12 +91,26 @@ const getReports = async (req, res, next) => {
 const getOrganizations = async (req, res, next) => {
   try {
     const [orgs] = await pool.query(`
-      SELECT o.*, u.email, 
-        (SELECT JSON_ARRAYAGG(document_url) FROM organization_documents WHERE organization_id = o.id) AS documents
+      SELECT o.*, u.email
       FROM organizations o
       JOIN users u ON o.user_id = u.id
       ORDER BY o.created_at DESC
     `)
+
+    if (orgs.length > 0) {
+      const orgIds = orgs.map(o => o.id)
+      const [docs] = await pool.query(
+        'SELECT organization_id, document_url FROM organization_documents WHERE organization_id IN (?)',
+        [orgIds]
+      )
+
+      orgs.forEach(o => {
+        o.documents = docs
+          .filter(d => d.organization_id === o.id)
+          .map(d => d.document_url)
+      })
+    }
+
     sendSuccess(res, { organizations: orgs })
   } catch (err) { next(err) }
 }

@@ -136,8 +136,7 @@ const getAllApproved = async (req, res, next) => {
   try {
     const { animal_type, city } = req.query
     let query = `
-      SELECT o.id, o.name, o.logo_url, o.address, o.latitude, o.longitude, o.max_capacity, o.current_occupancy, o.verified,
-        (SELECT JSON_ARRAYAGG(animal_type) FROM organization_animal_types WHERE organization_id = o.id) AS animal_types
+      SELECT o.id, o.name, o.logo_url, o.address, o.latitude, o.longitude, o.max_capacity, o.current_occupancy, o.verified
       FROM organizations o
       WHERE o.status = 'approved'
     `
@@ -154,6 +153,22 @@ const getAllApproved = async (req, res, next) => {
     }
 
     const [orgs] = await pool.query(query, params)
+
+    // Fetch types for these orgs and attach them
+    if (orgs.length > 0) {
+      const orgIds = orgs.map(o => o.id)
+      const [types] = await pool.query(
+        'SELECT organization_id, animal_type FROM organization_animal_types WHERE organization_id IN (?)',
+        [orgIds]
+      )
+      
+      orgs.forEach(o => {
+        o.animal_types = types
+          .filter(t => t.organization_id === o.id)
+          .map(t => t.animal_type)
+      })
+    }
+
     sendSuccess(res, { organizations: orgs })
   } catch (err) { next(err) }
 }
@@ -162,14 +177,20 @@ const getAllApproved = async (req, res, next) => {
 const getPublicProfile = async (req, res, next) => {
   try {
     const [orgs] = await pool.query(
-      `SELECT id, name, description, contact_number, logo_url, address, latitude, longitude, website, max_capacity, current_occupancy, verified,
-        (SELECT JSON_ARRAYAGG(animal_type) FROM organization_animal_types WHERE organization_id = organizations.id) AS animal_types
+      `SELECT id, name, description, contact_number, logo_url, address, latitude, longitude, website, max_capacity, current_occupancy, verified
        FROM organizations
        WHERE id = ? AND status = 'approved'`,
       [req.params.id]
     )
 
     if (orgs.length === 0) return sendError(res, 'Organization not found or not approved', 404)
+
+    // Fetch animal types
+    const [types] = await pool.query(
+      'SELECT animal_type FROM organization_animal_types WHERE organization_id = ?',
+      [req.params.id]
+    )
+    orgs[0].animal_types = types.map(t => t.animal_type)
 
     // Fetch gallery
     const [gallery] = await pool.query('SELECT image_url, caption FROM organization_gallery WHERE organization_id = ?', [req.params.id])
