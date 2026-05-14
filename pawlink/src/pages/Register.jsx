@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { authService } from '../services/authService'
 import { validators } from '../utils/validators'
@@ -7,6 +7,7 @@ import { validators } from '../utils/validators'
 export default function Register() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
   // State
   const [formData, setFormData] = useState({
@@ -17,6 +18,12 @@ export default function Register() {
     role: 'person', // Default role
     phone: '',
   })
+
+  useEffect(() => {
+    if (location.state?.role) {
+      setFormData(prev => ({ ...prev, role: location.state.role }))
+    }
+  }, [location.state])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)

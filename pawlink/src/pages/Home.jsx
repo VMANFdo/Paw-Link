@@ -59,8 +59,14 @@ export default function Home() {
               <Link to="/animals" className="btn-primary text-lg px-8 py-4 text-center">
                 Browse Animals
               </Link>
-              {user?.role !== 'admin' && (
-                <Link to="/add-animal" className="bg-white/10 backdrop-blur-md text-white border border-white/20 text-lg px-8 py-4 rounded-2xl font-bold hover:bg-white/20 transition-all text-center">
+              {user ? (
+                user.role !== 'admin' && (
+                  <Link to="/add-animal" className="bg-white/10 backdrop-blur-md text-white border border-white/20 text-lg px-8 py-4 rounded-2xl font-bold hover:bg-white/20 transition-all text-center">
+                    Post New Animal
+                  </Link>
+                )
+              ) : (
+                <Link to="/login" className="bg-white/10 backdrop-blur-md text-white border border-white/20 text-lg px-8 py-4 rounded-2xl font-bold hover:bg-white/20 transition-all text-center">
                   Post New Animal
                 </Link>
               )}
@@ -152,33 +158,80 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="container">
-        <div className="bg-primary-600 rounded-[3rem] p-12 md:p-20 text-center text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-primary-500 rounded-full blur-3xl opacity-50"></div>
-          <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-orange-400 rounded-full blur-3xl opacity-30"></div>
-          
-          <div className="relative z-10 max-w-2xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-black mb-6">Ready to make a difference?</h2>
-            <p className="text-xl text-primary-100 mb-10">Join thousands of others in building a safer world for our furry friends.</p>
-            <div className="flex flex-wrap justify-center gap-4">
-              {user?.role !== 'admin' && (
-                <Link to="/add-animal" className="bg-primary-500 text-white px-10 py-4 rounded-2xl font-black hover:bg-primary-400 transition-colors shadow-lg">
-                  Post New Animal
-                </Link>
-              )}
-              {user ? (
-                <Link to="/dashboard" className="bg-white text-primary-600 px-10 py-4 rounded-2xl font-black hover:bg-gray-100 transition-colors shadow-lg">
-                  {user.role === 'admin' ? 'Admin Dashboard' : 'View My Dashboard'}
-                </Link>
-              ) : (
-                <Link to="/register" className="bg-white text-primary-600 px-10 py-4 rounded-2xl font-black hover:bg-gray-100 transition-colors shadow-lg">
-                  Get Started Now
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
+<section className="container mx-auto px-6 md:px-12 lg:px-20">
+  <div className="grid md:grid-cols-2 gap-10">
+    
+    {/* Person CTA */}
+    <div className="bg-primary-600 rounded-[2.5rem] p-12 md:p-16 text-white relative overflow-hidden shadow-2xl flex flex-col items-center h-full">
+      <div className="absolute top-0 right-0 -mr-12 -mt-12 w-44 h-44 bg-primary-500 rounded-full blur-3xl opacity-40"></div>
+      
+      <div className="flex-1 flex flex-col items-center justify-center text-center relative z-10 mb-8">
+        <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold mb-6 leading-snug">
+          Did you find a pet who need a care ?
+        </h2>
+        
+        <p className="text-base md:text-lg opacity-90 max-w-md">
+          Share details and help connect them with loving adopters.
+        </p>
+      </div>
+      
+      <div className="relative z-10 mt-auto">
+        {user ? (
+          <Link 
+            to="/add-animal" 
+            className="bg-white text-primary-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all shadow-md inline-block"
+          >
+            Post New Animal
+          </Link>
+        ) : (
+          <Link 
+            to="/register" 
+            state={{ role: 'person' }} 
+            className="bg-white text-primary-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all shadow-md inline-block"
+          >
+            Register as Person
+          </Link>
+        )}
+      </div>
+    </div>
+    
+    {/* Organization CTA */}
+    <div className="bg-secondary-600 rounded-[2.5rem] p-12 md:p-16 text-white relative overflow-hidden shadow-2xl flex flex-col items-center h-full">
+      <div className="absolute bottom-0 left-0 -ml-12 -mb-12 w-44 h-44 bg-secondary-500 rounded-full blur-3xl opacity-40"></div>
+      
+      <div className="flex-1 flex flex-col items-center justify-center text-center relative z-10 mb-8">
+        <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold mb-6 leading-snug">
+          Are you an organization who can provide shelter to strays ?
+        </h2>
+        
+        <p className="text-base md:text-lg opacity-90 max-w-md">
+          Register to manage rescues and support stray animals with care.
+        </p>
+      </div>
+      
+      <div className="relative z-10 mt-auto">
+        {user ? (
+          <Link 
+            to="/org-dashboard" 
+            className="bg-white text-secondary-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all shadow-md inline-block"
+          >
+            Go to Dashboard
+          </Link>
+        ) : (
+          <Link 
+            to="/register" 
+            state={{ role: 'organization' }} 
+            className="bg-white text-secondary-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all shadow-md inline-block"
+          >
+            Register as Organization
+          </Link>
+        )}
+      </div>
+    </div>
+    
+  </div>
+</section>
+
     </div>
   )
 }
