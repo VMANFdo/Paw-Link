@@ -97,7 +97,7 @@ export default function Register() {
             }`}
             onClick={() => handleRoleToggle('person')}
           >
-            I am a Person
+          Person
           </button>
           <button
             type="button"
@@ -106,7 +106,7 @@ export default function Register() {
             }`}
             onClick={() => handleRoleToggle('organization')}
           >
-            I am an Organization
+          Organization
           </button>
         </div>
 

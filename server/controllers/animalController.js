@@ -16,7 +16,8 @@ const getAll = async (req, res, next) => {
         (SELECT image_url FROM animal_images WHERE animal_id = a.id LIMIT 1) AS thumbnail
       FROM animals a
       JOIN users u ON a.posted_by = u.id
-      WHERE 1=1
+      LEFT JOIN organizations o ON a.organization_id = o.id
+      WHERE (a.organization_id IS NULL OR o.status = 'approved')
     `
     const params = []
 
