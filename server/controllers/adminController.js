@@ -140,6 +140,39 @@ const updateOrgStatus = async (req, res, next) => {
   } catch (err) { next(err) }
 }
 
+const createOrganization = async (req, res, next) => {
+  const connection = await pool.getConnection()
+  try {
+    await connection.beginTransaction()
+
+    const { name, email, password, shelter_name, contact_number, address, latitude, longitude, max_capacity } = req.body
+
+    // 1. Create User
+    const hashedPassword = await bcrypt.hash(password, 12)
+    const [userResult] = await connection.query(
+      'INSERT INTO users (name, email, password, role, is_active) VALUES (?, ?, ?, ?, 1)',
+      [name, email, hashedPassword, 'organization']
+    )
+    const userId = userResult.insertId
+
+    // 2. Create Organization Profile (Automatically Approved)
+    await connection.query(
+      `INSERT INTO organizations 
+        (user_id, name, contact_number, address, latitude, longitude, max_capacity, status, verified)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', 1)`,
+      [userId, shelter_name, contact_number, address, latitude, longitude, max_capacity || 0]
+    )
+
+    await connection.commit()
+    sendSuccess(res, {}, 'Shelter created successfully', 201)
+  } catch (err) {
+    await connection.rollback()
+    next(err)
+  } finally {
+    connection.release()
+  }
+}
+
 module.exports = { 
   getStats, 
   getUsers, 
@@ -149,5 +182,6 @@ module.exports = {
   deleteAnimal, 
   getReports,
   getOrganizations,
-  updateOrgStatus
+  updateOrgStatus,
+  createOrganization
 }

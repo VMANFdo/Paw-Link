@@ -74,16 +74,30 @@ export default function Navbar() {
           
           {/* Admin-only Nav Link */}
           {user?.role === 'admin' && (
-            <NavLink 
-              to="/admin"
-              className={({ isActive }) => 
-                `text-sm font-black transition-colors px-3 py-1 rounded-lg ${
-                  isActive ? 'bg-red-50 text-red-600' : 'text-red-500 hover:bg-red-50'
-                }`
-              }
-            >
-              🛡️ Admin Panel
-            </NavLink>
+            <>
+              <NavLink 
+                to="/admin"
+                state={{ tab: 'stats' }}
+                className={({ isActive }) => 
+                  `text-sm font-black transition-colors px-3 py-1 rounded-lg ${
+                    isActive && (!location.state || location.state.tab !== 'manage_orgs') ? 'bg-red-50 text-red-600' : 'text-red-500 hover:bg-red-50'
+                  }`
+                }
+              >
+                🛡️ Admin Panel
+              </NavLink>
+              <NavLink 
+                to="/admin"
+                state={{ tab: 'manage_orgs' }}
+                className={({ isActive }) => 
+                  `text-sm font-black transition-colors px-3 py-1 rounded-lg ${
+                    isActive && location.state?.tab === 'manage_orgs' ? 'bg-primary-50 text-primary-600' : 'text-primary-500 hover:bg-primary-50'
+                  }`
+                }
+              >
+                🏢 Manage Organizations
+              </NavLink>
+            </>
           )}
         </nav>
 
@@ -132,8 +146,18 @@ export default function Navbar() {
                       <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 font-medium">Dashboard</Link>
                     )}
                     <Link to="/profile" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 font-medium">Profile</Link>
-                    {(user.role === 'organization' || user.role === 'admin') && (
+                    {user.role === 'organization' && (
                       <Link to="/org-dashboard" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-primary-600 hover:bg-primary-50 font-bold">Org Dashboard</Link>
+                    )}
+                    {user.role === 'admin' && (
+                      <Link 
+                        to="/admin" 
+                        state={{ tab: 'manage_orgs' }}
+                        onClick={() => setDropdownOpen(false)} 
+                        className="block px-4 py-2 text-sm text-primary-600 hover:bg-primary-50 font-bold"
+                      >
+                        Manage Organizations
+                      </Link>
                     )}
                     <button 
                       onClick={handleLogout}

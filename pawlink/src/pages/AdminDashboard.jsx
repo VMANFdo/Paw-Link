@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { adminService } from '../services/adminService'
 import { useAuth } from '../context/AuthContext'
 import { useUI } from '../context/UIContext'
+import { useLocation } from 'react-router-dom'
 
 /**
  * AdminDashboard.jsx — Master Platform Moderation
@@ -10,10 +11,18 @@ import { useUI } from '../context/UIContext'
 export default function AdminDashboard() {
   const { user } = useAuth()
   const { showToast, confirm } = useUI()
-  const [tab, setTab] = useState('stats')
-  const [data, setData] = useState({ stats: null, users: [], animals: [], reports: [] })
+  const location = useLocation()
+  const [tab, setTab] = useState(location.state?.tab || 'stats')
+  const [data, setData] = useState({ stats: null, users: [], animals: [], reports: [], organizations: [] })
   const [loading, setLoading] = useState(true)
   const [showUserModal, setShowUserModal] = useState(false)
+  const [showShelterModal, setShowShelterModal] = useState(false)
+
+  useEffect(() => {
+    if (location.state?.tab) {
+      setTab(location.state.tab)
+    }
+  }, [location.state])
 
   useEffect(() => {
     fetchData()
@@ -24,10 +33,10 @@ export default function AdminDashboard() {
     try {
       let res
       switch(tab) {
-        case 'stats':   res = await adminService.getStats(); setData(prev => ({...prev, stats: res.data.data.stats})); break;
-        case 'users':   res = await adminService.getUsers(); setData(prev => ({...prev, users: res.data.data.users})); break;
-        case 'animals': res = await adminService.getAnimals(); setData(prev => ({...prev, animals: res.data.data.animals})); break;
-        case 'reports': res = await adminService.getReports(); setData(prev => ({...prev, reports: res.data.data.reports})); break;
+        case 'stats':        res = await adminService.getStats(); setData(prev => ({...prev, stats: res.data.data.stats})); break;
+        case 'users':        res = await adminService.getUsers(); setData(prev => ({...prev, users: res.data.data.users})); break;
+        case 'reports':      res = await adminService.getReports(); setData(prev => ({...prev, reports: res.data.data.reports})); break;
+        case 'manage_orgs':  res = await adminService.getOrganizations(); setData(prev => ({...prev, organizations: res.data.data.organizations})); break;
         default: break;
       }
     } catch (err) {
@@ -62,6 +71,25 @@ export default function AdminDashboard() {
     } catch (err) { showToast('Delete failed', 'error') }
   }
 
+  const handleUpdateOrg = async (id, status) => {
+    try {
+      await adminService.updateOrgStatus(id, { status })
+      showToast('Organization status updated')
+      fetchData()
+    } catch (err) { showToast('Update failed', 'error') }
+  }
+
+  const handleCreateShelter = async (shelterData) => {
+    try {
+      await adminService.createOrganization(shelterData)
+      showToast('Shelter created successfully')
+      setShowShelterModal(false)
+      fetchData()
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to create shelter', 'error')
+    }
+  }
+
   const handleCreateUser = async (userData) => {
     try {
       await adminService.createUser(userData)
@@ -83,8 +111,7 @@ export default function AdminDashboard() {
         <div className="flex bg-gray-100 p-1.5 rounded-2xl overflow-x-auto">
           <TabBtn active={tab === 'stats'} onClick={() => setTab('stats')} label="Overview" />
           <TabBtn active={tab === 'users'} onClick={() => setTab('users')} label="Users" />
-          <TabBtn active={tab === 'organizations'} onClick={() => setTab('organizations')} label="Shelters" />
-          <TabBtn active={tab === 'animals'} onClick={() => setTab('animals')} label="Posts" />
+          <TabBtn active={tab === 'manage_orgs'} onClick={() => setTab('manage_orgs')} label="Manage Organizations" />
           <TabBtn active={tab === 'reports'} onClick={() => setTab('reports')} label="Reports" />
         </div>
       </div>
@@ -109,8 +136,19 @@ export default function AdminDashboard() {
               <UsersTable users={data.users} onToggle={handleToggleUser} />
             </div>
           )}
-          {tab === 'organizations' && <OrganizationsTable orgs={data.organizations} onUpdate={handleUpdateOrg} />}
-          {tab === 'animals' && <AnimalsList animals={data.animals} onDelete={handleDeleteAnimal} />}
+          {tab === 'manage_orgs' && (
+            <div>
+              <div className="flex justify-end mb-6">
+                <button 
+                  onClick={() => setShowShelterModal(true)}
+                  className="btn-primary px-6 py-3 flex items-center gap-2 shadow-lg shadow-primary-500/20"
+                >
+                  <span className="text-xl">+</span> Add New Shelter
+                </button>
+              </div>
+              <OrganizationsTable orgs={data.organizations} onUpdate={handleUpdateOrg} isModeration={true} />
+            </div>
+          )}
           {tab === 'reports' && <ReportsList reports={data.reports} />}
         </div>
       )}
@@ -119,6 +157,13 @@ export default function AdminDashboard() {
         <AddUserModal 
           onClose={() => setShowUserModal(false)} 
           onSubmit={handleCreateUser} 
+        />
+      )}
+
+      {showShelterModal && (
+        <AddShelterModal 
+          onClose={() => setShowShelterModal(false)} 
+          onSubmit={handleCreateShelter} 
         />
       )}
     </div>
@@ -205,6 +250,89 @@ function AddUserModal({ onClose, onSubmit }) {
                 className="w-full btn-primary py-4 text-lg shadow-lg shadow-primary-500/20 disabled:opacity-50"
               >
                 {loading ? 'Creating...' : 'Create User Account'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function AddShelterModal({ onClose, onSubmit }) {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    shelter_name: '',
+    contact_number: '',
+    address: '',
+    latitude: 6.9271,
+    longitude: 79.8612,
+    max_capacity: 50
+  })
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    await onSubmit(formData)
+    setLoading(false)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-[2.5rem] w-full max-w-2xl shadow-2xl animate-scale-up overflow-hidden max-h-[90vh] overflow-y-auto">
+        <div className="p-8 md:p-10">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-black text-gray-900">Add New Shelter</h2>
+            <button onClick={onClose} className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-all">&times;</button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h3 className="text-sm font-black text-primary-600 uppercase tracking-widest border-b border-gray-50 pb-2">User Account</h3>
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">Admin Name</label>
+                  <input type="text" required className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="e.g. John Shelter" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">Email Address</label>
+                  <input type="email" required className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="shelter@example.com" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">Password</label>
+                  <input type="password" required minLength="8" className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} placeholder="Min. 8 characters" />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-sm font-black text-primary-600 uppercase tracking-widest border-b border-gray-50 pb-2">Shelter Profile</h3>
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">Shelter Name</label>
+                  <input type="text" required className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.shelter_name} onChange={(e) => setFormData({...formData, shelter_name: e.target.value})} placeholder="e.g. Happy Paws Shelter" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">Contact Number</label>
+                  <input type="tel" required className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.contact_number} onChange={(e) => setFormData({...formData, contact_number: e.target.value})} placeholder="e.g. 0112345678" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">Max Capacity</label>
+                  <input type="number" required className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.max_capacity} onChange={(e) => setFormData({...formData, max_capacity: e.target.value})} />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">Physical Address</label>
+              <input type="text" required className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} placeholder="Street, City" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 pt-4">
+              <button type="button" onClick={onClose} className="btn-secondary py-4 font-bold rounded-2xl">Cancel</button>
+              <button type="submit" disabled={loading} className="btn-primary py-4 font-black rounded-2xl shadow-lg shadow-primary-500/20 disabled:opacity-50">
+                {loading ? 'Creating...' : 'Create Full Shelter Account'}
               </button>
             </div>
           </form>
@@ -343,7 +471,7 @@ function ReportsList({ reports }) {
   )
 }
 
-function OrganizationsTable({ orgs, onUpdate }) {
+function OrganizationsTable({ orgs, onUpdate, isModeration }) {
   return (
     <div className="card overflow-hidden">
       <table className="w-full text-left">
@@ -377,29 +505,36 @@ function OrganizationsTable({ orgs, onUpdate }) {
                  </span>
               </td>
               <td className="px-6 py-4 text-right space-x-3">
-                {o.status !== 'approved' && (
-                  <button 
-                    onClick={() => onUpdate(o.id, 'approved')}
-                    className="text-xs font-black uppercase text-green-600 hover:underline"
-                  >
-                    Approve
-                  </button>
+                {isModeration && (
+                  <>
+                    {o.status !== 'approved' && (
+                      <button 
+                        onClick={() => onUpdate(o.id, 'approved')}
+                        className="text-xs font-black uppercase text-green-600 hover:underline"
+                      >
+                        Approve
+                      </button>
+                    )}
+                    {(o.status === 'pending' || o.status === 'approved') && (
+                      <button 
+                        onClick={() => onUpdate(o.id, 'more_docs_needed')}
+                        className="text-xs font-black uppercase text-blue-600 hover:underline"
+                      >
+                        Need Docs
+                      </button>
+                    )}
+                    {o.status !== 'rejected' && (
+                      <button 
+                        onClick={() => onUpdate(o.id, 'rejected')}
+                        className={`text-xs font-black uppercase hover:underline ${o.status === 'approved' ? 'text-orange-500' : 'text-red-500'}`}
+                      >
+                        {o.status === 'approved' ? 'Ban' : 'Reject'}
+                      </button>
+                    )}
+                  </>
                 )}
-                {(o.status === 'pending' || o.status === 'approved') && (
-                  <button 
-                    onClick={() => onUpdate(o.id, 'more_docs_needed')}
-                    className="text-xs font-black uppercase text-blue-600 hover:underline"
-                  >
-                    Need Docs
-                  </button>
-                )}
-                {o.status !== 'rejected' && (
-                  <button 
-                    onClick={() => onUpdate(o.id, 'rejected')}
-                    className="text-xs font-black uppercase text-red-500 hover:underline"
-                  >
-                    Reject
-                  </button>
+                {!isModeration && (
+                  <span className="text-xs font-bold text-gray-400">View Only</span>
                 )}
               </td>
             </tr>

@@ -1,12 +1,37 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { animalService } from '../services/animalService'
+import organizationService from '../services/organizationService'
+import { useAuth } from '../context/AuthContext'
 import LocationPicker from '../components/animals/LocationPicker'
 
 export default function AddAnimal() {
+  const { user } = useAuth()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
+  const [checkingStatus, setCheckingStatus] = useState(user?.role === 'organization')
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (user?.role === 'organization') {
+      checkOrgStatus()
+    }
+  }, [user])
+
+  const checkOrgStatus = async () => {
+    try {
+      const res = await organizationService.getMyProfile()
+      const org = res.data.data.organization
+      if (org.status !== 'approved') {
+        navigate('/org-dashboard')
+      }
+    } catch (err) {
+      console.error('Failed to check org status', err)
+      navigate('/org-setup')
+    } finally {
+      setCheckingStatus(false)
+    }
+  }
 
   const [formData, setFormData] = useState({
     type: 'dog',
@@ -49,6 +74,12 @@ export default function AddAnimal() {
       setLoading(false)
     }
   }
+
+  if (checkingStatus) return (
+    <div className="container py-20 flex justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent"></div>
+    </div>
+  )
 
   return (
     <div className="container py-12 max-w-4xl">

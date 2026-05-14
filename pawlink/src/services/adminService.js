@@ -12,5 +12,6 @@ export const adminService = {
   deleteAnimal:     (id) => api.delete(`/admin/animals/${id}`),
   getReports:       () => api.get('/admin/reports'),
   getOrganizations: () => api.get('/admin/organizations'),
+  createOrganization: (data) => api.post('/admin/organizations', data),
   updateOrgStatus:  (id, data) => api.patch(`/admin/organizations/${id}`, data),
 }
