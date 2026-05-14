@@ -17,7 +17,7 @@ const getStats = async (req, res, next) => {
 const getUsers = async (req, res, next) => {
   try {
     const [users] = await pool.query(
-      'SELECT id, name, email, role, is_active, created_at FROM users ORDER BY created_at DESC'
+      "SELECT id, name, email, role, is_active, ban_reason, appeal_message, appeal_document_url, created_at FROM users WHERE role != 'organization' ORDER BY created_at DESC"
     )
     sendSuccess(res, { users })
   } catch (err) { next(err) }
@@ -25,8 +25,22 @@ const getUsers = async (req, res, next) => {
 
 const updateUserStatus = async (req, res, next) => {
   try {
-    const { is_active } = req.body
-    await pool.query('UPDATE users SET is_active = ? WHERE id = ?', [is_active, req.params.id])
+    const { is_active, ban_reason } = req.body
+    
+    if (is_active) {
+      // Unbanning: clear ban reason and appeal fields
+      await pool.query(
+        'UPDATE users SET is_active = ?, ban_reason = NULL, appeal_message = NULL, appeal_document_url = NULL WHERE id = ?', 
+        [is_active, req.params.id]
+      )
+    } else {
+      // Banning
+      await pool.query(
+        'UPDATE users SET is_active = ?, ban_reason = ? WHERE id = ?', 
+        [is_active, ban_reason || null, req.params.id]
+      )
+    }
+    
     sendSuccess(res, {}, `User ${is_active ? 'activated' : 'banned'}`)
   } catch (err) { next(err) }
 }
@@ -127,7 +141,15 @@ const updateOrgStatus = async (req, res, next) => {
     const updates = []
     const params = []
 
-    if (status) { updates.push('status = ?'); params.push(status) }
+    if (status) { 
+      updates.push('status = ?')
+      params.push(status)
+      if (status === 'approved') {
+        updates.push('rejection_reason = NULL')
+        updates.push('appeal_message = NULL')
+        updates.push('appeal_document_url = NULL')
+      }
+    }
     if (rejection_reason !== undefined) { updates.push('rejection_reason = ?'); params.push(rejection_reason) }
     if (verified !== undefined) { updates.push('verified = ?'); params.push(verified) }
 

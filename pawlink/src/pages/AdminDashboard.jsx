@@ -10,7 +10,7 @@ import { useLocation } from 'react-router-dom'
  */
 export default function AdminDashboard() {
   const { user } = useAuth()
-  const { showToast, confirm } = useUI()
+  const { showToast, confirm, prompt } = useUI()
   const location = useLocation()
   const [tab, setTab] = useState(location.state?.tab || 'stats')
   const [data, setData] = useState({ stats: null, users: [], animals: [], reports: [], organizations: [] })
@@ -35,6 +35,7 @@ export default function AdminDashboard() {
       switch(tab) {
         case 'stats':        res = await adminService.getStats(); setData(prev => ({...prev, stats: res.data.data.stats})); break;
         case 'users':        res = await adminService.getUsers(); setData(prev => ({...prev, users: res.data.data.users})); break;
+        case 'animals':      res = await adminService.getAnimals(); setData(prev => ({...prev, animals: res.data.data.animals})); break;
         case 'reports':      res = await adminService.getReports(); setData(prev => ({...prev, reports: res.data.data.reports})); break;
         case 'manage_orgs':  res = await adminService.getOrganizations(); setData(prev => ({...prev, organizations: res.data.data.organizations})); break;
         default: break;
@@ -47,8 +48,18 @@ export default function AdminDashboard() {
   }
 
   const handleToggleUser = async (uId, currentStatus) => {
+    let banReason = null
+    if (currentStatus) { // Banning
+      banReason = await prompt({
+        title: 'Ban User?',
+        message: 'Please provide a reason for this ban. The user will see this message.',
+        placeholder: 'e.g. Repeated violation of community guidelines...'
+      })
+      if (banReason === null) return // Cancelled
+    }
+
     try {
-      await adminService.updateUserStatus(uId, !currentStatus)
+      await adminService.updateUserStatus(uId, { is_active: !currentStatus, ban_reason: banReason })
       showToast(`User ${currentStatus ? 'banned' : 'unbanned'} successfully`)
       fetchData()
     } catch (err) { showToast('Action failed', 'error') }
@@ -72,8 +83,20 @@ export default function AdminDashboard() {
   }
 
   const handleUpdateOrg = async (id, status) => {
+    let reason = null
+    if (status === 'rejected' || status === 'more_docs_needed') {
+      reason = await prompt({
+        title: status === 'rejected' ? 'Ban Organization?' : 'Request Documents',
+        message: status === 'rejected' 
+          ? 'Provide a reason for banning this organization.' 
+          : 'List the specific documents or information required.',
+        placeholder: status === 'rejected' ? 'Reason for ban...' : 'e.g. Official NGO certificate, Latest audit report...'
+      })
+      if (reason === null) return
+    }
+
     try {
-      await adminService.updateOrgStatus(id, { status })
+      await adminService.updateOrgStatus(id, { status, rejection_reason: reason })
       showToast('Organization status updated')
       fetchData()
     } catch (err) { showToast('Update failed', 'error') }
@@ -406,6 +429,22 @@ function UsersTable({ users, onToggle }) {
               <td className="px-6 py-4">
                 <span className={`w-2 h-2 rounded-full inline-block mr-2 ${u.is_active ? 'bg-green-500' : 'bg-red-500'}`}></span>
                 <span className="text-sm font-medium">{u.is_active ? 'Active' : 'Banned'}</span>
+                {u.appeal_message && (
+                  <div className="mt-2 p-2 bg-yellow-50 rounded-lg border border-yellow-100 animate-pulse">
+                    <p className="text-[10px] font-black text-yellow-700 uppercase mb-1">Appeal Received 📩</p>
+                    <p className="text-[10px] text-yellow-800 line-clamp-2 italic">"{u.appeal_message}"</p>
+                    {u.appeal_document_url && (
+                      <a 
+                        href={`${import.meta.env.VITE_API_BASE_URL}${u.appeal_document_url}`} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="text-[10px] font-bold text-primary-600 hover:underline block mt-1"
+                      >
+                        View Attachment 📄
+                      </a>
+                    )}
+                  </div>
+                )}
               </td>
               <td className="px-6 py-4 text-right">
                 <button 
@@ -498,6 +537,22 @@ function OrganizationsTable({ orgs, onUpdate, isModeration }) {
                 }`}>
                   {o.status.replace(/_/g, ' ')}
                 </span>
+                {o.appeal_message && (
+                  <div className="mt-2 p-2 bg-yellow-50 rounded-lg border border-yellow-100 animate-pulse">
+                    <p className="text-[10px] font-black text-yellow-700 uppercase mb-1">Appeal Received 📩</p>
+                    <p className="text-[10px] text-yellow-800 line-clamp-2 italic">"{o.appeal_message}"</p>
+                    {o.appeal_document_url && (
+                      <a 
+                        href={`${import.meta.env.VITE_API_BASE_URL}${o.appeal_document_url}`} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="text-[10px] font-bold text-primary-600 hover:underline block mt-1"
+                      >
+                        View Attachment 📄
+                      </a>
+                    )}
+                  </div>
+                )}
               </td>
               <td className="px-6 py-4">
                  <span className={`text-sm font-medium ${o.verified ? 'text-blue-600' : 'text-gray-400'}`}>

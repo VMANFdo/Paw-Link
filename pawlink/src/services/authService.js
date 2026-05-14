@@ -27,4 +27,11 @@ export const authService = {
    * (requires JWT token in header — handled by api.js interceptor)
    */
   getMe: () => api.get('/auth/me'),
+
+  /**
+   * Submit an appeal message if banned
+   */
+  submitAppeal: (formData) => api.post('/auth/appeal', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
 }

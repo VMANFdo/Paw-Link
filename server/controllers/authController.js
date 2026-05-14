@@ -59,7 +59,7 @@ const login = async (req, res, next) => {
 
     // 1. Find user by email
     const [users] = await pool.query(
-      'SELECT id, name, email, password, role FROM users WHERE email = ?', [email]
+      'SELECT id, name, email, password, role, is_active, ban_reason, appeal_message, appeal_document_url FROM users WHERE email = ?', [email]
     )
     if (users.length === 0) {
       return sendError(res, 'Invalid email or password', 401)
@@ -78,6 +78,18 @@ const login = async (req, res, next) => {
 
     // 4. Return token + user (exclude password)
     const { password: _pw, ...userWithoutPassword } = user
+
+    // 5. If organization, fetch org status
+    if (user.role === 'organization') {
+      const [orgs] = await pool.query('SELECT status, rejection_reason, appeal_message, appeal_document_url FROM organizations WHERE user_id = ?', [user.id])
+      if (orgs.length > 0) {
+        userWithoutPassword.org_status = orgs[0].status
+        userWithoutPassword.org_rejection_reason = orgs[0].rejection_reason
+        userWithoutPassword.org_appeal_message = orgs[0].appeal_message
+        userWithoutPassword.org_appeal_document_url = orgs[0].appeal_document_url
+      }
+    }
+
     sendSuccess(res, { token, user: userWithoutPassword }, 'Login successful')
 
   } catch (err) {
@@ -92,17 +104,53 @@ const getMe = async (req, res, next) => {
   try {
     // req.user is set by authMiddleware (contains id, email, role)
     const [users] = await pool.query(
-      'SELECT id, name, email, role, profile_picture, created_at FROM users WHERE id = ?',
+      'SELECT id, name, email, role, profile_picture, is_active, ban_reason, appeal_message, appeal_document_url, created_at FROM users WHERE id = ?',
       [req.user.id]
     )
     if (users.length === 0) {
       return sendError(res, 'User not found', 404)
     }
 
-    sendSuccess(res, { user: users[0] })
+    const user = users[0]
+
+    // If organization, join org data
+    if (user.role === 'organization') {
+      const [orgs] = await pool.query('SELECT status, rejection_reason, appeal_message, appeal_document_url FROM organizations WHERE user_id = ?', [user.id])
+      if (orgs.length > 0) {
+        user.org_status = orgs[0].status
+        user.org_rejection_reason = orgs[0].rejection_reason
+        user.org_appeal_message = orgs[0].appeal_message
+        user.org_appeal_document_url = orgs[0].appeal_document_url
+      }
+    }
+
+    sendSuccess(res, { user })
   } catch (err) {
     next(err)
   }
 }
 
-module.exports = { register, login, getMe }
+const submitAppeal = async (req, res, next) => {
+  try {
+    const { message } = req.body
+    const documentUrl = req.file ? `/uploads/${req.file.filename}` : null
+    
+    if (!message) return sendError(res, 'Appeal message is required')
+
+    if (req.user.role === 'organization') {
+      await pool.query(
+        'UPDATE organizations SET appeal_message = ?, appeal_document_url = ? WHERE user_id = ?', 
+        [message, documentUrl, req.user.id]
+      )
+    } else {
+      await pool.query(
+        'UPDATE users SET appeal_message = ?, appeal_document_url = ? WHERE id = ?', 
+        [message, documentUrl, req.user.id]
+      )
+    }
+
+    sendSuccess(res, {}, 'Appeal submitted successfully')
+  } catch (err) { next(err) }
+}
+
+module.exports = { register, login, getMe, submitAppeal }

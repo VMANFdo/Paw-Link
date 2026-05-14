@@ -5,6 +5,7 @@ const UIContext = createContext()
 export function UIProvider({ children }) {
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
   const [dialog, setDialog] = useState({ show: false, title: '', message: '', onConfirm: null, confirmText: 'Confirm', type: 'info' })
+  const [promptData, setPromptData] = useState({ show: false, title: '', message: '', placeholder: '', onConfirm: null })
 
   const showToast = useCallback((message, type = 'success') => {
     setToast({ show: true, message, type })
@@ -31,8 +32,27 @@ export function UIProvider({ children }) {
     })
   }, [])
 
+  const prompt = useCallback((options) => {
+    return new Promise((resolve) => {
+      setPromptData({
+        show: true,
+        title: options.title || 'Enter Information',
+        message: options.message || '',
+        placeholder: options.placeholder || '',
+        onConfirm: (val) => {
+          setPromptData(prev => ({ ...prev, show: false }))
+          resolve(val)
+        },
+        onCancel: () => {
+          setPromptData(prev => ({ ...prev, show: false }))
+          resolve(null)
+        }
+      })
+    })
+  }, [])
+
   return (
-    <UIContext.Provider value={{ showToast, confirm }}>
+    <UIContext.Provider value={{ showToast, confirm, prompt }}>
       {children}
 
       {/* Global Toast */}
@@ -70,7 +90,42 @@ export function UIProvider({ children }) {
           </div>
         </div>
       )}
+      {/* Global Prompt Dialog */}
+      {promptData.show && (
+        <PromptDialog 
+          data={promptData} 
+          onClose={() => setPromptData(prev => ({ ...prev, show: false }))} 
+        />
+      )}
     </UIContext.Provider>
+  )
+}
+
+function PromptDialog({ data, onClose }) {
+  const [val, setVal] = useState('')
+  return (
+    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white rounded-[2.5rem] w-full max-w-md shadow-2xl overflow-hidden animate-fade-in-up p-10">
+        <h2 className="text-2xl font-black text-gray-900 mb-2">{data.title}</h2>
+        <p className="text-gray-500 mb-6 text-sm">{data.message}</p>
+        <textarea 
+          autoFocus
+          className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold mb-6 min-h-[100px]"
+          placeholder={data.placeholder}
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+        />
+        <div className="flex gap-4">
+          <button onClick={() => data.onCancel()} className="flex-1 btn-outline py-4">Cancel</button>
+          <button 
+            onClick={() => data.onConfirm(val)} 
+            className="flex-1 bg-primary-500 hover:bg-primary-600 text-white rounded-2xl font-black transition-colors shadow-lg shadow-primary-200 py-4"
+          >
+            Submit
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 

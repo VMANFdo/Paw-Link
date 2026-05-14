@@ -1,5 +1,6 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import ProtectedRoute from './ProtectedRoute'
+import RestrictionGuard from './RestrictionGuard'
 
 // Layout
 import Navbar from '../components/layout/Navbar'
@@ -25,6 +26,7 @@ import Contact          from '../pages/Contact'
 import SheltersListing  from '../pages/SheltersListing'
 import ShelterDetails   from '../pages/ShelterDetails'
 import OrgSetup         from '../pages/OrgSetup'
+import SuspendedPage    from '../pages/SuspendedPage'
 import NotFound         from '../pages/NotFound'
 
 /**
@@ -33,46 +35,61 @@ import NotFound         from '../pages/NotFound'
 export default function AppRouter() {
   return (
     <BrowserRouter>
+      <Routes>
+        <Route element={<LayoutWrapper />}>
+          <Route element={<RestrictionGuard />}>
+            {/* Public Routes */}
+            <Route path="/"              element={<Home />} />
+            <Route path="/animals"       element={<BrowseAnimals />} />
+            <Route path="/animals/:id"   element={<AnimalDetails />} />
+            <Route path="/map"           element={<MapView />} />
+            <Route path="/shelters"      element={<SheltersListing />} />
+            <Route path="/shelters/:id"  element={<ShelterDetails />} />
+            <Route path="/about"         element={<About />} />
+            <Route path="/contact"       element={<Contact />} />
+            <Route path="/login"         element={<Login />} />
+            <Route path="/register"      element={<Register />} />
+
+            {/* Private Routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard"         element={<Dashboard />} />
+              <Route path="/add-animal"        element={<AddAnimal />} />
+              <Route path="/profile"           element={<Profile />} />
+              <Route path="/adoptions"         element={<AdoptionRequests />} />
+              <Route path="/rescues"           element={<RescueRequests />} />
+              <Route path="/messages"          element={<Messages />} />
+            </Route>
+
+            {/* Organization-only Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['organization', 'admin']} />}>
+              <Route path="/org-dashboard" element={<OrganizationDashboard />} />
+              <Route path="/org-setup"     element={<OrgSetup />} />
+            </Route>
+
+            {/* Admin-only Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+              <Route path="/admin" element={<AdminDashboard />} />
+            </Route>
+          </Route>
+          
+          {/* Suspended Page (Inside Layout now) */}
+          <Route path="/suspended" element={<SuspendedPage />} />
+        </Route>
+
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
+  )
+}
+
+function LayoutWrapper() {
+  return (
+    <>
       <Navbar />
       <main className="min-h-screen">
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/"              element={<Home />} />
-          <Route path="/animals"       element={<BrowseAnimals />} />
-          <Route path="/animals/:id"   element={<AnimalDetails />} />
-          <Route path="/map"           element={<MapView />} />
-          <Route path="/shelters"      element={<SheltersListing />} />
-          <Route path="/shelters/:id"  element={<ShelterDetails />} />
-          <Route path="/about"         element={<About />} />
-          <Route path="/contact"       element={<Contact />} />
-          <Route path="/login"         element={<Login />} />
-          <Route path="/register"      element={<Register />} />
-
-          {/* Private Routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard"         element={<Dashboard />} />
-            <Route path="/add-animal"        element={<AddAnimal />} />
-            <Route path="/profile"           element={<Profile />} />
-            <Route path="/adoptions"         element={<AdoptionRequests />} />
-            <Route path="/rescues"           element={<RescueRequests />} />
-            <Route path="/messages"          element={<Messages />} />
-          </Route>
-
-          {/* Organization-only Routes */}
-          <Route element={<ProtectedRoute allowedRoles={['organization', 'admin']} />}>
-            <Route path="/org-dashboard" element={<OrganizationDashboard />} />
-            <Route path="/org-setup"     element={<OrgSetup />} />
-          </Route>
-
-          {/* Admin-only Routes */}
-          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-            <Route path="/admin" element={<AdminDashboard />} />
-          </Route>
-
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Outlet />
       </main>
       <Footer />
-    </BrowserRouter>
+    </>
   )
 }
