@@ -47,7 +47,24 @@ export default function AdminDashboard() {
     }
   }
 
-  const handleToggleUser = async (uId, currentStatus) => {
+  const handleToggleUser = async (uId, currentStatus, isPermanentBan = false) => {
+    if (isPermanentBan) {
+      const isConfirmed = await confirm({
+        title: 'Permanently Ban User?',
+        message: 'This will reject the appeal and permanently ban the user. They will never be able to access the platform again. Are you sure?',
+        confirmText: 'Permanently Ban',
+        type: 'danger'
+      })
+      if (!isConfirmed) return
+      
+      try {
+        await adminService.updateUserStatus(uId, { permanent_ban: true })
+        showToast('User permanently banned', 'error')
+        fetchData()
+      } catch (err) { showToast('Action failed', 'error') }
+      return
+    }
+
     let banReason = null
     if (currentStatus) { // Banning
       banReason = await prompt({
@@ -82,7 +99,24 @@ export default function AdminDashboard() {
     } catch (err) { showToast('Delete failed', 'error') }
   }
 
-  const handleUpdateOrg = async (id, status) => {
+  const handleUpdateOrg = async (id, status, isPermanentBan = false) => {
+    if (isPermanentBan) {
+      const isConfirmed = await confirm({
+        title: 'Permanently Ban Organization?',
+        message: 'This will reject the appeal and permanently ban the organization. This action is irreversible. Proceed?',
+        confirmText: 'Permanently Ban',
+        type: 'danger'
+      })
+      if (!isConfirmed) return
+      
+      try {
+        await adminService.updateOrgStatus(id, { permanent_ban: true, status: 'rejected' })
+        showToast('Organization permanently banned', 'error')
+        fetchData()
+      } catch (err) { showToast('Action failed', 'error') }
+      return
+    }
+
     let reason = null
     if (status === 'rejected' || status === 'more_docs_needed') {
       reason = await prompt({
@@ -447,12 +481,31 @@ function UsersTable({ users, onToggle }) {
                 )}
               </td>
               <td className="px-6 py-4 text-right">
-                <button 
-                  onClick={() => onToggle(u.id, u.is_active)}
-                  className={`text-xs font-black uppercase tracking-widest ${u.is_active ? 'text-red-500 hover:underline' : 'text-green-500 hover:underline'}`}
-                >
-                  {u.is_active ? 'Ban User' : 'Unban User'}
-                </button>
+                {u.is_permanently_banned ? (
+                  <span className="text-[10px] font-black uppercase text-red-700 bg-red-50 px-3 py-1.5 rounded-full border border-red-100 shadow-sm">Permanently Banned</span>
+                ) : u.appeal_message ? (
+                  <div className="flex flex-col gap-2 items-end">
+                    <button 
+                      onClick={() => onToggle(u.id, u.is_active)}
+                      className="text-[10px] font-black uppercase tracking-widest text-green-600 hover:underline bg-green-50 px-2 py-1 rounded-md"
+                    >
+                      Approve Appeal
+                    </button>
+                    <button 
+                      onClick={() => onToggle(u.id, u.is_active, true)}
+                      className="text-[10px] font-black uppercase tracking-widest text-red-600 hover:underline bg-red-50 px-2 py-1 rounded-md"
+                    >
+                      Reject Appeal
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => onToggle(u.id, u.is_active)}
+                    className={`text-xs font-black uppercase tracking-widest ${u.is_active ? 'text-red-500 hover:underline' : 'text-green-500 hover:underline'}`}
+                  >
+                    {u.is_active ? 'Ban User' : 'Unban User'}
+                  </button>
+                )}
               </td>
             </tr>
           ))}
@@ -560,35 +613,56 @@ function OrganizationsTable({ orgs, onUpdate, isModeration }) {
                  </span>
               </td>
               <td className="px-6 py-4 text-right space-x-3">
-                {isModeration && (
+                {o.is_permanently_banned ? (
+                  <span className="text-[10px] font-black uppercase text-red-700 bg-red-50 px-3 py-1.5 rounded-full border border-red-100 shadow-sm">Permanently Banned</span>
+                ) : isModeration && (
                   <>
-                    {o.status !== 'approved' && (
-                      <button 
-                        onClick={() => onUpdate(o.id, 'approved')}
-                        className="text-xs font-black uppercase text-green-600 hover:underline"
-                      >
-                        Approve
-                      </button>
-                    )}
-                    {(o.status === 'pending' || o.status === 'approved') && (
-                      <button 
-                        onClick={() => onUpdate(o.id, 'more_docs_needed')}
-                        className="text-xs font-black uppercase text-blue-600 hover:underline"
-                      >
-                        Need Docs
-                      </button>
-                    )}
-                    {o.status !== 'rejected' && (
-                      <button 
-                        onClick={() => onUpdate(o.id, 'rejected')}
-                        className={`text-xs font-black uppercase hover:underline ${o.status === 'approved' ? 'text-orange-500' : 'text-red-500'}`}
-                      >
-                        {o.status === 'approved' ? 'Ban' : 'Reject'}
-                      </button>
+                    {o.appeal_message ? (
+                      <div className="flex justify-end gap-2">
+                        <button 
+                          onClick={() => onUpdate(o.id, 'approved')}
+                          className="text-[10px] font-black uppercase text-green-600 hover:underline bg-green-50 px-2 py-1 rounded-md"
+                        >
+                          Approve Appeal
+                        </button>
+                        <button 
+                          onClick={() => onUpdate(o.id, 'rejected', true)}
+                          className="text-[10px] font-black uppercase text-red-600 hover:underline bg-red-50 px-2 py-1 rounded-md"
+                        >
+                          Reject Appeal
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        {o.status !== 'approved' && (
+                          <button 
+                            onClick={() => onUpdate(o.id, 'approved')}
+                            className="text-xs font-black uppercase text-green-600 hover:underline"
+                          >
+                            Approve
+                          </button>
+                        )}
+                        {(o.status === 'pending' || o.status === 'approved') && (
+                          <button 
+                            onClick={() => onUpdate(o.id, 'more_docs_needed')}
+                            className="text-xs font-black uppercase text-blue-600 hover:underline"
+                          >
+                            Need Docs
+                          </button>
+                        )}
+                        {o.status !== 'rejected' && (
+                          <button 
+                            onClick={() => onUpdate(o.id, 'rejected')}
+                            className={`text-xs font-black uppercase hover:underline ${o.status === 'approved' ? 'text-orange-500' : 'text-red-500'}`}
+                          >
+                            {o.status === 'approved' ? 'Ban' : 'Reject'}
+                          </button>
+                        )}
+                      </>
                     )}
                   </>
                 )}
-                {!isModeration && (
+                {!isModeration && !o.is_permanently_banned && (
                   <span className="text-xs font-bold text-gray-400">View Only</span>
                 )}
               </td>

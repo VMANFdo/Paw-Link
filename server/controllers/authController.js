@@ -59,7 +59,7 @@ const login = async (req, res, next) => {
 
     // 1. Find user by email
     const [users] = await pool.query(
-      'SELECT id, name, email, password, role, is_active, ban_reason, appeal_message, appeal_document_url FROM users WHERE email = ?', [email]
+      'SELECT id, name, email, password, role, is_active, is_permanently_banned, ban_reason, appeal_message, appeal_document_url FROM users WHERE email = ?', [email]
     )
     if (users.length === 0) {
       return sendError(res, 'Invalid email or password', 401)
@@ -81,9 +81,10 @@ const login = async (req, res, next) => {
 
     // 5. If organization, fetch org status
     if (user.role === 'organization') {
-      const [orgs] = await pool.query('SELECT status, rejection_reason, appeal_message, appeal_document_url FROM organizations WHERE user_id = ?', [user.id])
+      const [orgs] = await pool.query('SELECT status, is_permanently_banned, rejection_reason, appeal_message, appeal_document_url FROM organizations WHERE user_id = ?', [user.id])
       if (orgs.length > 0) {
         userWithoutPassword.org_status = orgs[0].status
+        userWithoutPassword.org_is_permanently_banned = orgs[0].is_permanently_banned
         userWithoutPassword.org_rejection_reason = orgs[0].rejection_reason
         userWithoutPassword.org_appeal_message = orgs[0].appeal_message
         userWithoutPassword.org_appeal_document_url = orgs[0].appeal_document_url
@@ -104,7 +105,7 @@ const getMe = async (req, res, next) => {
   try {
     // req.user is set by authMiddleware (contains id, email, role)
     const [users] = await pool.query(
-      'SELECT id, name, email, role, profile_picture, is_active, ban_reason, appeal_message, appeal_document_url, created_at FROM users WHERE id = ?',
+      'SELECT id, name, email, role, profile_picture, is_active, is_permanently_banned, ban_reason, appeal_message, appeal_document_url, created_at FROM users WHERE id = ?',
       [req.user.id]
     )
     if (users.length === 0) {
@@ -115,9 +116,10 @@ const getMe = async (req, res, next) => {
 
     // If organization, join org data
     if (user.role === 'organization') {
-      const [orgs] = await pool.query('SELECT status, rejection_reason, appeal_message, appeal_document_url FROM organizations WHERE user_id = ?', [user.id])
+      const [orgs] = await pool.query('SELECT status, is_permanently_banned, rejection_reason, appeal_message, appeal_document_url FROM organizations WHERE user_id = ?', [user.id])
       if (orgs.length > 0) {
         user.org_status = orgs[0].status
+        user.org_is_permanently_banned = orgs[0].is_permanently_banned
         user.org_rejection_reason = orgs[0].rejection_reason
         user.org_appeal_message = orgs[0].appeal_message
         user.org_appeal_document_url = orgs[0].appeal_document_url

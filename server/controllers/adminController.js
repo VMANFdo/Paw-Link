@@ -17,7 +17,7 @@ const getStats = async (req, res, next) => {
 const getUsers = async (req, res, next) => {
   try {
     const [users] = await pool.query(
-      "SELECT id, name, email, role, is_active, ban_reason, appeal_message, appeal_document_url, created_at FROM users WHERE role != 'organization' ORDER BY created_at DESC"
+      "SELECT id, name, email, role, is_active, is_permanently_banned, ban_reason, appeal_message, appeal_document_url, created_at FROM users WHERE role != 'organization' ORDER BY created_at DESC"
     )
     sendSuccess(res, { users })
   } catch (err) { next(err) }
@@ -25,7 +25,15 @@ const getUsers = async (req, res, next) => {
 
 const updateUserStatus = async (req, res, next) => {
   try {
-    const { is_active, ban_reason } = req.body
+    const { is_active, ban_reason, permanent_ban } = req.body
+    
+    if (permanent_ban) {
+      await pool.query(
+        'UPDATE users SET is_permanently_banned = 1, ban_reason = ?, appeal_message = NULL, appeal_document_url = NULL WHERE id = ?', 
+        ['Appeal Rejected - Permanent Ban', req.params.id]
+      )
+      return sendSuccess(res, {}, 'User permanently banned')
+    }
     
     if (is_active) {
       // Unbanning: clear ban reason and appeal fields
@@ -131,7 +139,7 @@ const getOrganizations = async (req, res, next) => {
 
 const updateOrgStatus = async (req, res, next) => {
   try {
-    const { status, rejection_reason, verified } = req.body
+    const { status, rejection_reason, verified, permanent_ban } = req.body
     const validStatuses = ['pending', 'approved', 'rejected', 'more_docs_needed']
     
     if (status && !validStatuses.includes(status)) {
@@ -140,6 +148,14 @@ const updateOrgStatus = async (req, res, next) => {
 
     const updates = []
     const params = []
+
+    if (permanent_ban) {
+      updates.push('is_permanently_banned = 1')
+      updates.push('rejection_reason = ?')
+      params.push('Appeal Rejected - Permanent Ban')
+      updates.push('appeal_message = NULL')
+      updates.push('appeal_document_url = NULL')
+    }
 
     if (status) { 
       updates.push('status = ?')
