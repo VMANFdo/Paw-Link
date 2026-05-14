@@ -32,6 +32,20 @@ export function AuthProvider({ children }) {
     if (savedToken && savedUser) {
       setToken(savedToken)
       setUser(JSON.parse(savedUser))
+      
+      // Fetch fresh user data to ensure status (ban, appeal) is up-to-date
+      authService.getMe()
+        .then(res => {
+          setUser(res.data.data.user)
+          localStorage.setItem('pawlink_user', JSON.stringify(res.data.data.user))
+        })
+        .catch(() => {
+          // If token is invalid or expired
+          setToken(null)
+          setUser(null)
+          localStorage.removeItem('pawlink_token')
+          localStorage.removeItem('pawlink_user')
+        })
     }
 
     setIsLoading(false)

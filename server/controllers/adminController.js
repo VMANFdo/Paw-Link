@@ -17,7 +17,7 @@ const getStats = async (req, res, next) => {
 const getUsers = async (req, res, next) => {
   try {
     const [users] = await pool.query(
-      'SELECT id, name, email, role, is_active, created_at FROM users ORDER BY created_at DESC'
+      "SELECT id, name, email, role, is_active, ban_reason, appeal_message, appeal_document_url, created_at FROM users WHERE role != 'organization' ORDER BY created_at DESC"
     )
     sendSuccess(res, { users })
   } catch (err) { next(err) }
@@ -25,8 +25,22 @@ const getUsers = async (req, res, next) => {
 
 const updateUserStatus = async (req, res, next) => {
   try {
-    const { is_active } = req.body
-    await pool.query('UPDATE users SET is_active = ? WHERE id = ?', [is_active, req.params.id])
+    const { is_active, ban_reason } = req.body
+    
+    if (is_active) {
+      // Unbanning: clear ban reason and appeal fields
+      await pool.query(
+        'UPDATE users SET is_active = ?, ban_reason = NULL, appeal_message = NULL, appeal_document_url = NULL WHERE id = ?', 
+        [is_active, req.params.id]
+      )
+    } else {
+      // Banning
+      await pool.query(
+        'UPDATE users SET is_active = ?, ban_reason = ? WHERE id = ?', 
+        [is_active, ban_reason || null, req.params.id]
+      )
+    }
+    
     sendSuccess(res, {}, `User ${is_active ? 'activated' : 'banned'}`)
   } catch (err) { next(err) }
 }
@@ -127,7 +141,15 @@ const updateOrgStatus = async (req, res, next) => {
     const updates = []
     const params = []
 
-    if (status) { updates.push('status = ?'); params.push(status) }
+    if (status) { 
+      updates.push('status = ?')
+      params.push(status)
+      if (status === 'approved') {
+        updates.push('rejection_reason = NULL')
+        updates.push('appeal_message = NULL')
+        updates.push('appeal_document_url = NULL')
+      }
+    }
     if (rejection_reason !== undefined) { updates.push('rejection_reason = ?'); params.push(rejection_reason) }
     if (verified !== undefined) { updates.push('verified = ?'); params.push(verified) }
 
@@ -140,6 +162,39 @@ const updateOrgStatus = async (req, res, next) => {
   } catch (err) { next(err) }
 }
 
+const createOrganization = async (req, res, next) => {
+  const connection = await pool.getConnection()
+  try {
+    await connection.beginTransaction()
+
+    const { name, email, password, shelter_name, contact_number, address, latitude, longitude, max_capacity } = req.body
+
+    // 1. Create User
+    const hashedPassword = await bcrypt.hash(password, 12)
+    const [userResult] = await connection.query(
+      'INSERT INTO users (name, email, password, role, is_active) VALUES (?, ?, ?, ?, 1)',
+      [name, email, hashedPassword, 'organization']
+    )
+    const userId = userResult.insertId
+
+    // 2. Create Organization Profile (Automatically Approved)
+    await connection.query(
+      `INSERT INTO organizations 
+        (user_id, name, contact_number, address, latitude, longitude, max_capacity, status, verified)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', 1)`,
+      [userId, shelter_name, contact_number, address, latitude, longitude, max_capacity || 0]
+    )
+
+    await connection.commit()
+    sendSuccess(res, {}, 'Shelter created successfully', 201)
+  } catch (err) {
+    await connection.rollback()
+    next(err)
+  } finally {
+    connection.release()
+  }
+}
+
 module.exports = { 
   getStats, 
   getUsers, 
@@ -149,5 +204,6 @@ module.exports = {
   deleteAnimal, 
   getReports,
   getOrganizations,
-  updateOrgStatus
+  updateOrgStatus,
+  createOrganization
 }

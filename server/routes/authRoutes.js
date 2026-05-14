@@ -5,6 +5,7 @@ const router   = express.Router()
 const authController = require('../controllers/authController')
 const authMiddleware = require('../middleware/authMiddleware')
 const validate       = require('../middleware/validate')
+const upload         = require('../config/multer')
 
 /**
  * Auth Routes
@@ -27,5 +28,8 @@ router.post('/login', [
 
 // GET /api/auth/me  (protected)
 router.get('/me', authMiddleware, authController.getMe)
+
+// POST /api/auth/appeal (protected, even for banned)
+router.post('/appeal', authMiddleware, upload.single('document'), authController.submitAppeal)
 
 module.exports = router
