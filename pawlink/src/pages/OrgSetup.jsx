@@ -17,8 +17,8 @@ export default function OrgSetup() {
     contact_number: user?.phone || '',
     address: '',
     city: '',
-    latitude: '',
-    longitude: '',
+    latitude: 6.9271,
+    longitude: 79.8612,
     website: '',
     max_capacity: 50,
     animal_types: []

@@ -1,9 +1,25 @@
-import { useState } from 'react'
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
+import { useState, useEffect } from 'react'
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet'
 import L from 'leaflet'
 
 export default function LocationPicker({ position, onPositionChange, disabled = false }) {
   const [markerPosition, setMarkerPosition] = useState(position || [6.9271, 79.8612])
+
+  useEffect(() => {
+    if (position && position.length === 2 && position[0] !== undefined && position[1] !== undefined) {
+      setMarkerPosition([Number(position[0]), Number(position[1])])
+    }
+  }, [position?.[0], position?.[1]])
+
+  function MapUpdater({ pos }) {
+    const map = useMap()
+    useEffect(() => {
+      if (pos && pos.length === 2 && pos[0] !== undefined && pos[1] !== undefined) {
+        map.setView([Number(pos[0]), Number(pos[1])], map.getZoom())
+      }
+    }, [pos?.[0], pos?.[1], map])
+    return null
+  }
 
   function MapEvents() {
     useMapEvents({
@@ -26,6 +42,7 @@ export default function LocationPicker({ position, onPositionChange, disabled = 
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <Marker position={markerPosition} />
+        <MapUpdater pos={markerPosition} />
         <MapEvents />
       </MapContainer>
       {!disabled && (

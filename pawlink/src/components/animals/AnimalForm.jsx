@@ -7,6 +7,7 @@ import LocationPicker from './LocationPicker'
 export default function AnimalForm({ onSuccess }) {
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
+  const [fetchingProfile, setFetchingProfile] = useState(user?.role === 'organization')
   const [error, setError] = useState('')
 
   const [formData, setFormData] = useState({
@@ -31,13 +32,15 @@ export default function AnimalForm({ onSuccess }) {
           if (org) {
             setFormData(prev => ({
               ...prev,
-              latitude: org.latitude || prev.latitude,
-              longitude: org.longitude || prev.longitude,
-              city: org.city || prev.city
+              latitude: (org.latitude !== null && org.latitude !== undefined) ? Number(org.latitude) : prev.latitude,
+              longitude: (org.longitude !== null && org.longitude !== undefined) ? Number(org.longitude) : prev.longitude,
+              city: org.city || prev.city || ''
             }))
           }
         } catch (err) {
           console.error("Failed to fetch organization location", err)
+        } finally {
+          setFetchingProfile(false)
         }
       }
       fetchOrgProfile()
@@ -69,6 +72,14 @@ export default function AnimalForm({ onSuccess }) {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (fetchingProfile) {
+    return (
+      <div className="flex justify-center items-center h-64 w-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent"></div>
+      </div>
+    )
   }
 
   return (
@@ -167,7 +178,6 @@ export default function AnimalForm({ onSuccess }) {
           <LocationPicker 
             position={[formData.latitude, formData.longitude]}
             onPositionChange={(pos) => setFormData({ ...formData, latitude: pos[0], longitude: pos[1] })}
-            disabled={user?.role === 'organization'}
           />
           <div className="mt-6">
             <label className="form-label">Nearest City</label>
@@ -176,7 +186,6 @@ export default function AnimalForm({ onSuccess }) {
               placeholder="e.g. Colombo, Kandy, Galle..." 
               value={formData.city} onChange={handleChange}
               required
-              disabled={user?.role === 'organization'}
             />
             <p className="text-[10px] text-gray-400 mt-2 italic">This helps people find the animal faster on the browse page.</p>
           </div>
