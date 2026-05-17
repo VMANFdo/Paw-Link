@@ -23,7 +23,7 @@ export default function AddAnimal() {
       const res = await organizationService.getMyProfile()
       const org = res.data.data.organization
       if (org.status !== 'approved') {
-        navigate('/org-dashboard')
+        navigate('/profile')
       }
     } catch (err) {
       console.error('Failed to check org status', err)
