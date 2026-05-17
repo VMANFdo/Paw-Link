@@ -11,6 +11,7 @@ import Home             from '../pages/Home'
 import BrowseAnimals    from '../pages/BrowseAnimals'
 import AnimalDetails    from '../pages/AnimalDetails'
 import AddAnimal        from '../pages/AddAnimal'
+import ManageAnimals    from '../pages/ManageAnimals'
 import Login            from '../pages/Login'
 import Register         from '../pages/Register'
 import Dashboard        from '../pages/Dashboard'
@@ -63,6 +64,7 @@ export default function AppRouter() {
             {/* Organization-only Routes */}
             <Route element={<ProtectedRoute allowedRoles={['organization', 'admin']} />}>
               <Route path="/org-setup"     element={<OrgSetup />} />
+              <Route path="/manage-animals" element={<ManageAnimals />} />
             </Route>
 
             {/* Admin-only Routes */}
