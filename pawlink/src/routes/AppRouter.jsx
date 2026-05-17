@@ -27,6 +27,7 @@ import SheltersListing  from '../pages/SheltersListing'
 import ShelterDetails   from '../pages/ShelterDetails'
 import OrgSetup         from '../pages/OrgSetup'
 import SuspendedPage    from '../pages/SuspendedPage'
+import OrgPending       from '../pages/OrgPending'
 import NotFound         from '../pages/NotFound'
 
 /**
@@ -70,10 +71,10 @@ export default function AppRouter() {
             <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
               <Route path="/admin" element={<AdminDashboard />} />
             </Route>
+            {/* Suspended Page & Pending Gate (Inside RestrictionGuard now) */}
+            <Route path="/suspended" element={<SuspendedPage />} />
+            <Route path="/org-pending" element={<OrgPending />} />
           </Route>
-          
-          {/* Suspended Page (Inside Layout now) */}
-          <Route path="/suspended" element={<SuspendedPage />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

@@ -10,19 +10,61 @@ export default function RestrictionGuard() {
 
   if (isLoading) return null
 
-  // Determine restriction status
-  const isBanned = user?.is_active === 0 || user?.org_status === 'rejected'
-  const needsDocs = user?.org_status === 'more_docs_needed'
-  const isRestricted = isAuthenticated && (isBanned || needsDocs)
+  if (isAuthenticated) {
+    // 1. User ban
+    if (user?.is_active === 0) {
+      if (location.pathname !== '/suspended') {
+        return <Navigate to="/suspended" replace />
+      }
+      return <Outlet />
+    }
 
-  // If restricted and NOT already on the suspended page, redirect to it
-  if (isRestricted && location.pathname !== '/suspended') {
-    return <Navigate to="/suspended" replace />
+    // 2. Organization Onboarding Status
+    if (user?.role === 'organization') {
+      const isComplete = user?.org_profile_complete === 1
+      const status = user?.org_status // 'pending', 'approved', 'rejected', 'more_docs_needed'
+
+      // Profile Setup Step
+      if (!isComplete) {
+        if (location.pathname !== '/org-setup') {
+          return <Navigate to="/org-setup" replace />
+        }
+        return <Outlet />
+      }
+
+      // Admin Approval Step
+      if (status !== 'approved') {
+        if (location.pathname !== '/org-pending') {
+          return <Navigate to="/org-pending" replace />
+        }
+        return <Outlet />
+      }
+    }
   }
 
-  // If NOT restricted but trying to access suspended page, go home
-  if (!isRestricted && location.pathname === '/suspended' && isAuthenticated) {
-    return <Navigate to="/" replace />
+  // Prevent restricted/complete users from sitting on setup/suspended/pending paths
+  if (isAuthenticated) {
+    const isSetupDoneOrgOnSetup = location.pathname === '/org-setup' && user?.role === 'organization' && user?.org_profile_complete === 1
+    const isNormalUserOnPending = location.pathname === '/org-pending' && user?.role !== 'organization'
+    const isApprovedOrgOnPending = location.pathname === '/org-pending' && user?.role === 'organization' && user?.org_status === 'approved'
+    const isNotBannedOnSuspended = location.pathname === '/suspended' && user?.is_active !== 0 && (user?.role !== 'organization' || user?.org_status === 'approved')
+
+    if (isApprovedOrgOnPending) {
+      return <Navigate to="/org-dashboard" replace />
+    }
+
+    if (isSetupDoneOrgOnSetup) {
+      return <Navigate to="/org-pending" replace />
+    }
+
+    if (isNormalUserOnPending) {
+      return <Navigate to="/dashboard" replace />
+    }
+
+    if (isNotBannedOnSuspended) {
+      const target = user?.role === 'organization' ? '/org-dashboard' : user?.role === 'admin' ? '/admin' : '/dashboard'
+      return <Navigate to={target} replace />
+    }
   }
 
   return <Outlet />

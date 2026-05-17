@@ -58,7 +58,7 @@ export default function Navbar() {
 
         {/* Desktop Nav Links */}
         <nav className="hidden md:flex items-center space-x-8">
-          {navLinks.map(link => (
+          {(user?.role !== 'organization' || user?.org_status === 'approved') && navLinks.map(link => (
             <NavLink 
               key={link.to} 
               to={link.to}
@@ -142,11 +142,13 @@ export default function Navbar() {
                       <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Signed in as</p>
                       <p className="text-xs font-bold text-gray-900 truncate">{user.email}</p>
                     </div>
-                    {user.role !== 'admin' && (
+                    {user.role !== 'admin' && (user.role !== 'organization' || user.org_status === 'approved') && (
                       <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 font-medium">Dashboard</Link>
                     )}
-                    <Link to="/profile" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 font-medium">Profile</Link>
-                    {user.role === 'organization' && (
+                    {(user.role !== 'organization' || user.org_status === 'approved') && (
+                      <Link to="/profile" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 font-medium">Profile</Link>
+                    )}
+                    {user.role === 'organization' && user.org_status === 'approved' && (
                       <Link to="/org-dashboard" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-primary-600 hover:bg-primary-50 font-bold">Org Dashboard</Link>
                     )}
                     {user.role === 'admin' && (
@@ -198,7 +200,7 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden bg-white border-t border-gray-50 p-4 space-y-4 animate-fade-in">
-          {navLinks.map(link => (
+          {(user?.role !== 'organization' || user?.org_status === 'approved') && navLinks.map(link => (
             <Link key={link.to} to={link.to} onClick={() => setIsOpen(false)} className="block text-gray-700 font-bold px-2 py-1">
               {link.label}
             </Link>
@@ -206,9 +208,13 @@ export default function Navbar() {
           <hr className="border-gray-50" />
           {user ? (
             <>
-              <Link to="/messages" onClick={() => setIsOpen(false)} className="block text-gray-700 font-bold px-2 py-1">Inquiries / Messages</Link>
-              {user.role !== 'admin' && (
-                <Link to="/dashboard" onClick={() => setIsOpen(false)} className="block text-gray-700 font-bold px-2 py-1">Dashboard</Link>
+              {(user.role !== 'organization' || user.org_status === 'approved') && (
+                <>
+                  <Link to="/messages" onClick={() => setIsOpen(false)} className="block text-gray-700 font-bold px-2 py-1">Inquiries / Messages</Link>
+                  {user.role !== 'admin' && (
+                    <Link to="/dashboard" onClick={() => setIsOpen(false)} className="block text-gray-700 font-bold px-2 py-1">Dashboard</Link>
+                  )}
+                </>
               )}
               {user.role === 'admin' && (
                 <Link to="/admin" onClick={() => setIsOpen(false)} className="block text-red-600 font-black px-2 py-1">🛡️ Admin Panel</Link>

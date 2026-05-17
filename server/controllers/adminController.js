@@ -10,7 +10,8 @@ const getStats = async (req, res, next) => {
     const [[{ animals }]]    = await pool.query('SELECT COUNT(*) AS animals FROM animals')
     const [[{ adoptions }]]  = await pool.query('SELECT COUNT(*) AS adoptions FROM adoption_requests WHERE status = "approved"')
     const [[{ rescues }]]    = await pool.query('SELECT COUNT(*) AS rescues FROM rescue_requests WHERE status = "in_progress"')
-    sendSuccess(res, { stats: { users, animals, adoptions, activeRescues: rescues } })
+    const [[{ pendingOrgs }]] = await pool.query('SELECT COUNT(*) AS pendingOrgs FROM organizations WHERE status = "pending"')
+    sendSuccess(res, { stats: { users, animals, adoptions, activeRescues: rescues, pendingOrgs } })
   } catch (err) { next(err) }
 }
 
@@ -116,7 +117,13 @@ const getOrganizations = async (req, res, next) => {
       SELECT o.*, u.email
       FROM organizations o
       JOIN users u ON o.user_id = u.id
-      ORDER BY o.created_at DESC
+      ORDER BY 
+        CASE 
+          WHEN o.status = 'pending' THEN 1 
+          WHEN o.status = 'more_docs_needed' THEN 2 
+          ELSE 3 
+        END ASC, 
+        o.created_at DESC
     `)
 
     if (orgs.length > 0) {
@@ -193,11 +200,11 @@ const createOrganization = async (req, res, next) => {
     )
     const userId = userResult.insertId
 
-    // 2. Create Organization Profile (Automatically Approved)
+    // 2. Create Organization Profile (Automatically Approved and completed)
     await connection.query(
       `INSERT INTO organizations 
-        (user_id, name, contact_number, address, latitude, longitude, max_capacity, status, verified)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', 1)`,
+        (user_id, name, contact_number, address, latitude, longitude, max_capacity, status, verified, profile_complete)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', 1, 1)`,
       [userId, shelter_name, contact_number, address, latitude, longitude, max_capacity || 0]
     )
 
