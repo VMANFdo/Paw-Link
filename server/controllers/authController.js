@@ -48,7 +48,7 @@ const register = async (req, res, next) => {
     const token = generateToken({ id: result.insertId, email, role })
 
     // 5. Return token + basic user info (never return the password)
-    const userResponse = { id: result.insertId, name, email, role }
+    const userResponse = { id: result.insertId, name, email, role, phone }
     if (role === 'organization') {
       userResponse.org_status = 'pending'
       userResponse.org_profile_complete = 0
@@ -73,7 +73,7 @@ const login = async (req, res, next) => {
 
     // 1. Find user by email
     const [users] = await pool.query(
-      'SELECT id, name, email, password, role, is_active, is_permanently_banned, ban_reason, appeal_message, appeal_document_url FROM users WHERE email = ?', [email]
+      'SELECT id, name, email, password, role, phone, is_active, is_permanently_banned, ban_reason, appeal_message, appeal_document_url FROM users WHERE email = ?', [email]
     )
     if (users.length === 0) {
       return sendError(res, 'Invalid email or password', 401)
@@ -120,7 +120,7 @@ const getMe = async (req, res, next) => {
   try {
     // req.user is set by authMiddleware (contains id, email, role)
     const [users] = await pool.query(
-      'SELECT id, name, email, role, profile_picture, is_active, is_permanently_banned, ban_reason, appeal_message, appeal_document_url, created_at FROM users WHERE id = ?',
+      'SELECT id, name, email, role, phone, profile_picture, is_active, is_permanently_banned, ban_reason, appeal_message, appeal_document_url, created_at FROM users WHERE id = ?',
       [req.user.id]
     )
     if (users.length === 0) {
