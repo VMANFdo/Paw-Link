@@ -14,7 +14,6 @@ import AddAnimal        from '../pages/AddAnimal'
 import Login            from '../pages/Login'
 import Register         from '../pages/Register'
 import Dashboard        from '../pages/Dashboard'
-import OrganizationDashboard from '../pages/OrganizationDashboard'
 import AdminDashboard   from '../pages/AdminDashboard'
 import Profile          from '../pages/Profile'
 import RescueRequests   from '../pages/RescueRequests'
@@ -63,7 +62,6 @@ export default function AppRouter() {
 
             {/* Organization-only Routes */}
             <Route element={<ProtectedRoute allowedRoles={['organization', 'admin']} />}>
-              <Route path="/org-dashboard" element={<OrganizationDashboard />} />
               <Route path="/org-setup"     element={<OrgSetup />} />
             </Route>
 
