@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 
-export default function AnimalCard({ animal }) {
+export default function AnimalCard({ animal, actionButton }) {
   // Use a default image if none is provided
   const imageUrl = animal.thumbnail 
     ? animal.thumbnail 
@@ -83,6 +83,11 @@ export default function AnimalCard({ animal }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
           </svg>
         </Link>
+        {actionButton && (
+          <div className="mt-3">
+            {actionButton}
+          </div>
+        )}
       </div>
     </div>
   )

@@ -135,22 +135,24 @@ export default function AnimalForm({ onSuccess }) {
             </div>
           </div>
 
-          <div>
-            <label className="form-label">Rescue Urgency</label>
-            <select 
-              name="rescue_urgency" 
-              className={`input-field font-black ${
-                formData.rescue_urgency === 'critical' ? 'text-red-600 bg-red-50 border-red-200' : ''
-              }`}
-              value={formData.rescue_urgency} 
-              onChange={handleChange}
-            >
-              <option value="low">Low - Safe but needs home</option>
-              <option value="medium">Medium - Needs rescue soon</option>
-              <option value="high">High - In danger / No food</option>
-              <option value="critical">Critical - Injured / Sick</option>
-            </select>
-          </div>
+          {user?.role !== 'organization' && (
+            <div>
+              <label className="form-label">Rescue Urgency</label>
+              <select 
+                name="rescue_urgency" 
+                className={`input-field font-black ${
+                  formData.rescue_urgency === 'critical' ? 'text-red-600 bg-red-50 border-red-200' : ''
+                }`}
+                value={formData.rescue_urgency} 
+                onChange={handleChange}
+              >
+                <option value="low">Low - Safe but needs home</option>
+                <option value="medium">Medium - Needs rescue soon</option>
+                <option value="high">High - In danger / No food</option>
+                <option value="critical">Critical - Injured / Sick</option>
+              </select>
+            </div>
+          )}
         </div>
 
         <div className="card p-8">
