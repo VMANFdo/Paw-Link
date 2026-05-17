@@ -72,6 +72,20 @@ export default function Navbar() {
             </NavLink>
           ))}
           
+          {/* Org-only Nav Link */}
+          {user?.role === 'organization' && user?.org_status === 'approved' && (
+            <NavLink 
+              to="/manage-animals"
+              className={({ isActive }) => 
+                `text-sm font-bold transition-colors ${
+                  isActive ? 'text-primary-600' : 'text-gray-500 hover:text-primary-500'
+                }`
+              }
+            >
+              Manage Animals
+            </NavLink>
+          )}
+          
           {/* Admin-only Nav Link */}
           {user?.role === 'admin' && (
             <>
@@ -202,6 +216,11 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
+          {user?.role === 'organization' && user?.org_status === 'approved' && (
+            <Link to="/manage-animals" onClick={() => setIsOpen(false)} className="block text-gray-700 font-bold px-2 py-1">
+              Manage Animals
+            </Link>
+          )}
           <hr className="border-gray-50" />
           {user ? (
             <>
