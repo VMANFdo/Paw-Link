@@ -13,7 +13,7 @@ const createProfile = async (req, res, next) => {
 
     const {
       name, description, contact_number, address,
-      latitude, longitude, website, max_capacity,
+      latitude, longitude, city, website, max_capacity,
       animal_types // Array of types: ['dog', 'cat']
     } = req.body
 
@@ -36,20 +36,21 @@ const createProfile = async (req, res, next) => {
           address = ?, 
           latitude = ?, 
           longitude = ?, 
+          city = ?,
           website = ?, 
           max_capacity = ?, 
           status = 'pending',
           profile_complete = 1
          WHERE id = ?`,
-        [name, description, contact_number, address, latitude, longitude, website, max_capacity || 0, orgId]
+        [name, description, contact_number, address, latitude, longitude, city, website, max_capacity || 0, orgId]
       )
     } else {
       // 2. Insert new record (fallback)
       const [result] = await connection.query(
         `INSERT INTO organizations 
-          (user_id, name, description, contact_number, address, latitude, longitude, website, max_capacity, status, profile_complete)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 1)`,
-        [req.user.id, name, description, contact_number, address, latitude, longitude, website, max_capacity || 0]
+          (user_id, name, description, contact_number, address, latitude, longitude, city, website, max_capacity, status, profile_complete)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 1)`,
+        [req.user.id, name, description, contact_number, address, latitude, longitude, city, website, max_capacity || 0]
       )
       orgId = result.insertId
     }
@@ -110,7 +111,7 @@ const updateProfile = async (req, res, next) => {
 
     const {
       name, description, contact_number, address,
-      latitude, longitude, website, max_capacity,
+      latitude, longitude, city, website, max_capacity,
       animal_types
     } = req.body
 
@@ -124,9 +125,9 @@ const updateProfile = async (req, res, next) => {
     // Update main record
     await connection.query(
       `UPDATE organizations 
-       SET name=?, description=?, contact_number=?, address=?, latitude=?, longitude=?, website=?, max_capacity=?
+       SET name=?, description=?, contact_number=?, address=?, latitude=?, longitude=?, city=?, website=?, max_capacity=?
        WHERE id=?`,
-      [name, description, contact_number, address, latitude, longitude, website, max_capacity, orgId]
+      [name, description, contact_number, address, latitude, longitude, city, website, max_capacity, orgId]
     )
 
     // Sync animal types (delete all and re-insert)
@@ -156,7 +157,7 @@ const getAllApproved = async (req, res, next) => {
   try {
     const { animal_type, city } = req.query
     let query = `
-      SELECT o.id, o.name, o.logo_url, o.address, o.latitude, o.longitude, o.max_capacity, o.current_occupancy, o.verified
+      SELECT o.id, o.name, o.logo_url, o.address, o.city, o.latitude, o.longitude, o.max_capacity, o.current_occupancy, o.verified
       FROM organizations o
       WHERE o.status = 'approved'
     `
@@ -197,7 +198,7 @@ const getAllApproved = async (req, res, next) => {
 const getPublicProfile = async (req, res, next) => {
   try {
     const [orgs] = await pool.query(
-      `SELECT id, name, description, contact_number, logo_url, address, latitude, longitude, website, max_capacity, current_occupancy, verified
+      `SELECT id, name, description, contact_number, logo_url, address, city, latitude, longitude, website, max_capacity, current_occupancy, verified
        FROM organizations
        WHERE id = ? AND status = 'approved'`,
       [req.params.id]

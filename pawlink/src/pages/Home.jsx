@@ -212,10 +212,10 @@ export default function Home() {
       <div className="relative z-10 mt-auto">
         {user ? (
           <Link 
-            to="/profile" 
+            to={user.role === 'organization' ? "/manage-animals" : "/profile"} 
             className="bg-white text-secondary-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all shadow-md inline-block"
           >
-            Go to Profile
+            {user.role === 'organization' ? "Manage Animals" : "Go to Profile"}
           </Link>
         ) : (
           <Link 

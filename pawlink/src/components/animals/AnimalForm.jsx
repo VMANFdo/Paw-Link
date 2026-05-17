@@ -1,8 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { animalService } from '../../services/animalService'
+import organizationService from '../../services/organizationService'
+import { useAuth } from '../../context/AuthContext'
 import LocationPicker from './LocationPicker'
 
 export default function AnimalForm({ onSuccess }) {
+  const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -18,6 +21,28 @@ export default function AnimalForm({ onSuccess }) {
     city: ''
   })
   const [images, setImages] = useState([])
+
+  useEffect(() => {
+    if (user?.role === 'organization') {
+      const fetchOrgProfile = async () => {
+        try {
+          const res = await organizationService.getMyProfile()
+          const org = res.data.data.organization
+          if (org) {
+            setFormData(prev => ({
+              ...prev,
+              latitude: org.latitude || prev.latitude,
+              longitude: org.longitude || prev.longitude,
+              city: org.city || prev.city
+            }))
+          }
+        } catch (err) {
+          console.error("Failed to fetch organization location", err)
+        }
+      }
+      fetchOrgProfile()
+    }
+  }, [user])
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -142,6 +167,7 @@ export default function AnimalForm({ onSuccess }) {
           <LocationPicker 
             position={[formData.latitude, formData.longitude]}
             onPositionChange={(pos) => setFormData({ ...formData, latitude: pos[0], longitude: pos[1] })}
+            disabled={user?.role === 'organization'}
           />
           <div className="mt-6">
             <label className="form-label">Nearest City</label>
@@ -150,6 +176,7 @@ export default function AnimalForm({ onSuccess }) {
               placeholder="e.g. Colombo, Kandy, Galle..." 
               value={formData.city} onChange={handleChange}
               required
+              disabled={user?.role === 'organization'}
             />
             <p className="text-[10px] text-gray-400 mt-2 italic">This helps people find the animal faster on the browse page.</p>
           </div>
