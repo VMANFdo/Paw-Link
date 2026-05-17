@@ -3,18 +3,20 @@ import { useNavigate } from 'react-router-dom'
 import organizationService from '../services/organizationService'
 import { useAuth } from '../context/AuthContext'
 import { authService } from '../services/authService'
+import LocationPicker from '../components/animals/LocationPicker'
 
 export default function OrgSetup() {
   const navigate = useNavigate()
-  const { updateUser } = useAuth()
+  const { user, updateUser } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   
   const [formData, setFormData] = useState({
-    name: '',
+    name: user?.name || '',
     description: '',
-    contact_number: '',
+    contact_number: user?.phone || '',
     address: '',
+    city: '',
     latitude: '',
     longitude: '',
     website: '',
@@ -93,17 +95,26 @@ export default function OrgSetup() {
 
           <div>
             <label className="form-label">Full Address</label>
-            <input type="text" name="address" className="input-field" value={formData.address} onChange={handleChange} required placeholder="Street address, City" />
+            <input type="text" name="address" className="input-field" value={formData.address} onChange={handleChange} required placeholder="Street address, etc." />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="form-label">Latitude</label>
-              <input type="number" step="any" name="latitude" className="input-field" value={formData.latitude} onChange={handleChange} required placeholder="e.g. 6.9271" />
-            </div>
-            <div>
-              <label className="form-label">Longitude</label>
-              <input type="number" step="any" name="longitude" className="input-field" value={formData.longitude} onChange={handleChange} required placeholder="e.g. 79.8612" />
+          <div className="card p-6 bg-gray-50 border border-gray-100 rounded-3xl">
+            <h3 className="font-bold text-gray-900 mb-4">Location</h3>
+            <LocationPicker 
+              position={formData.latitude && formData.longitude ? [formData.latitude, formData.longitude] : [6.9271, 79.8612]}
+              onPositionChange={(pos) => setFormData({ ...formData, latitude: pos[0], longitude: pos[1] })}
+            />
+            <div className="mt-4">
+              <label className="form-label">City / Town</label>
+              <input 
+                type="text" 
+                name="city" 
+                className="input-field" 
+                value={formData.city} 
+                onChange={handleChange} 
+                required 
+                placeholder="e.g. Colombo, Kandy" 
+              />
             </div>
           </div>
 

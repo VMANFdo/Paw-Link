@@ -50,7 +50,7 @@ export default function RestrictionGuard() {
     const isNotBannedOnSuspended = location.pathname === '/suspended' && user?.is_active !== 0 && (user?.role !== 'organization' || user?.org_status === 'approved')
 
     if (isApprovedOrgOnPending) {
-      return <Navigate to="/profile" replace />
+      return <Navigate to="/manage-animals" replace />
     }
 
     if (isSetupDoneOrgOnSetup) {
@@ -62,7 +62,7 @@ export default function RestrictionGuard() {
     }
 
     if (isNotBannedOnSuspended) {
-      const target = user?.role === 'organization' ? '/profile' : user?.role === 'admin' ? '/admin' : '/dashboard'
+      const target = user?.role === 'organization' ? '/manage-animals' : user?.role === 'admin' ? '/admin' : '/dashboard'
       return <Navigate to={target} replace />
     }
   }
