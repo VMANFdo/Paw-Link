@@ -8,6 +8,7 @@ export default function ManageAnimals() {
   const [animals, setAnimals] = useState([])
   const [loading, setLoading] = useState(true)
   const [filterType, setFilterType] = useState('')
+  const [activeTab, setActiveTab] = useState('available')
   const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
@@ -26,8 +27,18 @@ export default function ManageAnimals() {
     }
   }
 
+  const handleMarkAdopted = async (id) => {
+    try {
+      await animalService.updateStatus(id, 'adopted')
+      fetchMyAnimals()
+    } catch (err) {
+      console.error('Failed to mark adopted', err)
+    }
+  }
+
   const filteredAnimals = animals.filter(animal => 
-    filterType === '' || animal.type === filterType
+    (filterType === '' || animal.type === filterType) &&
+    (activeTab === 'available' ? (animal.status === 'available' || animal.status === 'pending') : (animal.status === 'adopted' || animal.status === 'rescued'))
   )
 
   return (
@@ -72,6 +83,27 @@ export default function ManageAnimals() {
         </div>
       </div>
 
+      <div className="flex justify-center mb-10">
+        <div className="bg-gray-100 p-1 rounded-full flex gap-1">
+          <button 
+            onClick={() => setActiveTab('available')}
+            className={`px-8 py-3 rounded-full font-bold transition-all ${
+              activeTab === 'available' ? 'bg-white shadow-md text-primary-600' : 'text-gray-500 hover:text-gray-900'
+            }`}
+          >
+            Available Animals
+          </button>
+          <button 
+            onClick={() => setActiveTab('adopted')}
+            className={`px-8 py-3 rounded-full font-bold transition-all ${
+              activeTab === 'adopted' ? 'bg-white shadow-md text-green-600' : 'text-gray-500 hover:text-gray-900'
+            }`}
+          >
+            Adopted Animals
+          </button>
+        </div>
+      </div>
+
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {[1, 2, 3, 4].map(i => (
@@ -81,7 +113,20 @@ export default function ManageAnimals() {
       ) : filteredAnimals.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {filteredAnimals.map(animal => (
-            <AnimalCard key={animal.id} animal={animal} />
+            <AnimalCard 
+              key={animal.id} 
+              animal={animal} 
+              actionButton={
+                activeTab === 'available' ? (
+                  <button 
+                    onClick={() => handleMarkAdopted(animal.id)}
+                    className="w-full py-2 bg-green-50 text-green-700 font-bold text-sm rounded-xl hover:bg-green-100 transition-colors"
+                  >
+                    ✅ Mark as Adopted
+                  </button>
+                ) : null
+              }
+            />
           ))}
         </div>
       ) : (

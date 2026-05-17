@@ -187,6 +187,12 @@ const updateStatus = async (req, res, next) => {
       return sendError(res, `Status must be one of: ${validStatuses.join(', ')}`)
     }
 
+    const [animals] = await pool.query('SELECT posted_by FROM animals WHERE id = ?', [req.params.id])
+    if (animals.length === 0) return sendError(res, 'Animal not found', 404)
+    if (animals[0].posted_by !== req.user.id && req.user.role !== 'admin') {
+      return sendError(res, 'Not authorised to update status', 403)
+    }
+
     await pool.query('UPDATE animals SET status = ? WHERE id = ?', [req.body.status, req.params.id])
     sendSuccess(res, {}, 'Status updated')
   } catch (err) {
