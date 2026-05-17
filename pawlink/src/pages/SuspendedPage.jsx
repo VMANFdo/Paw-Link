@@ -14,7 +14,8 @@ export default function SuspendedPage() {
   const [submitting, setSubmitting] = useState(false)
 
   // Determine the state
-  const isBanned = user?.is_active === 0 || user?.org_status === 'rejected'
+  const isPermanentlyBanned = user?.is_permanently_banned === 1 || user?.org_is_permanently_banned === 1
+  const isBanned = user?.is_active === 0 || user?.org_status === 'rejected' || isPermanentlyBanned
   const needsDocs = user?.org_status === 'more_docs_needed'
   const reason = user?.org_rejection_reason || user?.ban_reason
   const alreadyAppealed = user?.appeal_message || user?.org_appeal_message
@@ -58,11 +59,13 @@ export default function SuspendedPage() {
           </div>
           
           <h1 className="text-4xl font-black text-gray-900 mb-4">
-            {needsDocs ? 'Action Required' : alreadyAppealed ? 'Under Review' : 'Account Restricted'}
+            {isPermanentlyBanned ? 'Permanently Banned' : needsDocs ? 'Action Required' : alreadyAppealed ? 'Under Review' : 'Account Restricted'}
           </h1>
           
           <p className="text-gray-500 text-lg mb-10 leading-relaxed">
-            {needsDocs 
+            {isPermanentlyBanned 
+              ? "Your account has been permanently suspended. Your appeal was reviewed and rejected. You can no longer access PawLink."
+              : needsDocs 
               ? "Your shelter registration is almost complete, but we need a few more things from you."
               : alreadyAppealed 
                 ? "Your appeal has been received and is currently being processed by our safety team."
@@ -78,7 +81,11 @@ export default function SuspendedPage() {
             </div>
           )}
 
-          {needsDocs ? (
+          {isPermanentlyBanned ? (
+            <div className="space-y-6">
+               <button onClick={handleLogout} className="btn-secondary w-full py-4 text-lg font-bold">Logout & Exit</button>
+            </div>
+          ) : needsDocs ? (
             <div className="space-y-6">
                <div className="bg-primary-50 p-6 rounded-2xl border border-primary-100 text-left">
                   <h4 className="text-xs font-black text-primary-600 uppercase tracking-widest mb-1">What to do now?</h4>
@@ -145,7 +152,7 @@ export default function SuspendedPage() {
                  </form>
                )}
                
-               {!alreadyAppealed && (
+               {!alreadyAppealed && !isPermanentlyBanned && (
                  <button onClick={handleLogout} className="text-sm font-bold text-gray-400 hover:text-red-500 transition-colors">Logout of PawLink</button>
                )}
             </div>
