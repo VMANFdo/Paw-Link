@@ -19,10 +19,14 @@ CREATE TABLE IF NOT EXISTS users (
     role            ENUM('person', 'organization', 'admin') NOT NULL DEFAULT 'person',
     profile_picture VARCHAR(255) DEFAULT NULL,
     bio             TEXT DEFAULT NULL,
-    phone           VARCHAR(20) DEFAULT NULL,
-    is_active       TINYINT(1) NOT NULL DEFAULT 1,
-    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    phone                 VARCHAR(20) DEFAULT NULL,
+    is_active             TINYINT(1) NOT NULL DEFAULT 1,
+    is_permanently_banned TINYINT(1) NOT NULL DEFAULT 0,
+    ban_reason            TEXT DEFAULT NULL,
+    appeal_message        TEXT DEFAULT NULL,
+    appeal_document_url   VARCHAR(255) DEFAULT NULL,
+    created_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_email (email),
     INDEX idx_role  (role)
 );
@@ -43,14 +47,18 @@ CREATE TABLE IF NOT EXISTS organizations (
     website             VARCHAR(255) DEFAULT NULL,
     max_capacity        INT UNSIGNED NOT NULL DEFAULT 0,
     current_occupancy   INT UNSIGNED NOT NULL DEFAULT 0,
-    status              ENUM('pending', 'approved', 'rejected', 'more_docs_needed') NOT NULL DEFAULT 'pending',
-    verified            TINYINT(1) NOT NULL DEFAULT 0,
-    rejection_reason    TEXT DEFAULT NULL,
-    created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    status                ENUM('pending', 'approved', 'rejected', 'more_docs_needed') NOT NULL DEFAULT 'pending',
+    profile_complete      TINYINT(1) NOT NULL DEFAULT 0,
+    verified              TINYINT(1) NOT NULL DEFAULT 0,
+    rejection_reason      TEXT DEFAULT NULL,
+    is_permanently_banned TINYINT(1) NOT NULL DEFAULT 0,
+    appeal_message        TEXT DEFAULT NULL,
+    appeal_document_url   VARCHAR(255) DEFAULT NULL,
+    created_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    INDEX idx_status    (status),
-    INDEX idx_location  (latitude, longitude)
+    INDEX idx_status      (status),
+    INDEX idx_location    (latitude, longitude)
 );
 
 -- ================================================================

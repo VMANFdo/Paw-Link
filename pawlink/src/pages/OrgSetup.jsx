@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import organizationService from '../services/organizationService'
+import { useAuth } from '../context/AuthContext'
+import { authService } from '../services/authService'
 
 export default function OrgSetup() {
   const navigate = useNavigate()
+  const { updateUser } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   
@@ -41,7 +44,10 @@ export default function OrgSetup() {
 
     try {
       await organizationService.setupProfile(formData)
-      navigate('/org-dashboard')
+      // Refresh user details to get org_profile_complete = 1 and org_status = 'pending'
+      const res = await authService.getMe()
+      updateUser(res.data.data.user)
+      navigate('/org-pending')
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to complete setup.')
     } finally {

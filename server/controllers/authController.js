@@ -36,13 +36,27 @@ const register = async (req, res, next) => {
       [name, email, hashedPassword, role, phone]
     )
 
+    // If role is organization, create a minimal organization row
+    if (role === 'organization') {
+      await pool.query(
+        'INSERT INTO organizations (user_id, name, status, profile_complete) VALUES (?, ?, "pending", 0)',
+        [result.insertId, name]
+      )
+    }
+
     // 4. Generate JWT token
     const token = generateToken({ id: result.insertId, email, role })
 
     // 5. Return token + basic user info (never return the password)
+    const userResponse = { id: result.insertId, name, email, role }
+    if (role === 'organization') {
+      userResponse.org_status = 'pending'
+      userResponse.org_profile_complete = 0
+    }
+
     sendSuccess(res, {
       token,
-      user: { id: result.insertId, name, email, role },
+      user: userResponse,
     }, 'Registration successful', 201)
 
   } catch (err) {
@@ -81,9 +95,10 @@ const login = async (req, res, next) => {
 
     // 5. If organization, fetch org status
     if (user.role === 'organization') {
-      const [orgs] = await pool.query('SELECT status, is_permanently_banned, rejection_reason, appeal_message, appeal_document_url FROM organizations WHERE user_id = ?', [user.id])
+      const [orgs] = await pool.query('SELECT status, profile_complete, is_permanently_banned, rejection_reason, appeal_message, appeal_document_url FROM organizations WHERE user_id = ?', [user.id])
       if (orgs.length > 0) {
         userWithoutPassword.org_status = orgs[0].status
+        userWithoutPassword.org_profile_complete = orgs[0].profile_complete
         userWithoutPassword.org_is_permanently_banned = orgs[0].is_permanently_banned
         userWithoutPassword.org_rejection_reason = orgs[0].rejection_reason
         userWithoutPassword.org_appeal_message = orgs[0].appeal_message
@@ -116,9 +131,10 @@ const getMe = async (req, res, next) => {
 
     // If organization, join org data
     if (user.role === 'organization') {
-      const [orgs] = await pool.query('SELECT status, is_permanently_banned, rejection_reason, appeal_message, appeal_document_url FROM organizations WHERE user_id = ?', [user.id])
+      const [orgs] = await pool.query('SELECT status, profile_complete, is_permanently_banned, rejection_reason, appeal_message, appeal_document_url FROM organizations WHERE user_id = ?', [user.id])
       if (orgs.length > 0) {
         user.org_status = orgs[0].status
+        user.org_profile_complete = orgs[0].profile_complete
         user.org_is_permanently_banned = orgs[0].is_permanently_banned
         user.org_rejection_reason = orgs[0].rejection_reason
         user.org_appeal_message = orgs[0].appeal_message
@@ -141,7 +157,7 @@ const submitAppeal = async (req, res, next) => {
 
     if (req.user.role === 'organization') {
       await pool.query(
-        'UPDATE organizations SET appeal_message = ?, appeal_document_url = ? WHERE user_id = ?', 
+        'UPDATE organizations SET appeal_message = ?, appeal_document_url = ?, status = "pending" WHERE user_id = ?', 
         [message, documentUrl, req.user.id]
       )
     } else {

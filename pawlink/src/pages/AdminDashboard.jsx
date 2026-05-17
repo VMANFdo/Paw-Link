@@ -14,6 +14,7 @@ export default function AdminDashboard() {
   const location = useLocation()
   const [tab, setTab] = useState(location.state?.tab || 'stats')
   const [data, setData] = useState({ stats: null, users: [], animals: [], reports: [], organizations: [] })
+  const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showUserModal, setShowUserModal] = useState(false)
   const [showShelterModal, setShowShelterModal] = useState(false)
@@ -25,20 +26,37 @@ export default function AdminDashboard() {
   }, [location.state])
 
   useEffect(() => {
+    fetchStats()
+  }, [])
+
+  useEffect(() => {
     fetchData()
   }, [tab])
+
+  const fetchStats = async () => {
+    try {
+      const res = await adminService.getStats()
+      setStats(res.data.data.stats)
+    } catch (err) {
+      console.error('Failed to fetch admin stats', err)
+    }
+  }
 
   const fetchData = async () => {
     setLoading(true)
     try {
       let res
       switch(tab) {
-        case 'stats':        res = await adminService.getStats(); setData(prev => ({...prev, stats: res.data.data.stats})); break;
-        case 'users':        res = await adminService.getUsers(); setData(prev => ({...prev, users: res.data.data.users})); break;
-        case 'animals':      res = await adminService.getAnimals(); setData(prev => ({...prev, animals: res.data.data.animals})); break;
-        case 'reports':      res = await adminService.getReports(); setData(prev => ({...prev, reports: res.data.data.reports})); break;
-        case 'manage_orgs':  res = await adminService.getOrganizations(); setData(prev => ({...prev, organizations: res.data.data.organizations})); break;
-        default: break;
+        case 'stats':        
+          res = await adminService.getStats()
+          setStats(res.data.data.stats)
+          setData(prev => ({...prev, stats: res.data.data.stats}))
+          break
+        case 'users':        res = await adminService.getUsers(); setData(prev => ({...prev, users: res.data.data.users})); break
+        case 'animals':      res = await adminService.getAnimals(); setData(prev => ({...prev, animals: res.data.data.animals})); break
+        case 'reports':      res = await adminService.getReports(); setData(prev => ({...prev, reports: res.data.data.reports})); break
+        case 'manage_orgs':  res = await adminService.getOrganizations(); setData(prev => ({...prev, organizations: res.data.data.organizations})); break
+        default: break
       }
     } catch (err) {
       console.error('Failed to fetch admin data', err)
@@ -61,6 +79,7 @@ export default function AdminDashboard() {
         await adminService.updateUserStatus(uId, { permanent_ban: true })
         showToast('User permanently banned', 'error')
         fetchData()
+        fetchStats()
       } catch (err) { showToast('Action failed', 'error') }
       return
     }
@@ -79,6 +98,7 @@ export default function AdminDashboard() {
       await adminService.updateUserStatus(uId, { is_active: !currentStatus, ban_reason: banReason })
       showToast(`User ${currentStatus ? 'banned' : 'unbanned'} successfully`)
       fetchData()
+      fetchStats()
     } catch (err) { showToast('Action failed', 'error') }
   }
 
@@ -96,6 +116,7 @@ export default function AdminDashboard() {
       await adminService.deleteAnimal(aId)
       showToast('Post deleted successfully')
       fetchData()
+      fetchStats()
     } catch (err) { showToast('Delete failed', 'error') }
   }
 
@@ -113,6 +134,7 @@ export default function AdminDashboard() {
         await adminService.updateOrgStatus(id, { permanent_ban: true, status: 'rejected' })
         showToast('Organization permanently banned', 'error')
         fetchData()
+        fetchStats()
       } catch (err) { showToast('Action failed', 'error') }
       return
     }
@@ -133,6 +155,7 @@ export default function AdminDashboard() {
       await adminService.updateOrgStatus(id, { status, rejection_reason: reason })
       showToast('Organization status updated')
       fetchData()
+      fetchStats()
     } catch (err) { showToast('Update failed', 'error') }
   }
 
@@ -142,6 +165,7 @@ export default function AdminDashboard() {
       showToast('Shelter created successfully')
       setShowShelterModal(false)
       fetchData()
+      fetchStats()
     } catch (err) {
       showToast(err.response?.data?.message || 'Failed to create shelter', 'error')
     }
@@ -153,6 +177,7 @@ export default function AdminDashboard() {
       showToast('User created successfully')
       setShowUserModal(false)
       fetchData()
+      fetchStats()
     } catch (err) {
       showToast(err.response?.data?.message || 'Failed to create user', 'error')
     }
@@ -168,7 +193,7 @@ export default function AdminDashboard() {
         <div className="flex bg-gray-100 p-1.5 rounded-2xl overflow-x-auto">
           <TabBtn active={tab === 'stats'} onClick={() => setTab('stats')} label="Overview" />
           <TabBtn active={tab === 'users'} onClick={() => setTab('users')} label="Users" />
-          <TabBtn active={tab === 'manage_orgs'} onClick={() => setTab('manage_orgs')} label="Manage Organizations" />
+          <TabBtn active={tab === 'manage_orgs'} onClick={() => setTab('manage_orgs')} label="Manage Organizations" badge={stats?.pendingOrgs} />
           <TabBtn active={tab === 'reports'} onClick={() => setTab('reports')} label="Reports" />
         </div>
       </div>
@@ -399,15 +424,20 @@ function AddShelterModal({ onClose, onSubmit }) {
   )
 }
 
-function TabBtn({ active, onClick, label }) {
+function TabBtn({ active, onClick, label, badge }) {
   return (
     <button 
       onClick={onClick}
-      className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+      className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
         active ? 'bg-white shadow-md text-primary-600' : 'text-gray-400 hover:text-gray-600'
       }`}
     >
-      {label}
+      <span>{label}</span>
+      {badge > 0 && (
+        <span className="bg-red-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full leading-none animate-pulse">
+          {badge}
+        </span>
+      )}
     </button>
   )
 }
@@ -580,7 +610,25 @@ function OrganizationsTable({ orgs, onUpdate, isModeration }) {
             <tr key={o.id} className="hover:bg-gray-50/50 transition-colors">
               <td className="px-6 py-4">
                 <p className="font-bold text-gray-900">{o.name}</p>
-                <p className="text-xs text-gray-400">{o.email}</p>
+                <p className="text-xs text-gray-400 mb-2">{o.email}</p>
+                {o.documents && o.documents.length > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-[9px] font-black uppercase text-gray-400 tracking-wider">Registration Docs:</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {o.documents.map((docUrl, idx) => (
+                        <a 
+                          key={idx}
+                          href={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${docUrl}`} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 bg-gray-50 hover:bg-primary-50 hover:text-primary-600 border border-gray-200 hover:border-primary-200 px-2 py-0.5 rounded text-[9px] font-bold text-gray-600 transition-colors"
+                        >
+                          <span>Doc {idx + 1}</span> 📄
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </td>
               <td className="px-6 py-4">
                 <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${

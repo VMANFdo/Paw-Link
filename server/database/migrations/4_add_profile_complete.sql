@@ -1,0 +1,1 @@
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS profile_complete TINYINT(1) NOT NULL DEFAULT 0;

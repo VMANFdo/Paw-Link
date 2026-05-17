@@ -17,22 +17,42 @@ const createProfile = async (req, res, next) => {
       animal_types // Array of types: ['dog', 'cat']
     } = req.body
 
-    // 1. Check if org already exists for this user
-    const [existing] = await connection.query('SELECT id FROM organizations WHERE user_id = ?', [req.user.id])
-    if (existing.length > 0) {
+    // 1. Check if org already exists and is complete
+    const [existing] = await connection.query('SELECT id, profile_complete FROM organizations WHERE user_id = ?', [req.user.id])
+    if (existing.length > 0 && existing[0].profile_complete === 1) {
       await connection.rollback()
       return sendError(res, 'Organization profile already exists for this user', 400)
     }
 
-    // 2. Insert into organizations table
-    const [result] = await connection.query(
-      `INSERT INTO organizations 
-        (user_id, name, description, contact_number, address, latitude, longitude, website, max_capacity, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
-      [req.user.id, name, description, contact_number, address, latitude, longitude, website, max_capacity || 0]
-    )
-
-    const orgId = result.insertId
+    let orgId
+    if (existing.length > 0) {
+      // 2. Update existing minimal row
+      orgId = existing[0].id
+      await connection.query(
+        `UPDATE organizations SET 
+          name = ?, 
+          description = ?, 
+          contact_number = ?, 
+          address = ?, 
+          latitude = ?, 
+          longitude = ?, 
+          website = ?, 
+          max_capacity = ?, 
+          status = 'pending',
+          profile_complete = 1
+         WHERE id = ?`,
+        [name, description, contact_number, address, latitude, longitude, website, max_capacity || 0, orgId]
+      )
+    } else {
+      // 2. Insert new record (fallback)
+      const [result] = await connection.query(
+        `INSERT INTO organizations 
+          (user_id, name, description, contact_number, address, latitude, longitude, website, max_capacity, status, profile_complete)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 1)`,
+        [req.user.id, name, description, contact_number, address, latitude, longitude, website, max_capacity || 0]
+      )
+      orgId = result.insertId
+    }
 
     // 3. Handle animal types (if provided)
     if (animal_types && Array.isArray(animal_types) && animal_types.length > 0) {
