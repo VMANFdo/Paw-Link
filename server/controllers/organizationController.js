@@ -1,6 +1,47 @@
 const pool = require('../config/db')
 const { sendSuccess, sendError } = require('../utils/responseHelper')
 
+const parseCsvToArray = (value) => {
+  if (!value || typeof value !== 'string') return []
+  return value.split(',').map(item => item.trim()).filter(Boolean)
+}
+
+const enrichAnimalsWithMedical = async (animals) => {
+  if (!animals || animals.length === 0) return animals || []
+  const animalIds = animals.map(animal => animal.id)
+  const [medicalRows] = await pool.query(
+    `SELECT id, animal_id, record_type, description, DATE_FORMAT(record_date, '%Y-%m-%d') AS record_date, recorded_by
+     FROM medical_records
+     WHERE animal_id IN (?)`,
+    [animalIds]
+  )
+
+  const recordsByAnimalId = new Map()
+  medicalRows.forEach(record => {
+    if (!recordsByAnimalId.has(record.animal_id)) {
+      recordsByAnimalId.set(record.animal_id, [])
+    }
+    recordsByAnimalId.get(record.animal_id).push({
+      id: record.id,
+      record_type: record.record_type,
+      description: record.description,
+      record_date: record.record_date,
+      recorded_by: record.recorded_by
+    })
+  })
+
+  return animals.map(animal => {
+    const medical_records = recordsByAnimalId.get(animal.id) || []
+    const medical_record_types = medical_records.map(record => record.record_type)
+    return {
+      ...animal,
+      medical_records,
+      medical_record_types,
+      has_medical_records: medical_record_types.length > 0
+    }
+  })
+}
+
 /**
  * organizationController.js — Organization Profile & Approval Logic
  */
@@ -88,13 +129,15 @@ const getMyProfile = async (req, res, next) => {
   try {
     const [orgs] = await pool.query(
       `SELECT o.*, 
-        (SELECT JSON_ARRAYAGG(animal_type) FROM organization_animal_types WHERE organization_id = o.id) AS animal_types
+        (SELECT GROUP_CONCAT(animal_type) FROM organization_animal_types WHERE organization_id = o.id) AS animal_types
        FROM organizations o 
        WHERE o.user_id = ?`,
       [req.user.id]
     )
 
     if (orgs.length === 0) return sendError(res, 'Organization profile not found', 404)
+
+    orgs[0].animal_types = parseCsvToArray(orgs[0].animal_types)
 
     // Fetch documents
     const [docs] = await pool.query('SELECT * FROM organization_documents WHERE organization_id = ?', [orgs[0].id])
@@ -226,7 +269,9 @@ const getPublicProfile = async (req, res, next) => {
       [req.params.id]
     )
 
-    sendSuccess(res, { organization: { ...orgs[0], gallery, animals } })
+    const animalsWithMedical = await enrichAnimalsWithMedical(animals)
+
+    sendSuccess(res, { organization: { ...orgs[0], gallery, animals: animalsWithMedical } })
   } catch (err) { next(err) }
 }
 
