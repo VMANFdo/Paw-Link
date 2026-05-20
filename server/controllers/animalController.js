@@ -151,11 +151,14 @@ const getAll = async (req, res, next) => {
     const { type, status, urgency, lat, lng, radius } = req.query
 
     let query = `
-      SELECT a.*, a.city, u.name AS poster_name,
-        (SELECT image_url FROM animal_images WHERE animal_id = a.id LIMIT 1) AS thumbnail
+      SELECT a.*, COALESCE(NULLIF(a.city, ''), o.city) AS city, u.name AS poster_name,
+        (SELECT image_url FROM animal_images WHERE animal_id = a.id LIMIT 1) AS thumbnail,
+        au.name AS adopter_name
       FROM animals a
       JOIN users u ON a.posted_by = u.id
       LEFT JOIN organizations o ON a.organization_id = o.id
+      LEFT JOIN adoption_requests ad ON ad.animal_id = a.id AND ad.status = 'approved'
+      LEFT JOIN users au ON ad.requester_id = au.id
       WHERE (a.organization_id IS NULL OR o.status = 'approved')
     `
     const params = []
@@ -206,7 +209,7 @@ const getById = async (req, res, next) => {
     fetch('http://127.0.0.1:7443/ingest/910aaeb4-255d-413a-9ba8-809144c93304',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a525ee'},body:JSON.stringify({sessionId:'a525ee',runId:'pre-fix',hypothesisId:'H2',location:'animalController.js:getById:start',message:'getById called',data:{animalId:req.params.id},timestamp:Date.now()})}).catch(()=>{});
     // #endregion
     const [animals] = await pool.query(`
-      SELECT a.*, a.city, u.name AS poster_name, u.email AS poster_email, u.phone AS poster_phone,
+      SELECT a.*, COALESCE(NULLIF(a.city, ''), o.city) AS city, u.name AS poster_name, u.email AS poster_email, u.phone AS poster_phone,
              o.name AS org_name, o.logo_url AS org_logo, o.verified AS org_verified,
              ad.requester_id AS adopter_id, au.name AS adopter_name
       FROM animals a
@@ -301,8 +304,8 @@ const create = async (req, res, next) => {
 
     // Logic for Organizations
     if (req.user.role === 'organization') {
-      const [orgs] = await connection.query(
-        'SELECT id, latitude, longitude FROM organizations WHERE user_id = ? AND status = "approved"',
+      const [orgs] = await pool.query(
+        'SELECT id, latitude, longitude, city FROM organizations WHERE user_id = ? AND status = "approved"',
         [req.user.id]
       )
 
@@ -315,6 +318,7 @@ const create = async (req, res, next) => {
       // Auto-fill location from organization profile
       latitude = orgs[0].latitude
       longitude = orgs[0].longitude
+      city = orgs[0].city
     }
 
     const [result] = await connection.query(
@@ -501,9 +505,13 @@ const updateStatus = async (req, res, next) => {
 const getMine = async (req, res, next) => {
   try {
     const [animals] = await pool.query(`
-      SELECT a.*, a.city,
-        (SELECT image_url FROM animal_images WHERE animal_id = a.id LIMIT 1) AS thumbnail
+      SELECT a.*, COALESCE(NULLIF(a.city, ''), o.city) AS city,
+        (SELECT image_url FROM animal_images WHERE animal_id = a.id LIMIT 1) AS thumbnail,
+        au.name AS adopter_name
       FROM animals a
+      LEFT JOIN organizations o ON a.organization_id = o.id
+      LEFT JOIN adoption_requests ad ON ad.animal_id = a.id AND ad.status = 'approved'
+      LEFT JOIN users au ON ad.requester_id = au.id
       WHERE a.posted_by = ?
       ORDER BY a.created_at DESC
     `, [req.user.id])
@@ -519,9 +527,10 @@ const getMine = async (req, res, next) => {
 const getCities = async (req, res, next) => {
   try {
     const [rows] = await pool.query(`
-      SELECT DISTINCT city 
-      FROM animals 
-      WHERE city IS NOT NULL AND city != '' 
+      SELECT DISTINCT COALESCE(NULLIF(a.city, ''), o.city) AS city 
+      FROM animals a
+      LEFT JOIN organizations o ON a.organization_id = o.id
+      WHERE COALESCE(NULLIF(a.city, ''), o.city) IS NOT NULL AND COALESCE(NULLIF(a.city, ''), o.city) != ''
       ORDER BY city ASC
     `)
     const cities = rows.map(r => r.city)

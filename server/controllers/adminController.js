@@ -85,8 +85,10 @@ const createUser = async (req, res, next) => {
 const getAnimals = async (req, res, next) => {
   try {
     const [animals] = await pool.query(`
-      SELECT a.*, u.name AS poster_name FROM animals a
+      SELECT a.*, COALESCE(NULLIF(a.city, ''), o.city) AS city, u.name AS poster_name 
+      FROM animals a
       JOIN users u ON a.posted_by = u.id
+      LEFT JOIN organizations o ON a.organization_id = o.id
       ORDER BY a.created_at DESC
     `)
     sendSuccess(res, { animals })
