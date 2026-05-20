@@ -64,10 +64,13 @@ const getById = async (req, res, next) => {
   try {
     const [animals] = await pool.query(`
       SELECT a.*, a.city, u.name AS poster_name, u.email AS poster_email, u.phone AS poster_phone,
-             o.name AS org_name, o.logo_url AS org_logo, o.verified AS org_verified
+             o.name AS org_name, o.logo_url AS org_logo, o.verified AS org_verified,
+             ad.requester_id AS adopter_id, au.name AS adopter_name
       FROM animals a
       JOIN users u ON a.posted_by = u.id
       LEFT JOIN organizations o ON a.organization_id = o.id
+      LEFT JOIN adoption_requests ad ON ad.animal_id = a.id AND ad.status = 'approved'
+      LEFT JOIN users au ON ad.requester_id = au.id
       WHERE a.id = ?
     `, [req.params.id])
 

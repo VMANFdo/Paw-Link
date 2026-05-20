@@ -408,17 +408,29 @@ export default function AnimalDetails() {
 
           {/* ── Adoption Action Area ── */}
           {isAuthor ? (
-            <div className="p-4 bg-primary-50 rounded-2xl text-center text-primary-700 font-bold text-sm">
-              This is your post. You can manage it from your
-              <a href="/dashboard" className="underline ml-1">dashboard</a>.
+            <div className="space-y-4">
+              {animal.status === 'adopted' && (
+                <div className="w-full py-5 text-center rounded-[2rem] font-black text-xl bg-green-50 text-green-600 border-2 border-green-200">
+                  🎉 {animal.adopter_name ? `Adopted by ${animal.adopter_name}` : 'Adopted'}
+                </div>
+              )}
+              {animal.status === 'rescued' && (
+                <div className="w-full py-5 text-center rounded-[2rem] font-black text-xl bg-blue-50 text-blue-400 border-2 border-blue-100">
+                  🚑 This animal has been rescued and is in care
+                </div>
+              )}
+              <div className="p-4 bg-primary-50 rounded-2xl text-center text-primary-700 font-bold text-sm">
+                This is your post. You can manage it from your
+                <a href="/dashboard" className="underline ml-1">dashboard</a>.
+              </div>
             </div>
           ) : user?.role === 'admin' ? (
             <div className="p-4 bg-blue-50 rounded-2xl text-center text-blue-700 font-bold text-sm">
               You are viewing this post as an <strong>Administrator</strong>.
             </div>
           ) : animal.status === 'adopted' ? (
-            <div className="w-full py-5 text-center rounded-[2rem] font-black text-xl bg-gray-100 text-gray-400 border-2 border-gray-200">
-              🏠 This animal has already been adopted
+            <div className="w-full py-5 text-center rounded-[2rem] font-black text-xl bg-green-50 text-green-600 border-2 border-green-200">
+              🎉 {animal.adopter_name ? `Adopted by ${animal.adopter_name}` : 'Adopted'}
             </div>
           ) : animal.status === 'rescued' ? (
             <div className="w-full py-5 text-center rounded-[2rem] font-black text-xl bg-blue-50 text-blue-400 border-2 border-blue-100">

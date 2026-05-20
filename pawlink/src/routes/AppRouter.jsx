@@ -62,7 +62,7 @@ export default function AppRouter() {
             </Route>
 
             {/* Organization-only Routes */}
-            <Route element={<ProtectedRoute allowedRoles={['organization', 'admin']} />}>
+            <Route element={<ProtectedRoute allowedRoles={['organization']} />}>
               <Route path="/org-setup"     element={<OrgSetup />} />
               <Route path="/manage-animals" element={<ManageAnimals />} />
             </Route>
