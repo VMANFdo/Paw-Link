@@ -6,6 +6,45 @@ import { messageService } from '../services/messageService'
 import { useAuth } from '../context/AuthContext'
 import { useUI } from '../context/UIContext'
 
+const MEDICAL_TYPE_ALIASES = {
+  vaccination: ['vaccination', 'vaccinated', 'vaccine', 'vaccines'],
+  general_checkup: ['general checkup', 'checkup', 'check-up', 'health checkup', 'health check', 'general health checkup'],
+  surgery: ['surgery', 'spay', 'neuter', 'neutered', 'spayed']
+}
+
+const normalizeMedicalType = (value) => {
+  if (!value) return null
+  const normalized = String(value).trim().toLowerCase().replace(/\s+/g, ' ')
+  if (!normalized) return null
+
+  for (const [canonical, aliases] of Object.entries(MEDICAL_TYPE_ALIASES)) {
+    if (aliases.includes(normalized)) return canonical
+  }
+  return null
+}
+
+const extractMedicalTypes = (animal) => {
+  const rawTypes = Array.isArray(animal?.medical_record_types) ? animal.medical_record_types : []
+  const rawRecords = Array.isArray(animal?.medical_records) ? animal.medical_records : []
+  const merged = rawTypes.length > 0 ? rawTypes : rawRecords.map(record => (
+    typeof record === 'string' ? record : record?.record_type
+  ))
+
+  return merged
+    .map(normalizeMedicalType)
+    .filter(Boolean)
+}
+
+const extractRawMedicalLabels = (animal) => {
+  const rawTypes = Array.isArray(animal?.medical_record_types) ? animal.medical_record_types : []
+  const rawRecords = Array.isArray(animal?.medical_records) ? animal.medical_records : []
+  const recordLabels = rawRecords
+    .map(record => (typeof record === 'string' ? record : record?.record_type))
+    .filter(Boolean)
+
+  return [...rawTypes, ...recordLabels].filter(Boolean)
+}
+
 /**
  * AnimalDetails.jsx — Detailed view for a single animal
  * Features a gallery, detailed information, and adoption request flow.
@@ -35,9 +74,11 @@ export default function AnimalDetails() {
   const [isEditing, setIsEditing] = useState(false)
   const [editData, setEditData] = useState({
     type: '', breed: '', age: '', gender: '', 
-    rescue_urgency: '', city: '', description: ''
+    rescue_urgency: '', city: '', description: '',
+    vaccinated: false, checkup: false, surgery: false
   })
   const [updating, setUpdating] = useState(false)
+  const [medicalOpen, setMedicalOpen] = useState(false)
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 
@@ -45,11 +86,30 @@ export default function AnimalDetails() {
     fetchAnimal()
   }, [id])
 
+  useEffect(() => {
+    const types = extractMedicalTypes(animal)
+    if (types.length > 0) {
+      setMedicalOpen(true)
+    }
+  }, [animal])
+
   const fetchAnimal = async () => {
     try {
       const response = await animalService.getById(id)
-      const fetchedAnimal = response.data.data.animal
-      setAnimal(fetchedAnimal)
+      const envelope = response.data?.data
+      const fetchedAnimal = envelope?.animal ?? envelope
+      // #region agent log
+      fetch('http://127.0.0.1:7443/ingest/910aaeb4-255d-413a-9ba8-809144c93304',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a525ee'},body:JSON.stringify({sessionId:'a525ee',runId:'pre-fix',hypothesisId:'H3',location:'AnimalDetails.jsx:fetchAnimal:rawResponse',message:'animal payload received in frontend',data:{animalId:id,envelopeKeys:envelope&&typeof envelope==='object'&&!Array.isArray(envelope)?Object.keys(envelope):[],usedNestedAnimal:!!envelope?.animal,fetchedKeys:fetchedAnimal&&typeof fetchedAnimal==='object'?Object.keys(fetchedAnimal).slice(0,40):[],medicalRecordsRawCount:Array.isArray(fetchedAnimal?.medical_records)?fetchedAnimal.medical_records.length:-1,medicalRecordTypesRawCount:Array.isArray(fetchedAnimal?.medical_record_types)?fetchedAnimal.medical_record_types.length:-1,firstMedicalRecordType:Array.isArray(fetchedAnimal?.medical_records)&&fetchedAnimal.medical_records[0]?(typeof fetchedAnimal.medical_records[0]==='string'?fetchedAnimal.medical_records[0]:fetchedAnimal.medical_records[0]?.record_type):null},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+      const normalizedAnimal = {
+        ...fetchedAnimal,
+        medical_records: fetchedAnimal.medical_records ?? fetchedAnimal.medicalRecords ?? [],
+        medical_record_types: fetchedAnimal.medical_record_types ?? fetchedAnimal.medicalRecordTypes ?? []
+      }
+      // #region agent log
+      fetch('http://127.0.0.1:7443/ingest/910aaeb4-255d-413a-9ba8-809144c93304',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a525ee'},body:JSON.stringify({sessionId:'a525ee',runId:'pre-fix',hypothesisId:'H3',location:'AnimalDetails.jsx:fetchAnimal:normalized',message:'animal payload normalized in frontend',data:{animalId:id,medicalRecordsCount:Array.isArray(normalizedAnimal.medical_records)?normalizedAnimal.medical_records.length:-1,medicalRecordTypesCount:Array.isArray(normalizedAnimal.medical_record_types)?normalizedAnimal.medical_record_types.length:-1,normalizedTypes:extractMedicalTypes(normalizedAnimal)},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+      setAnimal(normalizedAnimal)
 
       // Check if logged-in user already has a request for this animal
       if (user && fetchedAnimal && user.id !== fetchedAnimal.posted_by) {
@@ -69,6 +129,7 @@ export default function AnimalDetails() {
 
   const handleEditToggle = () => {
     if (!isEditing) {
+      const medicalTypeSet = new Set(extractMedicalTypes(animal))
       setEditData({
         type: animal.type,
         breed: animal.breed || '',
@@ -76,7 +137,10 @@ export default function AnimalDetails() {
         gender: animal.gender,
         rescue_urgency: animal.rescue_urgency,
         city: animal.city || '',
-        description: animal.description || ''
+        description: animal.description || '',
+        vaccinated: medicalTypeSet.has('vaccination'),
+        checkup: medicalTypeSet.has('general_checkup'),
+        surgery: medicalTypeSet.has('surgery')
       })
     }
     setIsEditing(!isEditing)
@@ -187,6 +251,14 @@ export default function AnimalDetails() {
 
   const isAuthor = user?.id === animal.posted_by
   const canManage = isAuthor || user?.role === 'admin'
+  const normalizedMedicalTypes = extractMedicalTypes(animal)
+  const medicalTypeSet = new Set(normalizedMedicalTypes)
+  const hasVaccination = medicalTypeSet.has('vaccination')
+  const hasCheckup = medicalTypeSet.has('general_checkup')
+  const hasSurgery = medicalTypeSet.has('surgery')
+  const knownMedicalCount = [hasVaccination, hasCheckup, hasSurgery].filter(Boolean).length
+  const rawMedicalLabels = extractRawMedicalLabels(animal)
+  const hasUnknownMedicalLabels = rawMedicalLabels.length > 0 && knownMedicalCount === 0
 
   return (
     <div className="container py-12">
@@ -354,6 +426,164 @@ export default function AnimalDetails() {
               </p>
             )}
           </div>
+
+          {/* Edit Mode: Optional Medical Records checkboxes */}
+          {isEditing && user?.role === 'organization' && (
+            <div className="p-6 bg-white rounded-3xl border-2 border-gray-100 space-y-4 text-left">
+              <div>
+                <h4 className="text-base font-black text-gray-900">Medical Records (Optional)</h4>
+                <p className="text-[11px] text-gray-400 font-medium mt-1">Update the medical status certifications for this animal.</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Vaccination */}
+                <label 
+                  className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer select-none ${
+                    editData.vaccinated 
+                      ? 'border-primary-500 bg-primary-50/20 shadow-sm' 
+                      : 'border-gray-100 hover:border-gray-200 bg-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">💉</span>
+                    <span className="font-bold text-gray-900 text-xs">Vaccination</span>
+                  </div>
+                  <input 
+                    type="checkbox"
+                    checked={editData.vaccinated}
+                    onChange={(e) => setEditData({ ...editData, vaccinated: e.target.checked })}
+                    className="w-4 h-4 accent-primary-500 cursor-pointer"
+                  />
+                </label>
+
+                {/* General Checkup */}
+                <label 
+                  className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer select-none ${
+                    editData.checkup 
+                      ? 'border-primary-500 bg-primary-50/20 shadow-sm' 
+                      : 'border-gray-100 hover:border-gray-200 bg-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🩺</span>
+                    <span className="font-bold text-gray-900 text-xs">Gen Checkup</span>
+                  </div>
+                  <input 
+                    type="checkbox"
+                    checked={editData.checkup}
+                    onChange={(e) => setEditData({ ...editData, checkup: e.target.checked })}
+                    className="w-4 h-4 accent-primary-500 cursor-pointer"
+                  />
+                </label>
+
+                {/* Surgery */}
+                <label 
+                  className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer select-none ${
+                    editData.surgery 
+                      ? 'border-primary-500 bg-primary-50/20 shadow-sm' 
+                      : 'border-gray-100 hover:border-gray-200 bg-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">✂️</span>
+                    <span className="font-bold text-gray-900 text-xs">Surgery</span>
+                  </div>
+                  <input 
+                    type="checkbox"
+                    checked={editData.surgery}
+                    onChange={(e) => setEditData({ ...editData, surgery: e.target.checked })}
+                    className="w-4 h-4 accent-primary-500 cursor-pointer"
+                  />
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* View Mode: Collapsible Medical Records Accordion (only display checked items) */}
+          {!isEditing && (
+            <div className="border border-gray-100 rounded-3xl overflow-hidden bg-white shadow-sm transition-all hover:shadow-md">
+              <button
+                type="button"
+                onClick={() => setMedicalOpen(!medicalOpen)}
+                className="w-full flex items-center justify-between p-6 bg-gray-50/50 hover:bg-gray-50/85 transition-colors text-left focus:outline-none"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">🩺</span>
+                  <div>
+                    <h4 className="font-black text-gray-900 text-lg leading-tight">View Medical Records</h4>
+                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-0.5">
+                      {knownMedicalCount > 0
+                        ? `${knownMedicalCount} certification${knownMedicalCount > 1 ? 's' : ''} verified`
+                        : rawMedicalLabels.length > 0
+                          ? `${rawMedicalLabels.length} medical record${rawMedicalLabels.length > 1 ? 's' : ''} available`
+                          : 'Shelter Health Certifications'}
+                    </p>
+                  </div>
+                </div>
+                <div className={`w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm border border-gray-100 transition-transform duration-300 ${
+                  medicalOpen ? 'rotate-180' : ''
+                }`}>
+                  <span className="text-gray-500 font-black text-sm">▼</span>
+                </div>
+              </button>
+
+              <div className={`transition-all duration-300 overflow-hidden ${
+                medicalOpen ? 'max-h-[500px] border-t border-gray-100' : 'max-h-0'
+              }`}>
+                <div className="p-6 space-y-4">
+                  {rawMedicalLabels.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-3">
+                      {hasVaccination && (
+                        <div className="flex items-center gap-4 p-4 rounded-2xl bg-green-50/50 border border-green-100 text-left">
+                          <span className="text-2xl bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-sm">💉</span>
+                          <div>
+                            <p className="font-extrabold text-green-800 text-sm">Vaccination Certified</p>
+                            <p className="text-xs text-green-600 font-medium mt-0.5">This animal is up-to-date with all essential vaccinations.</p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {hasCheckup && (
+                        <div className="flex items-center gap-4 p-4 rounded-2xl bg-blue-50/50 border border-blue-100 text-left">
+                          <span className="text-2xl bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-sm">🩺</span>
+                          <div>
+                            <p className="font-extrabold text-blue-800 text-sm">General Checkup Certified</p>
+                            <p className="text-xs text-blue-600 font-medium mt-0.5">Passed a thorough veterinarian physical and clinical checkup.</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {hasSurgery && (
+                        <div className="flex items-center gap-4 p-4 rounded-2xl bg-purple-50/50 border border-purple-100 text-left">
+                          <span className="text-2xl bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-sm">✂️</span>
+                          <div>
+                            <p className="font-extrabold text-purple-800 text-sm">Surgery Status: Completed</p>
+                            <p className="text-xs text-purple-600 font-medium mt-0.5">Neutered, spayed, or required surgical treatments completed.</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {hasUnknownMedicalLabels && (
+                        <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-100 text-left">
+                          <p className="font-extrabold text-amber-800 text-sm">Medical records are available</p>
+                          <p className="text-xs text-amber-700 font-medium mt-0.5">
+                            Some records use a custom format and cannot be auto-classified yet.
+                          </p>
+                          <p className="text-xs text-amber-600 font-semibold mt-2">
+                            {rawMedicalLabels.join(', ')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6">
+                      <p className="text-gray-400 font-bold text-sm">No medical records have been certified for this animal.</p>
+                      <p className="text-xs text-gray-300 font-medium mt-1">Shelters can certify health items when posting or editing an animal.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="p-8 bg-white rounded-3xl shadow-lg border border-gray-100 flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center">

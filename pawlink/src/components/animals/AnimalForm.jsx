@@ -19,7 +19,10 @@ export default function AnimalForm({ onSuccess }) {
     description: '',
     latitude: 6.9271,
     longitude: 79.8612,
-    city: ''
+    city: '',
+    vaccinated: false,
+    checkup: false,
+    surgery: false
   })
   const [images, setImages] = useState([])
 
@@ -204,6 +207,89 @@ export default function AnimalForm({ onSuccess }) {
             </>
           )}
         </div>
+
+        {user?.role === 'organization' && (
+          <div className="card p-8 space-y-6">
+            <div>
+              <h2 className="text-xl font-black text-gray-950 border-b border-gray-100 pb-4 text-left">Medical Records (Optional)</h2>
+              <p className="text-xs text-gray-400 mt-2 font-medium text-left">Tick the medical certifications that apply to this animal. These will be immediately displayed on the adoption page.</p>
+            </div>
+            
+            <div className="space-y-4">
+              {/* Vaccination Checkbox */}
+              <label 
+                className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer select-none ${
+                  formData.vaccinated 
+                    ? 'border-primary-500 bg-primary-50/30 shadow-sm' 
+                    : 'border-gray-100 hover:border-gray-200 bg-white'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">💉</span>
+                  <div className="text-left">
+                    <p className="font-bold text-gray-900 text-sm">Vaccination Status</p>
+                    <p className="text-[11px] text-gray-500 font-medium">Up-to-date with essential vaccines</p>
+                  </div>
+                </div>
+                <input 
+                  type="checkbox" 
+                  name="vaccinated"
+                  checked={formData.vaccinated} 
+                  onChange={(e) => setFormData({ ...formData, vaccinated: e.target.checked })}
+                  className="w-5 h-5 accent-primary-500 cursor-pointer rounded-lg"
+                />
+              </label>
+
+              {/* General Checkup Checkbox */}
+              <label 
+                className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer select-none ${
+                  formData.checkup 
+                    ? 'border-primary-500 bg-primary-50/30 shadow-sm' 
+                    : 'border-gray-100 hover:border-gray-200 bg-white'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">🩺</span>
+                  <div className="text-left">
+                    <p className="font-bold text-gray-900 text-sm">General Checkup Status</p>
+                    <p className="text-[11px] text-gray-500 font-medium">Passed complete physical checkup</p>
+                  </div>
+                </div>
+                <input 
+                  type="checkbox" 
+                  name="checkup"
+                  checked={formData.checkup} 
+                  onChange={(e) => setFormData({ ...formData, checkup: e.target.checked })}
+                  className="w-5 h-5 accent-primary-500 cursor-pointer rounded-lg"
+                />
+              </label>
+
+              {/* Surgery Checkbox */}
+              <label 
+                className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer select-none ${
+                  formData.surgery 
+                    ? 'border-primary-500 bg-primary-50/30 shadow-sm' 
+                    : 'border-gray-100 hover:border-gray-200 bg-white'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">✂️</span>
+                  <div className="text-left">
+                    <p className="font-bold text-gray-900 text-sm">Surgery Status</p>
+                    <p className="text-[11px] text-gray-500 font-medium">Neutered / Spayed / Completed surgery</p>
+                  </div>
+                </div>
+                <input 
+                  type="checkbox" 
+                  name="surgery"
+                  checked={formData.surgery} 
+                  onChange={(e) => setFormData({ ...formData, surgery: e.target.checked })}
+                  className="w-5 h-5 accent-primary-500 cursor-pointer rounded-lg"
+                />
+              </label>
+            </div>
+          </div>
+        )}
 
         <div className="card p-8">
           <h2 className="text-xl font-black text-gray-900 border-b border-gray-50 pb-4 mb-6">Detailed Description</h2>
