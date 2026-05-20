@@ -299,7 +299,7 @@ export default function AnimalDetails() {
                   className="text-xl text-gray-400 font-medium hover:text-primary-600 transition-colors inline-flex items-center group"
                 >
                   <span className="group-hover:scale-110 transition-transform mr-2">📍</span>
-                  {animal.city ? `${animal.city}, ` : ''} 
+                  {animal.city ? `${animal.city} : ` : ''} 
                   Located at {Number(animal.latitude).toFixed(4)}, {Number(animal.longitude).toFixed(4)}
                 </a>
               </>

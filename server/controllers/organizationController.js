@@ -218,9 +218,10 @@ const getPublicProfile = async (req, res, next) => {
     
     // Fetch animals posted by this org
     const [animals] = await pool.query(
-      `SELECT a.*, 
+      `SELECT a.*, COALESCE(NULLIF(a.city, ''), o.city) AS city,
         (SELECT image_url FROM animal_images WHERE animal_id = a.id LIMIT 1) AS thumbnail
        FROM animals a
+       LEFT JOIN organizations o ON a.organization_id = o.id
        WHERE a.organization_id = ? AND a.status = 'available'
        ORDER BY a.created_at DESC`,
       [req.params.id]

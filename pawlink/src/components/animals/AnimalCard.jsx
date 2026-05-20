@@ -74,15 +74,21 @@ export default function AnimalCard({ animal, actionButton }) {
           </span>
         </div>
 
-        <Link 
-          to={`/animals/${animal.id}`} 
-          className="btn-primary w-full py-3 text-sm flex items-center justify-center group-hover:bg-primary-600"
-        >
-          View Details
-          <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-          </svg>
-        </Link>
+        {animal.status === 'adopted' ? (
+          <div className="w-full py-3 bg-green-50 text-green-700 font-bold text-sm text-center rounded-xl border border-green-200">
+            🎉 Adopted by {animal.adopter_name || 'Someone'}
+          </div>
+        ) : (
+          <Link 
+            to={`/animals/${animal.id}`} 
+            className="btn-primary w-full py-3 text-sm flex items-center justify-center group-hover:bg-primary-600"
+          >
+            View Details
+            <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </Link>
+        )}
         {actionButton && (
           <div className="mt-3">
             {actionButton}
