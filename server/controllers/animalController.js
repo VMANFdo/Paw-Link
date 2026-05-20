@@ -13,10 +13,13 @@ const getAll = async (req, res, next) => {
 
     let query = `
       SELECT a.*, a.city, u.name AS poster_name,
-        (SELECT image_url FROM animal_images WHERE animal_id = a.id LIMIT 1) AS thumbnail
+        (SELECT image_url FROM animal_images WHERE animal_id = a.id LIMIT 1) AS thumbnail,
+        au.name AS adopter_name
       FROM animals a
       JOIN users u ON a.posted_by = u.id
       LEFT JOIN organizations o ON a.organization_id = o.id
+      LEFT JOIN adoption_requests ad ON ad.animal_id = a.id AND ad.status = 'approved'
+      LEFT JOIN users au ON ad.requester_id = au.id
       WHERE (a.organization_id IS NULL OR o.status = 'approved')
     `
     const params = []
@@ -208,8 +211,11 @@ const getMine = async (req, res, next) => {
   try {
     const [animals] = await pool.query(`
       SELECT a.*, a.city,
-        (SELECT image_url FROM animal_images WHERE animal_id = a.id LIMIT 1) AS thumbnail
+        (SELECT image_url FROM animal_images WHERE animal_id = a.id LIMIT 1) AS thumbnail,
+        au.name AS adopter_name
       FROM animals a
+      LEFT JOIN adoption_requests ad ON ad.animal_id = a.id AND ad.status = 'approved'
+      LEFT JOIN users au ON ad.requester_id = au.id
       WHERE a.posted_by = ?
       ORDER BY a.created_at DESC
     `, [req.user.id])

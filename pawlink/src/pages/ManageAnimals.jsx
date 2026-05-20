@@ -27,14 +27,7 @@ export default function ManageAnimals() {
     }
   }
 
-  const handleMarkAdopted = async (id) => {
-    try {
-      await animalService.updateStatus(id, 'adopted')
-      fetchMyAnimals()
-    } catch (err) {
-      console.error('Failed to mark adopted', err)
-    }
-  }
+
 
   const filteredAnimals = animals.filter(animal => 
     (filterType === '' || animal.type === filterType) &&
@@ -116,16 +109,6 @@ export default function ManageAnimals() {
             <AnimalCard 
               key={animal.id} 
               animal={animal} 
-              actionButton={
-                activeTab === 'available' ? (
-                  <button 
-                    onClick={() => handleMarkAdopted(animal.id)}
-                    className="w-full py-2 bg-green-50 text-green-700 font-bold text-sm rounded-xl hover:bg-green-100 transition-colors"
-                  >
-                    ✅ Mark as Adopted
-                  </button>
-                ) : null
-              }
             />
           ))}
         </div>
