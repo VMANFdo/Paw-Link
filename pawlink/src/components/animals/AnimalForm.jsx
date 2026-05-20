@@ -177,20 +177,32 @@ export default function AnimalForm({ onSuccess }) {
       <div className="space-y-6">
         <div className="card p-8">
           <h2 className="text-xl font-black text-gray-900 border-b border-gray-50 pb-4 mb-6">Location Spotted</h2>
-          <LocationPicker 
-            position={[formData.latitude, formData.longitude]}
-            onPositionChange={(pos) => setFormData({ ...formData, latitude: pos[0], longitude: pos[1] })}
-          />
-          <div className="mt-6">
-            <label className="form-label">Nearest City</label>
-            <input 
-              type="text" name="city" className="input-field" 
-              placeholder="e.g. Colombo, Kandy, Galle..." 
-              value={formData.city} onChange={handleChange}
-              required
-            />
-            <p className="text-[10px] text-gray-400 mt-2 italic">This helps people find the animal faster on the browse page.</p>
-          </div>
+          {user?.role === 'organization' ? (
+            <div className="bg-primary-50 p-6 rounded-2xl border border-primary-100 text-center">
+              <div className="text-4xl mb-3">📍</div>
+              <h3 className="font-bold text-primary-900 text-lg mb-1">Fixed Location</h3>
+              <p className="text-primary-700 text-sm">
+                As a registered shelter, all animals you post are automatically pinned to your official organization address in <b>{formData.city || 'your city'}</b>.
+              </p>
+            </div>
+          ) : (
+            <>
+              <LocationPicker 
+                position={[formData.latitude, formData.longitude]}
+                onPositionChange={(pos) => setFormData({ ...formData, latitude: pos[0], longitude: pos[1] })}
+              />
+              <div className="mt-6">
+                <label className="form-label">Nearest City</label>
+                <input 
+                  type="text" name="city" className="input-field" 
+                  placeholder="e.g. Colombo, Kandy, Galle..." 
+                  value={formData.city} onChange={handleChange}
+                  required
+                />
+                <p className="text-[10px] text-gray-400 mt-2 italic">This helps people find the animal faster on the browse page.</p>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="card p-8">
