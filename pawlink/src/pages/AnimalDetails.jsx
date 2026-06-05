@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { animalService } from '../services/animalService'
 import { adoptionService } from '../services/adoptionService'
 import { messageService } from '../services/messageService'
+import { reportService } from '../services/reportService'
 import { useAuth } from '../context/AuthContext'
 import { useUI } from '../context/UIContext'
 
@@ -70,6 +71,13 @@ export default function AnimalDetails() {
   const [sendingInquiry, setSendingInquiry] = useState(false)
   const [inquirySent, setInquirySent] = useState(false)
 
+  // Report state
+  const [showReportModal, setShowReportModal] = useState(false)
+  const [reportReason, setReportReason] = useState('')
+  const [reportDetails, setReportDetails] = useState('')
+  const [submittingReport, setSubmittingReport] = useState(false)
+  const [reportSent, setReportSent] = useState(false)
+
   // Edit Mode state
   const [isEditing, setIsEditing] = useState(false)
   const [editData, setEditData] = useState({
@@ -98,17 +106,13 @@ export default function AnimalDetails() {
       const response = await animalService.getById(id)
       const envelope = response.data?.data
       const fetchedAnimal = envelope?.animal ?? envelope
-      // #region agent log
-      fetch('http://127.0.0.1:7443/ingest/910aaeb4-255d-413a-9ba8-809144c93304',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a525ee'},body:JSON.stringify({sessionId:'a525ee',runId:'pre-fix',hypothesisId:'H3',location:'AnimalDetails.jsx:fetchAnimal:rawResponse',message:'animal payload received in frontend',data:{animalId:id,envelopeKeys:envelope&&typeof envelope==='object'&&!Array.isArray(envelope)?Object.keys(envelope):[],usedNestedAnimal:!!envelope?.animal,fetchedKeys:fetchedAnimal&&typeof fetchedAnimal==='object'?Object.keys(fetchedAnimal).slice(0,40):[],medicalRecordsRawCount:Array.isArray(fetchedAnimal?.medical_records)?fetchedAnimal.medical_records.length:-1,medicalRecordTypesRawCount:Array.isArray(fetchedAnimal?.medical_record_types)?fetchedAnimal.medical_record_types.length:-1,firstMedicalRecordType:Array.isArray(fetchedAnimal?.medical_records)&&fetchedAnimal.medical_records[0]?(typeof fetchedAnimal.medical_records[0]==='string'?fetchedAnimal.medical_records[0]:fetchedAnimal.medical_records[0]?.record_type):null},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
+
       const normalizedAnimal = {
         ...fetchedAnimal,
         medical_records: fetchedAnimal.medical_records ?? fetchedAnimal.medicalRecords ?? [],
         medical_record_types: fetchedAnimal.medical_record_types ?? fetchedAnimal.medicalRecordTypes ?? []
       }
-      // #region agent log
-      fetch('http://127.0.0.1:7443/ingest/910aaeb4-255d-413a-9ba8-809144c93304',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a525ee'},body:JSON.stringify({sessionId:'a525ee',runId:'pre-fix',hypothesisId:'H3',location:'AnimalDetails.jsx:fetchAnimal:normalized',message:'animal payload normalized in frontend',data:{animalId:id,medicalRecordsCount:Array.isArray(normalizedAnimal.medical_records)?normalizedAnimal.medical_records.length:-1,medicalRecordTypesCount:Array.isArray(normalizedAnimal.medical_record_types)?normalizedAnimal.medical_record_types.length:-1,normalizedTypes:extractMedicalTypes(normalizedAnimal)},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
+
       setAnimal(normalizedAnimal)
 
       // Check if logged-in user already has a request for this animal
@@ -227,6 +231,32 @@ export default function AnimalDetails() {
       showToast(err.response?.data?.message || 'Failed to submit request', 'error')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleReportSubmit = async (e) => {
+    e.preventDefault()
+    if (!reportReason) return showToast('Please select a reason', 'error')
+    if (reportReason === 'other' && !reportDetails.trim()) return showToast('Please provide details for "Other"', 'error')
+
+    setSubmittingReport(true)
+    try {
+      await reportService.createReport({
+        animal_id: id,
+        reason: reportReason,
+        details: reportDetails
+      })
+      setReportSent(true)
+      setTimeout(() => {
+        setShowReportModal(false)
+        setReportSent(false)
+        setReportReason('')
+        setReportDetails('')
+      }, 3000)
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to submit report', 'error')
+    } finally {
+      setSubmittingReport(false)
     }
   }
 
@@ -633,6 +663,15 @@ export default function AnimalDetails() {
                   WhatsApp
                 </a>
               )}
+              
+              {user && user.id !== animal.posted_by && (
+                <button 
+                  onClick={() => setShowReportModal(true)}
+                  className="flex items-center gap-2 bg-red-50 text-red-600 hover:bg-red-100 px-5 py-2.5 rounded-2xl font-bold transition-colors shadow-sm ml-auto"
+                >
+                  🚩 Report
+                </button>
+              )}
             </div>
           </div>
 
@@ -750,6 +789,18 @@ export default function AnimalDetails() {
         sending={sendingInquiry}
         sent={inquirySent}
       />
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        reason={reportReason}
+        setReason={setReportReason}
+        details={reportDetails}
+        setDetails={setReportDetails}
+        onSubmit={handleReportSubmit}
+        submitting={submittingReport}
+        sent={reportSent}
+      />
     </div>
   )
 }
@@ -798,6 +849,93 @@ function InquiryModal({ isOpen, onClose, animal, body, setBody, onSend, sending,
                 <button type="button" onClick={onClose} className="flex-1 btn-outline py-4">Cancel</button>
                 <button type="submit" disabled={sending} className="flex-[2] btn-primary py-4 shadow-lg">
                   {sending ? 'Sending...' : 'Send Message'}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ReportModal({ isOpen, onClose, reason, setReason, details, setDetails, onSubmit, submitting, sent }) {
+  if (!isOpen) return null
+
+  const reasons = [
+    { id: 'fake_post', label: 'Fake Post' },
+    { id: 'animal_already_adopted', label: 'Animal Already Adopted' },
+    { id: 'animal_is_missing', label: 'Animal is Missing' },
+    { id: 'other', label: 'Other' }
+  ]
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl overflow-hidden animate-fade-in-up">
+        <div className="p-8 border-b border-gray-50 flex justify-between items-center bg-red-50/30">
+          <div>
+            <h2 className="text-2xl font-black text-gray-900">Report Post</h2>
+            <p className="text-xs text-red-500 font-bold uppercase tracking-widest mt-1">Flag inappropriate content</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <div className="p-8">
+          {sent ? (
+            <div className="py-10 text-center animate-fade-in">
+              <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-sm">✓</div>
+              <h3 className="text-xl font-black text-gray-900 mb-2">Report Submitted</h3>
+              <p className="text-gray-500 text-sm">Thank you. Our moderation team will review this post shortly.</p>
+            </div>
+          ) : (
+            <form onSubmit={onSubmit} className="space-y-6">
+              <div>
+                <label className="form-label mb-3">Why are you reporting this?</label>
+                <div className="grid grid-cols-1 gap-3">
+                  {reasons.map(r => (
+                    <label 
+                      key={r.id} 
+                      className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                        reason === r.id ? 'border-red-500 bg-red-50' : 'border-gray-100 hover:border-gray-200 bg-white'
+                      }`}
+                    >
+                      <input 
+                        type="radio" 
+                        name="reportReason" 
+                        value={r.id} 
+                        checked={reason === r.id} 
+                        onChange={(e) => setReason(e.target.value)}
+                        className="w-4 h-4 text-red-600 focus:ring-red-500 mr-3"
+                      />
+                      <span className="font-bold text-gray-900 text-sm">{r.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {reason === 'other' && (
+                <div className="animate-fade-in">
+                  <label className="form-label">Additional Details</label>
+                  <textarea 
+                    className="input-field min-h-[100px] pt-3 text-sm" 
+                    placeholder="Please explain the issue..."
+                    value={details}
+                    onChange={(e) => setDetails(e.target.value)}
+                    required
+                  ></textarea>
+                </div>
+              )}
+
+              <div className="flex gap-4 pt-4">
+                <button type="button" onClick={onClose} className="flex-1 btn-outline py-4">Cancel</button>
+                <button 
+                  type="submit" 
+                  disabled={submitting || !reason} 
+                  className="flex-[2] bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-2xl shadow-lg disabled:opacity-50 transition-colors"
+                >
+                  {submitting ? 'Submitting...' : 'Submit Report'}
                 </button>
               </div>
             </form>

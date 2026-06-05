@@ -11,7 +11,8 @@ const getStats = async (req, res, next) => {
     const [[{ adoptions }]]  = await pool.query('SELECT COUNT(*) AS adoptions FROM adoption_requests WHERE status = "approved"')
     const [[{ rescues }]]    = await pool.query('SELECT COUNT(*) AS rescues FROM rescue_requests WHERE status = "in_progress"')
     const [[{ pendingOrgs }]] = await pool.query('SELECT COUNT(*) AS pendingOrgs FROM organizations WHERE status = "pending"')
-    sendSuccess(res, { stats: { users, animals, adoptions, activeRescues: rescues, pendingOrgs } })
+    const [[{ pendingReports }]] = await pool.query('SELECT COUNT(*) AS pendingReports FROM reports WHERE status = "pending"')
+    sendSuccess(res, { stats: { users, animals, adoptions, activeRescues: rescues, pendingOrgs, pendingReports } })
   } catch (err) { next(err) }
 }
 
@@ -105,12 +106,47 @@ const deleteAnimal = async (req, res, next) => {
 const getReports = async (req, res, next) => {
   try {
     const [reports] = await pool.query(`
-      SELECT r.*, u.name AS reporter_name FROM reports r
+      SELECT r.*, u.name AS reporter_name, a.breed AS animal_breed, a.type AS animal_type, a.status AS animal_status
+      FROM reports r
       JOIN users u ON r.reporter_id = u.id
+      JOIN animals a ON r.animal_id = a.id
       ORDER BY r.created_at DESC
     `)
     sendSuccess(res, { reports })
   } catch (err) { next(err) }
+}
+
+const updateReportStatus = async (req, res, next) => {
+  const connection = await pool.getConnection()
+  try {
+    await connection.beginTransaction()
+    
+    const { status, action } = req.body
+    const reportId = req.params.id
+
+    if (!['reviewed', 'dismissed'].includes(status)) {
+      return sendError(res, 'Invalid status', 400)
+    }
+
+    // 1. Update the report status
+    await connection.query('UPDATE reports SET status = ? WHERE id = ?', [status, reportId])
+
+    // 2. If the admin chose to delete the post, delete it
+    if (action === 'delete_post') {
+      const [[report]] = await connection.query('SELECT animal_id FROM reports WHERE id = ?', [reportId])
+      if (report && report.animal_id) {
+        await connection.query('DELETE FROM animals WHERE id = ?', [report.animal_id])
+      }
+    }
+
+    await connection.commit()
+    sendSuccess(res, {}, 'Report updated successfully')
+  } catch (err) {
+    await connection.rollback()
+    next(err)
+  } finally {
+    connection.release()
+  }
 }
 
 const getOrganizations = async (req, res, next) => {
@@ -228,6 +264,7 @@ module.exports = {
   getAnimals, 
   deleteAnimal, 
   getReports,
+  updateReportStatus,
   getOrganizations,
   updateOrgStatus,
   createOrganization
