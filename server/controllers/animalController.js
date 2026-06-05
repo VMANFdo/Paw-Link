@@ -1,17 +1,6 @@
-const fs = require('fs')
-const path = require('path')
 const pool = require('../config/db')
 const { sendSuccess, sendError } = require('../utils/responseHelper')
 const { updateOccupancy } = require('../utils/capacityHelper')
-
-const DEBUG_LOG_PATH = path.join(__dirname, '..', '..', '.cursor', 'debug-a525ee.log')
-/** NDJSON line for debug mode (session a525ee); never log secrets/PII */
-const debugAgentFileLog = (entry) => {
-  try {
-    const line = JSON.stringify({ sessionId: 'a525ee', timestamp: Date.now(), ...entry }) + '\n'
-    fs.appendFileSync(DEBUG_LOG_PATH, line)
-  } catch (_) {}
-}
 
 const LEGACY_MEDICAL_CONFIG = {
   vaccinated: { type: 'Vaccination', description: 'Vaccination completed' },
@@ -205,9 +194,6 @@ const getAll = async (req, res, next) => {
 // GET /api/animals/:id — Single animal with images
 const getById = async (req, res, next) => {
   try {
-    // #region agent log
-    fetch('http://127.0.0.1:7443/ingest/910aaeb4-255d-413a-9ba8-809144c93304',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a525ee'},body:JSON.stringify({sessionId:'a525ee',runId:'pre-fix',hypothesisId:'H2',location:'animalController.js:getById:start',message:'getById called',data:{animalId:req.params.id},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     const [animals] = await pool.query(`
       SELECT a.*, COALESCE(NULLIF(a.city, ''), o.city) AS city, u.name AS poster_name, u.email AS poster_email, u.phone AS poster_phone,
              o.name AS org_name, o.logo_url AS org_logo, o.verified AS org_verified,
@@ -236,9 +222,6 @@ const getById = async (req, res, next) => {
        ORDER BY record_date DESC, id DESC`,
       [req.params.id]
     )
-    // #region agent log
-    fetch('http://127.0.0.1:7443/ingest/910aaeb4-255d-413a-9ba8-809144c93304',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a525ee'},body:JSON.stringify({sessionId:'a525ee',runId:'pre-fix',hypothesisId:'H2',location:'animalController.js:getById:records',message:'medical records fetched for animal',data:{animalId:req.params.id,recordCount:records.length,recordTypes:records.map(r=>r.record_type)},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     const medical_record_types = records.map(r => r.record_type)
 
     let rowPlain
@@ -261,22 +244,6 @@ const getById = async (req, res, next) => {
       medical_record_types,
       has_medical_records: medical_record_types.length > 0
     }
-
-    // #region agent log
-    debugAgentFileLog({
-      runId: 'pre-fix',
-      hypothesisId: 'H2',
-      location: 'animalController.js:getById:outbound',
-      message: 'outgoing animal DTO keys and medical counts',
-      data: {
-        animalId: req.params.id,
-        recordCount: recordsPlain.length,
-        recordTypes: medical_record_types,
-        dtoKeys: Object.keys(animalDto),
-        hasMedicalRecordsKey: Object.prototype.hasOwnProperty.call(animalDto, 'medical_records')
-      }
-    })
-    // #endregion
 
     sendSuccess(res, { animal: animalDto })
   } catch (err) {
@@ -337,9 +304,6 @@ const create = async (req, res, next) => {
     }
 
     const requestedMedical = collectRequestedMedicalRecords(req.body)
-    // #region agent log
-    fetch('http://127.0.0.1:7443/ingest/910aaeb4-255d-413a-9ba8-809144c93304',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a525ee'},body:JSON.stringify({sessionId:'a525ee',runId:'pre-fix',hypothesisId:'H1',location:'animalController.js:create:requestedMedical',message:'parsed medical records during create',data:{animalId,requestedMode:requestedMedical.mode,requestedCount:requestedMedical.records.length,requestedTypes:requestedMedical.records.map(r=>r.record_type)},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     if (requestedMedical.records.length > 0) {
       const values = requestedMedical.records.map(record => [
         animalId,
@@ -352,9 +316,6 @@ const create = async (req, res, next) => {
         'INSERT INTO medical_records (animal_id, recorded_by, record_type, description, record_date) VALUES ?',
         [values]
       )
-      // #region agent log
-      fetch('http://127.0.0.1:7443/ingest/910aaeb4-255d-413a-9ba8-809144c93304',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a525ee'},body:JSON.stringify({sessionId:'a525ee',runId:'pre-fix',hypothesisId:'H1',location:'animalController.js:create:insertedMedical',message:'inserted medical records during create',data:{animalId,insertedCount:values.length},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
     }
 
     await connection.commit()
@@ -396,17 +357,11 @@ const update = async (req, res, next) => {
     )
 
     const requestedMedical = collectRequestedMedicalRecords(req.body)
-    // #region agent log
-    fetch('http://127.0.0.1:7443/ingest/910aaeb4-255d-413a-9ba8-809144c93304',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a525ee'},body:JSON.stringify({sessionId:'a525ee',runId:'pre-fix',hypothesisId:'H1',location:'animalController.js:update:requestedMedical',message:'parsed medical records during update',data:{animalId:req.params.id,requestedMode:requestedMedical.mode,requestedCount:requestedMedical.records.length,requestedTypes:requestedMedical.records.map(r=>r.record_type),bodyFlags:{vaccinated:req.body.vaccinated,checkup:req.body.checkup,surgery:req.body.surgery}},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     if (requestedMedical.mode !== 'none') {
       const [existingRecords] = await connection.query(
         'SELECT id, record_type FROM medical_records WHERE animal_id = ?',
         [req.params.id]
       )
-      // #region agent log
-      fetch('http://127.0.0.1:7443/ingest/910aaeb4-255d-413a-9ba8-809144c93304',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a525ee'},body:JSON.stringify({sessionId:'a525ee',runId:'pre-fix',hypothesisId:'H1',location:'animalController.js:update:existingMedical',message:'existing medical records before update sync',data:{animalId:req.params.id,existingCount:existingRecords.length,existingTypes:existingRecords.map(r=>r.record_type)},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
 
       if (requestedMedical.mode === 'structured') {
         await connection.query('DELETE FROM medical_records WHERE animal_id = ?', [req.params.id])

@@ -106,13 +106,11 @@ export default function AnimalDetails() {
       const response = await animalService.getById(id)
       const envelope = response.data?.data
       const fetchedAnimal = envelope?.animal ?? envelope
-
       const normalizedAnimal = {
         ...fetchedAnimal,
         medical_records: fetchedAnimal.medical_records ?? fetchedAnimal.medicalRecords ?? [],
         medical_record_types: fetchedAnimal.medical_record_types ?? fetchedAnimal.medicalRecordTypes ?? []
       }
-
       setAnimal(normalizedAnimal)
 
       // Check if logged-in user already has a request for this animal
