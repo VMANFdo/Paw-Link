@@ -159,6 +159,17 @@ export default function AdminDashboard() {
     } catch (err) { showToast('Update failed', 'error') }
   }
 
+  const handleUpdateReport = async (id, status, action = null) => {
+    try {
+      await adminService.updateReportStatus(id, { status, action })
+      showToast(action === 'delete_post' ? 'Post deleted & report dismissed' : 'Report dismissed')
+      fetchData()
+      fetchStats()
+    } catch (err) {
+      showToast('Action failed', 'error')
+    }
+  }
+
   const handleCreateShelter = async (shelterData) => {
     try {
       await adminService.createOrganization(shelterData)
@@ -194,7 +205,7 @@ export default function AdminDashboard() {
           <TabBtn active={tab === 'stats'} onClick={() => setTab('stats')} label="Overview" />
           <TabBtn active={tab === 'users'} onClick={() => setTab('users')} label="Users" />
           <TabBtn active={tab === 'manage_orgs'} onClick={() => setTab('manage_orgs')} label="Manage Organizations" badge={stats?.pendingOrgs} />
-          <TabBtn active={tab === 'reports'} onClick={() => setTab('reports')} label="Reports" />
+          <TabBtn active={tab === 'reports'} onClick={() => setTab('reports')} label="Reports" badge={stats?.pendingReports} />
         </div>
       </div>
 
@@ -231,7 +242,7 @@ export default function AdminDashboard() {
               <OrganizationsTable orgs={data.organizations} onUpdate={handleUpdateOrg} isModeration={true} />
             </div>
           )}
-          {tab === 'reports' && <ReportsList reports={data.reports} />}
+          {tab === 'reports' && <ReportsList reports={data.reports} onUpdate={handleUpdateReport} />}
         </div>
       )}
 
@@ -571,23 +582,75 @@ function AnimalsList({ animals, onDelete }) {
   )
 }
 
-function ReportsList({ reports }) {
+function ReportsList({ reports, onUpdate }) {
+  const pendingReports = reports.filter(r => r.status === 'pending')
+  
   return (
     <div className="card divide-y divide-gray-50">
-      {reports.length > 0 ? reports.map(r => (
-        <div key={r.id} className="p-6 flex items-start justify-between">
-          <div>
+      {pendingReports.length > 0 ? pendingReports.map(r => (
+        <div key={r.id} className="p-6 flex flex-col md:flex-row md:items-start justify-between gap-4">
+          <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <span className="bg-red-50 text-red-600 px-2 py-0.5 rounded text-[10px] font-black uppercase">{r.type || 'Flagged'}</span>
+              <span className="bg-red-50 text-red-600 px-2 py-0.5 rounded text-[10px] font-black uppercase">
+                {r.reason.replace(/_/g, ' ')}
+              </span>
               <p className="text-sm font-black text-gray-900">Report #{r.id}</p>
+              <span className="text-xs text-gray-400 font-medium">{new Date(r.created_at).toLocaleDateString()}</span>
             </div>
-            <p className="text-gray-600 text-sm leading-relaxed mb-1">{r.reason || r.description}</p>
-            <p className="text-xs text-gray-400">Reporter: {r.reporter_name} • {new Date(r.created_at).toLocaleDateString()}</p>
+            
+            {/* Animal Context Card */}
+            <div className="bg-gray-50 rounded-xl p-3 mb-3 flex items-center gap-3 border border-gray-100">
+              <div className="w-10 h-10 bg-primary-100 text-primary-600 rounded-lg flex items-center justify-center font-bold">
+                🐾
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">Reported Post</p>
+                <p className="text-sm font-bold text-gray-900">
+                  {r.animal_breed || r.animal_type} 
+                  <span className="ml-2 text-[10px] bg-white px-2 py-0.5 rounded-full border border-gray-200">Status: {r.animal_status || 'Unknown'}</span>
+                </p>
+              </div>
+              <a 
+                href={`/animal/${r.animal_id}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="ml-auto text-xs font-bold text-primary-600 hover:text-primary-700 bg-primary-50 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                View Post ↗
+              </a>
+            </div>
+
+            {r.details && (
+              <div className="mb-2">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Additional Details</p>
+                <p className="text-sm text-gray-700 bg-orange-50/50 p-3 rounded-lg border border-orange-100">{r.details}</p>
+              </div>
+            )}
+            
+            <p className="text-xs text-gray-400 font-medium">Reported by <span className="font-bold text-gray-600">{r.reporter_name}</span></p>
           </div>
-          <button className="text-xs font-black text-primary-600 hover:underline">Dismiss</button>
+          
+          <div className="flex flex-row md:flex-col gap-2 min-w-[140px]">
+            <button 
+              onClick={() => onUpdate(r.id, 'reviewed', 'delete_post')}
+              className="flex-1 w-full bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl transition-colors text-center"
+            >
+              Delete Post
+            </button>
+            <button 
+              onClick={() => onUpdate(r.id, 'dismissed')}
+              className="flex-1 w-full bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-bold py-2.5 px-4 rounded-xl transition-colors text-center"
+            >
+              Dismiss Report
+            </button>
+          </div>
         </div>
       )) : (
-        <div className="p-20 text-center text-gray-400">No active reports. All clear!</div>
+        <div className="p-20 text-center flex flex-col items-center justify-center">
+          <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center text-3xl mb-4">✨</div>
+          <h3 className="text-xl font-black text-gray-900 mb-1">All Clear!</h3>
+          <p className="text-gray-500 text-sm">There are no pending reports to review.</p>
+        </div>
       )}
     </div>
   )

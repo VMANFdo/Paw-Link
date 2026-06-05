@@ -111,6 +111,17 @@ export default function Navbar() {
               >
                 🏢 Manage Organizations
               </NavLink>
+              <NavLink 
+                to="/admin"
+                state={{ tab: 'reports' }}
+                className={({ isActive }) => 
+                  `text-sm font-black transition-colors px-3 py-1 rounded-lg ${
+                    isActive && location.state?.tab === 'reports' ? 'bg-red-50 text-red-600' : 'text-red-500 hover:bg-red-50'
+                  }`
+                }
+              >
+                🚩 Reported Posts
+              </NavLink>
             </>
           )}
         </nav>
@@ -163,14 +174,24 @@ export default function Navbar() {
                       <Link to="/profile" onClick={() => setDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 font-medium">Profile</Link>
                     )}
                     {user.role === 'admin' && (
-                      <Link 
-                        to="/admin" 
-                        state={{ tab: 'manage_orgs' }}
-                        onClick={() => setDropdownOpen(false)} 
-                        className="block px-4 py-2 text-sm text-primary-600 hover:bg-primary-50 font-bold"
-                      >
-                        Manage Organizations
-                      </Link>
+                      <>
+                        <Link 
+                          to="/admin" 
+                          state={{ tab: 'manage_orgs' }}
+                          onClick={() => setDropdownOpen(false)} 
+                          className="block px-4 py-2 text-sm text-primary-600 hover:bg-primary-50 font-bold"
+                        >
+                          Manage Organizations
+                        </Link>
+                        <Link 
+                          to="/admin" 
+                          state={{ tab: 'reports' }}
+                          onClick={() => setDropdownOpen(false)} 
+                          className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-bold"
+                        >
+                          Reported Posts
+                        </Link>
+                      </>
                     )}
                     <button 
                       onClick={handleLogout}
