@@ -98,17 +98,11 @@ export default function AnimalDetails() {
       const response = await animalService.getById(id)
       const envelope = response.data?.data
       const fetchedAnimal = envelope?.animal ?? envelope
-      // #region agent log
-      fetch('http://127.0.0.1:7443/ingest/910aaeb4-255d-413a-9ba8-809144c93304',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a525ee'},body:JSON.stringify({sessionId:'a525ee',runId:'pre-fix',hypothesisId:'H3',location:'AnimalDetails.jsx:fetchAnimal:rawResponse',message:'animal payload received in frontend',data:{animalId:id,envelopeKeys:envelope&&typeof envelope==='object'&&!Array.isArray(envelope)?Object.keys(envelope):[],usedNestedAnimal:!!envelope?.animal,fetchedKeys:fetchedAnimal&&typeof fetchedAnimal==='object'?Object.keys(fetchedAnimal).slice(0,40):[],medicalRecordsRawCount:Array.isArray(fetchedAnimal?.medical_records)?fetchedAnimal.medical_records.length:-1,medicalRecordTypesRawCount:Array.isArray(fetchedAnimal?.medical_record_types)?fetchedAnimal.medical_record_types.length:-1,firstMedicalRecordType:Array.isArray(fetchedAnimal?.medical_records)&&fetchedAnimal.medical_records[0]?(typeof fetchedAnimal.medical_records[0]==='string'?fetchedAnimal.medical_records[0]:fetchedAnimal.medical_records[0]?.record_type):null},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       const normalizedAnimal = {
         ...fetchedAnimal,
         medical_records: fetchedAnimal.medical_records ?? fetchedAnimal.medicalRecords ?? [],
         medical_record_types: fetchedAnimal.medical_record_types ?? fetchedAnimal.medicalRecordTypes ?? []
       }
-      // #region agent log
-      fetch('http://127.0.0.1:7443/ingest/910aaeb4-255d-413a-9ba8-809144c93304',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a525ee'},body:JSON.stringify({sessionId:'a525ee',runId:'pre-fix',hypothesisId:'H3',location:'AnimalDetails.jsx:fetchAnimal:normalized',message:'animal payload normalized in frontend',data:{animalId:id,medicalRecordsCount:Array.isArray(normalizedAnimal.medical_records)?normalizedAnimal.medical_records.length:-1,medicalRecordTypesCount:Array.isArray(normalizedAnimal.medical_record_types)?normalizedAnimal.medical_record_types.length:-1,normalizedTypes:extractMedicalTypes(normalizedAnimal)},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       setAnimal(normalizedAnimal)
 
       // Check if logged-in user already has a request for this animal
