@@ -6,6 +6,22 @@ const parseCsvToArray = (value) => {
   return value.split(',').map(item => item.trim()).filter(Boolean)
 }
 
+const parseAnimalTypesInput = (value) => {
+  if (Array.isArray(value)) return value.map(type => String(type).trim()).filter(Boolean)
+  if (!value || typeof value !== 'string') return null
+
+  try {
+    const parsed = JSON.parse(value)
+    if (Array.isArray(parsed)) {
+      return parsed.map(type => String(type).trim()).filter(Boolean)
+    }
+  } catch (_) {
+    return parseCsvToArray(value)
+  }
+
+  return parseCsvToArray(value)
+}
+
 const enrichAnimalsWithMedical = async (animals) => {
   if (!animals || animals.length === 0) return animals || []
   const animalIds = animals.map(animal => animal.id)
@@ -157,6 +173,7 @@ const updateProfile = async (req, res, next) => {
       latitude, longitude, city, website, max_capacity,
       animal_types
     } = req.body
+    const parsedAnimalTypes = parseAnimalTypesInput(animal_types)
 
     const [orgs] = await connection.query('SELECT id FROM organizations WHERE user_id = ?', [req.user.id])
     if (orgs.length === 0) {
@@ -164,20 +181,38 @@ const updateProfile = async (req, res, next) => {
       return sendError(res, 'Organization profile not found', 404)
     }
     const orgId = orgs[0].id
+    const logoUrl = req.file ? `/uploads/${req.file.filename}` : null
 
     // Update main record
+    const updateFields = [
+      'name=?',
+      'description=?',
+      'contact_number=?',
+      'address=?',
+      'latitude=?',
+      'longitude=?',
+      'city=?',
+      'website=?',
+      'max_capacity=?'
+    ]
+    const updateParams = [name, description, contact_number, address, latitude, longitude, city, website, max_capacity]
+
+    if (logoUrl) {
+      updateFields.push('logo_url=?')
+      updateParams.push(logoUrl)
+    }
+
+    updateParams.push(orgId)
     await connection.query(
-      `UPDATE organizations 
-       SET name=?, description=?, contact_number=?, address=?, latitude=?, longitude=?, city=?, website=?, max_capacity=?
-       WHERE id=?`,
-      [name, description, contact_number, address, latitude, longitude, city, website, max_capacity, orgId]
+      `UPDATE organizations SET ${updateFields.join(', ')} WHERE id=?`,
+      updateParams
     )
 
     // Sync animal types (delete all and re-insert)
-    if (animal_types && Array.isArray(animal_types)) {
+    if (parsedAnimalTypes) {
       await connection.query('DELETE FROM organization_animal_types WHERE organization_id = ?', [orgId])
-      if (animal_types.length > 0) {
-        const typeValues = animal_types.map(type => [orgId, type])
+      if (parsedAnimalTypes.length > 0) {
+        const typeValues = parsedAnimalTypes.map(type => [orgId, type])
         await connection.query(
           'INSERT INTO organization_animal_types (organization_id, animal_type) VALUES ?',
           [typeValues]
@@ -185,8 +220,18 @@ const updateProfile = async (req, res, next) => {
       }
     }
 
+    const [updatedOrgs] = await connection.query(
+      `SELECT o.*, 
+        (SELECT GROUP_CONCAT(animal_type) FROM organization_animal_types WHERE organization_id = o.id) AS animal_types
+       FROM organizations o 
+       WHERE o.id = ?`,
+      [orgId]
+    )
+    const updatedOrganization = updatedOrgs[0]
+    updatedOrganization.animal_types = parseCsvToArray(updatedOrganization.animal_types)
+
     await connection.commit()
-    sendSuccess(res, {}, 'Organization profile updated')
+    sendSuccess(res, { organization: updatedOrganization }, 'Organization profile updated')
   } catch (err) {
     await connection.rollback()
     next(err)
