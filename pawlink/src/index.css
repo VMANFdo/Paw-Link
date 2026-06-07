@@ -6,13 +6,13 @@
    smooth scrolling, resets).
    ============================================== */
 
+/* 2. Import Leaflet CSS (required for map to render correctly) */
+@import 'leaflet/dist/leaflet.css';
+
 /* 1. Import Tailwind CSS layers */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* 2. Import Leaflet CSS (required for map to render correctly) */
-@import 'leaflet/dist/leaflet.css';
 
 /* 3. Global base styles */
 @layer base {
