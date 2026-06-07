@@ -21,7 +21,7 @@
   }
 
   body {
-    @apply font-sans bg-gray-50 text-gray-800 antialiased;
+    @apply font-sans bg-gray-50 text-gray-800 antialiased dark:bg-dark-900 dark:text-gray-100 transition-colors duration-200;
   }
 
   * {
@@ -34,15 +34,15 @@
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-gray-100;
+    @apply bg-gray-100 dark:bg-dark-900;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-primary-400 rounded-full;
+    @apply bg-primary-400 dark:bg-primary-500/60 rounded-full;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary-500;
+    @apply bg-primary-500 dark:bg-primary-600;
   }
 }
 
@@ -55,22 +55,27 @@
 
   /* Secondary/outline button */
   .btn-secondary {
-    @apply border-2 border-primary-500 text-primary-600 hover:bg-primary-50 font-semibold px-5 py-2.5 rounded-xl transition-all duration-200;
+    @apply border-2 border-primary-500 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950/20 font-semibold px-5 py-2.5 rounded-xl transition-all duration-200;
+  }
+
+  /* Bordered button */
+  .btn-outline {
+    @apply border-2 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-900/50 font-semibold px-5 py-2.5 rounded-xl transition-all duration-200;
   }
 
   /* Card container */
   .card {
-    @apply bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden;
+    @apply bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden dark:bg-dark-800 dark:border-gray-800/40;
   }
 
   /* Form input field */
   .input-field {
-    @apply w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all duration-150;
+    @apply w-full border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all duration-150 dark:bg-dark-900 dark:text-white dark:focus:ring-primary-500/50;
   }
 
   /* Form label */
   .form-label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
+    @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1;
   }
 
   /* Badge / status pill */
@@ -79,23 +84,23 @@
   }
 
   .badge-available {
-    @apply badge bg-green-100 text-green-700;
+    @apply badge bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-300;
   }
 
   .badge-adopted {
-    @apply badge bg-blue-100 text-blue-700;
+    @apply badge bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300;
   }
 
   .badge-rescued {
-    @apply badge bg-purple-100 text-purple-700;
+    @apply badge bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300;
   }
 
   .badge-pending {
-    @apply badge bg-yellow-100 text-yellow-700;
+    @apply badge bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-300;
   }
 
   .badge-urgent {
-    @apply badge bg-red-100 text-red-700;
+    @apply badge bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300;
   }
 
   /* Section container */
