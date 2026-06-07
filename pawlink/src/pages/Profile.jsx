@@ -22,8 +22,6 @@ export default function Profile() {
   const [selectedFile, setSelectedFile] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [orgProfile, setOrgProfile] = useState(null)
-  const [isOrgEditing, setIsOrgEditing] = useState(false)
-  const [orgSaving, setOrgSaving] = useState(false)
   const [orgMessage, setOrgMessage] = useState({ type: '', text: '' })
   const [orgLogoFile, setOrgLogoFile] = useState(null)
   const [orgLogoPreview, setOrgLogoPreview] = useState(null)
@@ -136,10 +134,33 @@ export default function Profile() {
       const updatedUser = response.data.data.user
       setProfile(updatedUser)
       updateUser({ ...user, ...updatedUser }) // Preserve organization gate fields in global auth state.
+
+      if (profile.role === 'organization' && orgProfile) {
+        const orgUploadData = new FormData()
+        Object.entries(orgFormData).forEach(([key, value]) => {
+          if (key === 'animal_types') {
+            orgUploadData.append(key, JSON.stringify(value || []))
+          } else {
+            orgUploadData.append(key, value ?? '')
+          }
+        })
+        if (orgLogoFile) {
+          orgUploadData.append('logo', orgLogoFile)
+        }
+
+        const orgResponse = await organizationService.updateProfile(orgUploadData)
+        const updatedOrganization = orgResponse.data.data.organization
+        setOrgProfile(updatedOrganization)
+        setOrgFormData(mapOrgToFormData(updatedOrganization))
+        setOrgLogoFile(null)
+        setOrgLogoPreview(null)
+        setOrgMessage({ type: '', text: '' })
+      }
+
       setSelectedFile(null)
       setPreviewUrl(null)
       setIsEditing(false)
-      setMessage({ type: 'success', text: 'Profile updated successfully!' })
+      setMessage({ type: 'success', text: profile.role === 'organization' ? 'Profile and shelter details updated successfully!' : 'Profile updated successfully!' })
       
       // Clear success message after 3 seconds
       setTimeout(() => setMessage({ type: '', text: '' }), 3000)
@@ -150,43 +171,12 @@ export default function Profile() {
     }
   }
 
-  const handleOrgSubmit = async (e) => {
-    e.preventDefault()
-    setOrgSaving(true)
-    setOrgMessage({ type: '', text: '' })
-
-    const uploadData = new FormData()
-    Object.entries(orgFormData).forEach(([key, value]) => {
-      if (key === 'animal_types') {
-        uploadData.append(key, JSON.stringify(value || []))
-      } else {
-        uploadData.append(key, value ?? '')
-      }
-    })
-    if (orgLogoFile) {
-      uploadData.append('logo', orgLogoFile)
-    }
-
-    try {
-      const response = await organizationService.updateProfile(uploadData)
-      const updatedOrganization = response.data.data.organization
-      setOrgProfile(updatedOrganization)
-      setOrgFormData(mapOrgToFormData(updatedOrganization))
-      setOrgLogoFile(null)
-      setOrgLogoPreview(null)
-      setIsOrgEditing(false)
-      setOrgMessage({ type: 'success', text: 'Shelter profile updated successfully!' })
-      setTimeout(() => setOrgMessage({ type: '', text: '' }), 3000)
-    } catch (err) {
-      setOrgMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update shelter profile.' })
-    } finally {
-      setOrgSaving(false)
-    }
-  }
-
-  const cancelOrgEditing = () => {
-    setIsOrgEditing(false)
+  const cancelEditing = () => {
+    setIsEditing(false)
+    setFormData({ name: profile.name, bio: profile.bio || '', phone: profile.phone || '' })
     setOrgFormData(mapOrgToFormData(orgProfile))
+    setSelectedFile(null)
+    setPreviewUrl(null)
     setOrgLogoFile(null)
     setOrgLogoPreview(null)
   }
@@ -251,10 +241,7 @@ export default function Profile() {
               </button>
             ) : (
               <button 
-                onClick={() => {
-                  setIsEditing(false)
-                  setFormData({ name: profile.name, bio: profile.bio || '', phone: profile.phone || '' }) // Reset
-                }}
+                onClick={cancelEditing}
                 className="btn-outline px-6 py-2"
               >
                 Cancel Editing
@@ -296,7 +283,7 @@ export default function Profile() {
           </div>
         ) : (
           /* --- EDIT MODE --- */
-          <form onSubmit={handleSubmit} className="space-y-8 animate-fade-in-up">
+          <form id="profile-edit-form" onSubmit={handleSubmit} className="space-y-8 animate-fade-in-up">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
                 <label className="form-label">Full Name</label>
@@ -346,15 +333,17 @@ export default function Profile() {
               ></textarea>
             </div>
 
+            {profile.role !== 'organization' && (
             <div className="pt-6 flex justify-end">
               <button 
                 type="submit" 
                 disabled={saving}
                 className="btn-primary px-10 py-4 shadow-lg w-full md:w-auto"
               >
-                {saving ? 'Saving Changes...' : 'Save Profile Changes'}
+                {saving ? 'Saving Changes...' : 'Save Changes'}
               </button>
             </div>
+            )}
           </form>
         )}
       </div>
@@ -363,8 +352,8 @@ export default function Profile() {
         <div className="bg-white dark:bg-dark-800 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800 p-8 md:p-12 mt-10">
           <div className="flex flex-col md:flex-row md:items-start gap-8 mb-8 pb-8 border-b border-gray-100 dark:border-gray-800">
             <div 
-              onClick={isOrgEditing ? triggerOrgLogoInput : undefined}
-              className={`w-full md:w-48 aspect-[16/10] rounded-3xl bg-secondary-50 dark:bg-secondary-950/30 flex items-center justify-center text-4xl font-black text-secondary-600 shadow-inner flex-shrink-0 relative group overflow-hidden ${isOrgEditing ? 'cursor-pointer' : ''}`}
+              onClick={isEditing ? triggerOrgLogoInput : undefined}
+              className={`w-full md:w-48 aspect-[16/10] rounded-3xl bg-secondary-50 dark:bg-secondary-950/30 flex items-center justify-center text-4xl font-black text-secondary-600 shadow-inner flex-shrink-0 relative group overflow-hidden ${isEditing ? 'cursor-pointer' : ''}`}
             >
               {orgLogoPreview ? (
                 <img src={orgLogoPreview} alt="Shelter logo preview" className="w-full h-full object-cover" />
@@ -374,7 +363,7 @@ export default function Profile() {
                 orgProfile.name?.charAt(0)?.toUpperCase() || 'S'
               )}
               
-              {isOrgEditing && (
+              {isEditing && (
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <span className="text-white text-xs font-bold">Change Shelter Photo</span>
                 </div>
@@ -395,22 +384,6 @@ export default function Profile() {
                   <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2">Shelter Profile</h2>
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400">This image is shown on shelter cards and public shelter pages.</p>
                 </div>
-
-                {!isOrgEditing ? (
-                  <button 
-                    onClick={() => setIsOrgEditing(true)}
-                    className="btn-secondary px-6 py-2 shadow-sm"
-                  >
-                    Edit Shelter
-                  </button>
-                ) : (
-                  <button 
-                    onClick={cancelOrgEditing}
-                    className="btn-outline px-6 py-2"
-                  >
-                    Cancel Editing
-                  </button>
-                )}
               </div>
             </div>
           </div>
@@ -423,7 +396,7 @@ export default function Profile() {
             </div>
           )}
 
-          {!isOrgEditing ? (
+          {!isEditing ? (
             <div className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <InfoBlock label="Shelter Name" value={orgProfile.name} icon="Name" />
@@ -452,7 +425,7 @@ export default function Profile() {
               </div>
             </div>
           ) : (
-            <form onSubmit={handleOrgSubmit} className="space-y-8 animate-fade-in-up">
+            <div className="space-y-8 animate-fade-in-up">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                   <label className="form-label">Shelter Name</label>
@@ -519,18 +492,21 @@ export default function Profile() {
                   ))}
                 </div>
               </div>
-
-              <div className="pt-6 flex justify-end">
-                <button 
-                  type="submit" 
-                  disabled={orgSaving}
-                  className="btn-primary px-10 py-4 shadow-lg w-full md:w-auto"
-                >
-                  {orgSaving ? 'Saving Shelter...' : 'Save Shelter Profile'}
-                </button>
-              </div>
-            </form>
+            </div>
           )}
+        </div>
+      )}
+
+      {isEditing && profile.role === 'organization' && (
+        <div className="pt-8 flex justify-end">
+          <button 
+            type="submit" 
+            form="profile-edit-form"
+            disabled={saving}
+            className="btn-primary px-10 py-4 shadow-lg w-full md:w-auto"
+          >
+            {saving ? 'Saving Changes...' : 'Save Changes'}
+          </button>
         </div>
       )}
 
