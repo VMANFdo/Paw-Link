@@ -107,10 +107,10 @@ export default function Profile() {
     <div className="container-section py-12 max-w-4xl">
       
       {/* Header Area */}
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-10 pb-10 border-b border-gray-100">
+      <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-10 pb-10 border-b border-gray-100 dark:border-gray-800">
         <div 
           onClick={isEditing ? triggerFileInput : undefined}
-          className={`w-32 h-32 rounded-full bg-primary-100 flex items-center justify-center text-4xl font-black text-primary-600 shadow-inner flex-shrink-0 relative group overflow-hidden ${isEditing ? 'cursor-pointer' : ''}`}
+          className={`w-32 h-32 rounded-full bg-primary-100 dark:bg-primary-950/40 flex items-center justify-center text-4xl font-black text-primary-600 shadow-inner flex-shrink-0 relative group overflow-hidden ${isEditing ? 'cursor-pointer' : ''}`}
         >
           {previewUrl ? (
             <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -138,8 +138,8 @@ export default function Profile() {
         <div className="flex-1 text-center md:text-left">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-black text-gray-900 mb-2">{profile.name}</h1>
-              <span className="inline-block bg-primary-50 text-primary-600 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
+              <h1 className="text-4xl font-black text-gray-900 dark:text-white mb-2">{profile.name}</h1>
+              <span className="inline-block bg-primary-50 dark:bg-primary-950/30 text-primary-600 dark:text-primary-400 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
                 {profile.role}
               </span>
             </div>
@@ -169,14 +169,14 @@ export default function Profile() {
       {/* Messages */}
       {message.text && (
         <div className={`p-4 mb-8 rounded-2xl text-center font-bold text-sm ${
-          message.type === 'success' ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-red-50 text-red-600 border border-red-100'
+          message.type === 'success' ? 'bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 border border-green-100 dark:border-green-900/30' : 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/30'
         }`}>
           {message.text}
         </div>
       )}
 
       {/* Profile Content */}
-      <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 p-8 md:p-12">
+      <div className="bg-white dark:bg-dark-800 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800 p-8 md:p-12">
         {!isEditing ? (
           /* --- VIEW MODE --- */
           <div className="space-y-8">
@@ -187,7 +187,7 @@ export default function Profile() {
               <InfoBlock label="Member Since" value={new Date(profile.created_at).toLocaleDateString()} icon="📅" readOnlyNotice="Cannot be changed" />
             </div>
             
-            <div className="pt-6 border-t border-gray-50">
+            <div className="pt-6 border-t border-gray-50 dark:border-gray-800">
               <InfoBlock 
                 label="Bio" 
                 value={profile.bio || 'No bio provided yet.'} 
@@ -219,7 +219,7 @@ export default function Profile() {
                 <input 
                   type="email" 
                   value={profile.email} 
-                  className="input-field bg-gray-50 text-gray-400 cursor-not-allowed" 
+                  className="input-field bg-gray-50 dark:bg-dark-900 text-gray-400 dark:text-gray-500 cursor-not-allowed" 
                   disabled 
                 />
               </div>
@@ -274,7 +274,7 @@ function InfoBlock({ label, value, icon, readOnlyNotice, fullWidth }) {
         </p>
         {readOnlyNotice && <span className="text-[9px] text-gray-300 uppercase font-bold">{readOnlyNotice}</span>}
       </div>
-      <p className="text-lg font-bold text-gray-900 mt-2">{value}</p>
+      <p className="text-lg font-bold text-gray-900 dark:text-white mt-2">{value}</p>
     </div>
   )
 }

@@ -71,14 +71,14 @@ export default function AdoptionRequests({ isNested = false }) {
 
   return (
     <div className={isNested ? "" : "container-section py-10"}>
-      {!isNested && <h1 className="text-3xl font-black text-gray-900 mb-8">Adoption Requests</h1>}
+      {!isNested && <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-8">Adoption Requests</h1>}
 
       {/* Tabs */}
-      <div className="flex space-x-1 bg-gray-100 p-1 rounded-2xl w-fit mb-10">
+      <div className="flex space-x-1 bg-gray-100 dark:bg-dark-800 p-1 rounded-2xl w-fit mb-10">
         <button 
           onClick={() => setTab('received')}
           className={`px-8 py-2.5 rounded-xl text-sm font-bold transition-all ${
-            tab === 'received' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-500 hover:text-gray-700'
+            tab === 'received' ? 'bg-white dark:bg-dark-900 shadow-sm text-primary-600' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
           }`}
         >
           Received Requests
@@ -86,7 +86,7 @@ export default function AdoptionRequests({ isNested = false }) {
         <button 
           onClick={() => setTab('sent')}
           className={`px-8 py-2.5 rounded-xl text-sm font-bold transition-all ${
-            tab === 'sent' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-500 hover:text-gray-700'
+            tab === 'sent' ? 'bg-white dark:bg-dark-900 shadow-sm text-primary-600' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
           }`}
         >
           Sent Requests
@@ -110,8 +110,8 @@ export default function AdoptionRequests({ isNested = false }) {
               />
             ))
           ) : (
-            <div className="py-20 text-center card bg-gray-50 border-dashed border-2">
-              <p className="text-gray-400 font-medium">No requests found in this category.</p>
+            <div className="py-20 text-center card bg-gray-50 dark:bg-dark-800/20 border-dashed border-2">
+              <p className="text-gray-400 dark:text-gray-500 font-medium">No requests found in this category.</p>
               <Link to="/animals" className="text-primary-600 font-bold text-sm mt-2 inline-block">Browse animals to adopt</Link>
             </div>
           )}
@@ -133,31 +133,31 @@ function RequestCard({ request, isReceived, onStatusUpdate, onCancel }) {
   return (
     <div className="card p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-md transition-shadow">
       <div className="flex items-center space-x-6">
-        <div className="w-20 h-20 rounded-2xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100">
+        <div className="w-20 h-20 rounded-2xl bg-gray-100 dark:bg-dark-800 overflow-hidden flex-shrink-0 border border-gray-100 dark:border-gray-800">
           {request.thumbnail ? (
             <img src={`${API_BASE}${request.thumbnail}`} className="w-full h-full object-cover" alt="thumbnail" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-300">No Image</div>
+            <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-300 dark:text-gray-600">No Image</div>
           )}
         </div>
         <div>
           <div className="flex items-center space-x-3 mb-1">
-            <h4 className="font-black text-gray-900 text-lg">
+            <h4 className="font-black text-gray-900 dark:text-white text-lg">
               {request.type} ({request.breed})
             </h4>
             <span className={`px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${statusColors[request.status]}`}>
               {request.status}
             </span>
           </div>
-          <p className="text-sm text-gray-500 mb-2">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
             {isReceived ? (
-              <>From: <span className="font-bold text-gray-700">{request.requester_name}</span> ({request.requester_email})</>
+              <>From: <span className="font-bold text-gray-700 dark:text-gray-300">{request.requester_name}</span> ({request.requester_email})</>
             ) : (
               <>Status of your application for this animal</>
             )}
           </p>
-          <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 max-w-lg">
-            <p className="text-xs text-gray-600 italic">"{request.message}"</p>
+          <div className="bg-gray-50 dark:bg-dark-900 p-3 rounded-xl border border-gray-100 dark:border-gray-800 max-w-lg">
+            <p className="text-xs text-gray-600 dark:text-gray-400 italic">"{request.message}"</p>
           </div>
         </div>
       </div>
@@ -174,7 +174,7 @@ function RequestCard({ request, isReceived, onStatusUpdate, onCancel }) {
             </button>
             <button 
               onClick={() => onStatusUpdate(request.id, 'rejected')}
-              className="bg-white border-2 border-red-500 text-red-600 hover:bg-red-50 text-xs font-bold py-2.5 rounded-xl transition-all"
+              className="bg-white dark:bg-dark-900 border-2 border-red-500 dark:border-red-500/50 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 text-xs font-bold py-2.5 rounded-xl transition-all"
             >
               ✗ Reject
             </button>
@@ -185,7 +185,7 @@ function RequestCard({ request, isReceived, onStatusUpdate, onCancel }) {
         {isReceived && (
           <Link
             to="/messages"
-            className="text-center text-xs font-bold text-blue-500 hover:text-blue-700 py-2 border-2 border-blue-100 rounded-xl hover:bg-blue-50 transition-all"
+            className="text-center text-xs font-bold text-blue-500 hover:text-blue-700 py-2 border-2 border-blue-100 dark:border-blue-900/50 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-all"
           >
             💬 Message
           </Link>
@@ -195,7 +195,7 @@ function RequestCard({ request, isReceived, onStatusUpdate, onCancel }) {
         {!isReceived && request.status === 'pending' && (
           <button
             onClick={() => onCancel(request.id)}
-            className="bg-white border-2 border-red-200 text-red-500 hover:bg-red-50 text-xs font-bold py-2.5 rounded-xl transition-all"
+            className="bg-white dark:bg-dark-900 border-2 border-red-200 dark:border-red-900/50 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 text-xs font-bold py-2.5 rounded-xl transition-all"
           >
             Cancel Request
           </button>

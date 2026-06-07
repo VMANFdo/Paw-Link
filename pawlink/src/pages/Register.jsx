@@ -81,19 +81,19 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-[90vh] flex items-center justify-center bg-gray-50 px-4 py-12">
+    <div className="min-h-[90vh] flex items-center justify-center bg-gray-50 dark:bg-dark-900 px-4 py-12">
       <div className="card p-8 w-full max-w-lg shadow-xl border-t-4 border-secondary-500">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Join PawLink 🐾</h1>
-          <p className="text-gray-500">Create an account to help stray animals</p>
+          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">Join PawLink 🐾</h1>
+          <p className="text-gray-500 dark:text-gray-400">Create an account to help stray animals</p>
         </div>
 
         {/* Role Selector */}
-        <div className="flex p-1 bg-gray-100 rounded-xl mb-8">
+        <div className="flex p-1 bg-gray-100 dark:bg-dark-800 rounded-xl mb-8">
           <button
             type="button"
             className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
-              formData.role === 'person' ? 'bg-white shadow-md text-primary-600' : 'text-gray-500'
+              formData.role === 'person' ? 'bg-white dark:bg-dark-900 shadow-md text-primary-600' : 'text-gray-500 dark:text-gray-400'
             }`}
             onClick={() => handleRoleToggle('person')}
           >
@@ -102,7 +102,7 @@ export default function Register() {
           <button
             type="button"
             className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
-              formData.role === 'organization' ? 'bg-white shadow-md text-secondary-600' : 'text-gray-500'
+              formData.role === 'organization' ? 'bg-white dark:bg-dark-900 shadow-md text-secondary-600' : 'text-gray-500 dark:text-gray-400'
             }`}
             onClick={() => handleRoleToggle('organization')}
           >
@@ -111,7 +111,7 @@ export default function Register() {
         </div>
 
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 text-red-700 text-sm">
+          <div className="bg-red-50 dark:bg-red-950/40 border-l-4 border-red-500 p-4 mb-6 text-red-700 dark:text-red-400 text-sm">
             {error}
           </div>
         )}
@@ -237,8 +237,8 @@ export default function Register() {
           </button>
         </form>
 
-        <div className="mt-8 text-center border-t border-gray-100 pt-6">
-          <p className="text-sm text-gray-600">
+        <div className="mt-8 text-center border-t border-gray-100 dark:border-gray-800 pt-6">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Already have an account?{' '}
             <Link to="/login" className="text-primary-600 font-bold hover:underline">
               Sign In

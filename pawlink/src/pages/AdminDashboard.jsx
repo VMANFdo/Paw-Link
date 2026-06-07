@@ -198,10 +198,10 @@ export default function AdminDashboard() {
     <div className="container-section py-10">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
         <div>
-          <h1 className="text-4xl font-black text-gray-900">Admin Control Panel</h1>
-          <p className="text-gray-500 mt-1">Platform-wide moderation and analytics.</p>
+          <h1 className="text-4xl font-black text-gray-900 dark:text-white">Admin Control Panel</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Platform-wide moderation and analytics.</p>
         </div>
-        <div className="flex bg-gray-100 p-1.5 rounded-2xl overflow-x-auto">
+        <div className="flex bg-gray-100 dark:bg-dark-800 p-1.5 rounded-2xl overflow-x-auto">
           <TabBtn active={tab === 'stats'} onClick={() => setTab('stats')} label="Overview" />
           <TabBtn active={tab === 'users'} onClick={() => setTab('users')} label="Users" />
           <TabBtn active={tab === 'manage_orgs'} onClick={() => setTab('manage_orgs')} label="Manage Organizations" badge={stats?.pendingOrgs} />
@@ -281,11 +281,11 @@ function AddUserModal({ onClose, onSubmit }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-[2.5rem] w-full max-w-md shadow-2xl animate-scale-up overflow-hidden">
+      <div className="bg-white dark:bg-dark-800 rounded-[2.5rem] w-full max-w-md shadow-2xl animate-scale-up overflow-hidden">
         <div className="p-8 md:p-10">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-black text-gray-900">Add New User</h2>
-            <button onClick={onClose} className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-all">&times;</button>
+            <h2 className="text-3xl font-black text-gray-900 dark:text-white">Add New User</h2>
+            <button onClick={onClose} className="w-10 h-10 rounded-full bg-gray-50 dark:bg-dark-900 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-dark-900/80 transition-all dark:text-gray-400">&times;</button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -294,7 +294,7 @@ function AddUserModal({ onClose, onSubmit }) {
               <input 
                 type="text" 
                 required 
-                className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold"
+                className="w-full bg-gray-50 dark:bg-dark-900 dark:text-white border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold"
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 placeholder="e.g. John Doe"
@@ -305,7 +305,7 @@ function AddUserModal({ onClose, onSubmit }) {
               <input 
                 type="email" 
                 required 
-                className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold"
+                className="w-full bg-gray-50 dark:bg-dark-900 dark:text-white border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold"
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
                 placeholder="email@example.com"
@@ -317,7 +317,7 @@ function AddUserModal({ onClose, onSubmit }) {
                 type="password" 
                 required 
                 minLength="8"
-                className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold"
+                className="w-full bg-gray-50 dark:bg-dark-900 dark:text-white border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold"
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
                 placeholder="Min. 8 characters"
@@ -326,7 +326,7 @@ function AddUserModal({ onClose, onSubmit }) {
             <div>
               <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">User Role</label>
               <select 
-                className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold appearance-none"
+                className="w-full bg-gray-50 dark:bg-dark-900 dark:text-white border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold appearance-none"
                 value={formData.role}
                 onChange={(e) => setFormData({...formData, role: e.target.value})}
               >
@@ -375,51 +375,51 @@ function AddShelterModal({ onClose, onSubmit }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-[2.5rem] w-full max-w-2xl shadow-2xl animate-scale-up overflow-hidden max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-dark-800 rounded-[2.5rem] w-full max-w-2xl shadow-2xl animate-scale-up overflow-hidden max-h-[90vh] overflow-y-auto">
         <div className="p-8 md:p-10">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-black text-gray-900">Add New Shelter</h2>
-            <button onClick={onClose} className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-all">&times;</button>
+            <h2 className="text-3xl font-black text-gray-900 dark:text-white">Add New Shelter</h2>
+            <button onClick={onClose} className="w-10 h-10 rounded-full bg-gray-50 dark:bg-dark-900 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-dark-900/80 transition-all dark:text-gray-400">&times;</button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
-                <h3 className="text-sm font-black text-primary-600 uppercase tracking-widest border-b border-gray-50 pb-2">User Account</h3>
+                <h3 className="text-sm font-black text-primary-600 uppercase tracking-widest border-b border-gray-50 dark:border-gray-800 pb-2">User Account</h3>
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">Admin Name</label>
-                  <input type="text" required className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="e.g. John Shelter" />
+                  <input type="text" required className="w-full bg-gray-50 dark:bg-dark-900 dark:text-white border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="e.g. John Shelter" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">Email Address</label>
-                  <input type="email" required className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="shelter@example.com" />
+                  <input type="email" required className="w-full bg-gray-50 dark:bg-dark-900 dark:text-white border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="shelter@example.com" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">Password</label>
-                  <input type="password" required minLength="8" className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} placeholder="Min. 8 characters" />
+                  <input type="password" required minLength="8" className="w-full bg-gray-50 dark:bg-dark-900 dark:text-white border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} placeholder="Min. 8 characters" />
                 </div>
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-sm font-black text-primary-600 uppercase tracking-widest border-b border-gray-50 pb-2">Shelter Profile</h3>
+                <h3 className="text-sm font-black text-primary-600 uppercase tracking-widest border-b border-gray-50 dark:border-gray-800 pb-2">Shelter Profile</h3>
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">Shelter Name</label>
-                  <input type="text" required className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.shelter_name} onChange={(e) => setFormData({...formData, shelter_name: e.target.value})} placeholder="e.g. Happy Paws Shelter" />
+                  <input type="text" required className="w-full bg-gray-50 dark:bg-dark-900 dark:text-white border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.shelter_name} onChange={(e) => setFormData({...formData, shelter_name: e.target.value})} placeholder="e.g. Happy Paws Shelter" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">Contact Number</label>
-                  <input type="tel" required className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.contact_number} onChange={(e) => setFormData({...formData, contact_number: e.target.value})} placeholder="e.g. 0112345678" />
+                  <input type="tel" required className="w-full bg-gray-50 dark:bg-dark-900 dark:text-white border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.contact_number} onChange={(e) => setFormData({...formData, contact_number: e.target.value})} placeholder="e.g. 0112345678" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">Max Capacity</label>
-                  <input type="number" required className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.max_capacity} onChange={(e) => setFormData({...formData, max_capacity: e.target.value})} />
+                  <input type="number" required className="w-full bg-gray-50 dark:bg-dark-900 dark:text-white border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.max_capacity} onChange={(e) => setFormData({...formData, max_capacity: e.target.value})} />
                 </div>
               </div>
             </div>
 
             <div>
               <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">Physical Address</label>
-              <input type="text" required className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} placeholder="Street, City" />
+              <input type="text" required className="w-full bg-gray-50 dark:bg-dark-900 dark:text-white border-none rounded-2xl p-4 focus:ring-2 focus:ring-primary-500 font-bold" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} placeholder="Street, City" />
             </div>
 
             <div className="grid grid-cols-2 gap-4 pt-4">
@@ -440,7 +440,7 @@ function TabBtn({ active, onClick, label, badge }) {
     <button 
       onClick={onClick}
       className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
-        active ? 'bg-white shadow-md text-primary-600' : 'text-gray-400 hover:text-gray-600'
+        active ? 'bg-white dark:bg-dark-900 shadow-md text-primary-600' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
       }`}
     >
       <span>{label}</span>
@@ -478,7 +478,7 @@ function UsersTable({ users, onToggle }) {
   return (
     <div className="card overflow-hidden">
       <table className="w-full text-left">
-        <thead className="bg-gray-50 border-b border-gray-100">
+        <thead className="bg-gray-50 dark:bg-dark-900 border-b border-gray-100 dark:border-gray-800">
           <tr>
             <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase">User</th>
             <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase">Role</th>
@@ -486,12 +486,12 @@ function UsersTable({ users, onToggle }) {
             <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase text-right">Action</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-50">
+        <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
           {users.map(u => (
-            <tr key={u.id} className="hover:bg-gray-50/50 transition-colors">
+            <tr key={u.id} className="hover:bg-gray-50/50 dark:hover:bg-dark-900/30 transition-colors">
               <td className="px-6 py-4">
-                <p className="font-bold text-gray-900">{u.name}</p>
-                <p className="text-xs text-gray-400">{u.email}</p>
+                <p className="font-bold text-gray-900 dark:text-white">{u.name}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">{u.email}</p>
               </td>
               <td className="px-6 py-4">
                 <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
@@ -505,9 +505,9 @@ function UsersTable({ users, onToggle }) {
                 <span className={`w-2 h-2 rounded-full inline-block mr-2 ${u.is_active ? 'bg-green-500' : 'bg-red-500'}`}></span>
                 <span className="text-sm font-medium">{u.is_active ? 'Active' : 'Banned'}</span>
                 {u.appeal_message && (
-                  <div className="mt-2 p-2 bg-yellow-50 rounded-lg border border-yellow-100 animate-pulse">
-                    <p className="text-[10px] font-black text-yellow-700 uppercase mb-1">Appeal Received 📩</p>
-                    <p className="text-[10px] text-yellow-800 line-clamp-2 italic">"{u.appeal_message}"</p>
+                  <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg border border-yellow-100 dark:border-yellow-900/30 animate-pulse">
+                    <p className="text-[10px] font-black text-yellow-700 dark:text-yellow-300 uppercase mb-1">Appeal Received 📩</p>
+                    <p className="text-[10px] text-yellow-800 dark:text-yellow-400 line-clamp-2 italic">"{u.appeal_message}"</p>
                     {u.appeal_document_url && (
                       <a 
                         href={`${import.meta.env.VITE_API_BASE_URL}${u.appeal_document_url}`} 
@@ -586,7 +586,7 @@ function ReportsList({ reports, onUpdate }) {
   const pendingReports = reports.filter(r => r.status === 'pending')
   
   return (
-    <div className="card divide-y divide-gray-50">
+    <div className="card divide-y divide-gray-50 dark:divide-gray-800">
       {pendingReports.length > 0 ? pendingReports.map(r => (
         <div key={r.id} className="p-6 flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div className="flex-1">
@@ -594,18 +594,18 @@ function ReportsList({ reports, onUpdate }) {
               <span className="bg-red-50 text-red-600 px-2 py-0.5 rounded text-[10px] font-black uppercase">
                 {r.reason.replace(/_/g, ' ')}
               </span>
-              <p className="text-sm font-black text-gray-900">Report #{r.id}</p>
-              <span className="text-xs text-gray-400 font-medium">{new Date(r.created_at).toLocaleDateString()}</span>
+              <p className="text-sm font-black text-gray-900 dark:text-white">Report #{r.id}</p>
+              <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">{new Date(r.created_at).toLocaleDateString()}</span>
             </div>
             
             {/* Animal Context Card */}
-            <div className="bg-gray-50 rounded-xl p-3 mb-3 flex items-center gap-3 border border-gray-100">
+            <div className="bg-gray-50 dark:bg-dark-900 rounded-xl p-3 mb-3 flex items-center gap-3 border border-gray-100 dark:border-gray-800">
               <div className="w-10 h-10 bg-primary-100 text-primary-600 rounded-lg flex items-center justify-center font-bold">
                 🐾
               </div>
               <div>
                 <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">Reported Post</p>
-                <p className="text-sm font-bold text-gray-900">
+                <p className="text-sm font-bold text-gray-900 dark:text-white">
                   {r.animal_breed || r.animal_type} 
                   <span className="ml-2 text-[10px] bg-white px-2 py-0.5 rounded-full border border-gray-200">Status: {r.animal_status || 'Unknown'}</span>
                 </p>
@@ -627,7 +627,7 @@ function ReportsList({ reports, onUpdate }) {
               </div>
             )}
             
-            <p className="text-xs text-gray-400 font-medium">Reported by <span className="font-bold text-gray-600">{r.reporter_name}</span></p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 font-medium">Reported by <span className="font-bold text-gray-600 dark:text-gray-300">{r.reporter_name}</span></p>
           </div>
           
           <div className="flex flex-row md:flex-col gap-2 min-w-[140px]">
@@ -639,7 +639,7 @@ function ReportsList({ reports, onUpdate }) {
             </button>
             <button 
               onClick={() => onUpdate(r.id, 'dismissed')}
-              className="flex-1 w-full bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-bold py-2.5 px-4 rounded-xl transition-colors text-center"
+              className="flex-1 w-full bg-gray-100 dark:bg-dark-800 hover:bg-gray-200 dark:hover:bg-dark-900 text-gray-600 dark:text-gray-300 text-xs font-bold py-2.5 px-4 rounded-xl transition-colors text-center"
             >
               Dismiss Report
             </button>
@@ -647,9 +647,9 @@ function ReportsList({ reports, onUpdate }) {
         </div>
       )) : (
         <div className="p-20 text-center flex flex-col items-center justify-center">
-          <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center text-3xl mb-4">✨</div>
-          <h3 className="text-xl font-black text-gray-900 mb-1">All Clear!</h3>
-          <p className="text-gray-500 text-sm">There are no pending reports to review.</p>
+          <div className="w-16 h-16 bg-green-50 dark:bg-green-950/20 text-green-500 dark:text-green-400 rounded-full flex items-center justify-center text-3xl mb-4">✨</div>
+          <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1">All Clear!</h3>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">There are no pending reports to review.</p>
         </div>
       )}
     </div>
@@ -660,7 +660,7 @@ function OrganizationsTable({ orgs, onUpdate, isModeration }) {
   return (
     <div className="card overflow-hidden">
       <table className="w-full text-left">
-        <thead className="bg-gray-50 border-b border-gray-100">
+        <thead className="bg-gray-50 dark:bg-dark-900 border-b border-gray-100 dark:border-gray-800">
           <tr>
             <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase">Organization</th>
             <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase">Status</th>
@@ -668,12 +668,12 @@ function OrganizationsTable({ orgs, onUpdate, isModeration }) {
             <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase text-right">Action</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-50">
+        <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
           {orgs?.map(o => (
-            <tr key={o.id} className="hover:bg-gray-50/50 transition-colors">
+            <tr key={o.id} className="hover:bg-gray-50/50 dark:hover:bg-dark-900/30 transition-colors">
               <td className="px-6 py-4">
-                <p className="font-bold text-gray-900">{o.name}</p>
-                <p className="text-xs text-gray-400 mb-2">{o.email}</p>
+                <p className="font-bold text-gray-900 dark:text-white">{o.name}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">{o.email}</p>
                 {o.documents && o.documents.length > 0 && (
                   <div className="space-y-1">
                     <p className="text-[9px] font-black uppercase text-gray-400 tracking-wider">Registration Docs:</p>
@@ -684,7 +684,7 @@ function OrganizationsTable({ orgs, onUpdate, isModeration }) {
                           href={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${docUrl}`} 
                           target="_blank" 
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1 bg-gray-50 hover:bg-primary-50 hover:text-primary-600 border border-gray-200 hover:border-primary-200 px-2 py-0.5 rounded text-[9px] font-bold text-gray-600 transition-colors"
+                          className="inline-flex items-center gap-1 bg-gray-50 dark:bg-dark-800 hover:bg-primary-50 dark:hover:bg-primary-950/20 hover:text-primary-600 border border-gray-200 dark:border-gray-700 hover:border-primary-200 dark:hover:border-primary-900/40 px-2 py-0.5 rounded text-[9px] font-bold text-gray-600 transition-colors"
                         >
                           <span>Doc {idx + 1}</span> 📄
                         </a>
@@ -702,9 +702,9 @@ function OrganizationsTable({ orgs, onUpdate, isModeration }) {
                   {o.status.replace(/_/g, ' ')}
                 </span>
                 {o.appeal_message && (
-                  <div className="mt-2 p-2 bg-yellow-50 rounded-lg border border-yellow-100 animate-pulse">
-                    <p className="text-[10px] font-black text-yellow-700 uppercase mb-1">Appeal Received 📩</p>
-                    <p className="text-[10px] text-yellow-800 line-clamp-2 italic">"{o.appeal_message}"</p>
+                  <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg border border-yellow-100 dark:border-yellow-900/30 animate-pulse">
+                    <p className="text-[10px] font-black text-yellow-700 dark:text-yellow-300 uppercase mb-1">Appeal Received 📩</p>
+                    <p className="text-[10px] text-yellow-800 dark:text-yellow-400 line-clamp-2 italic">"{o.appeal_message}"</p>
                     {o.appeal_document_url && (
                       <a 
                         href={`${import.meta.env.VITE_API_BASE_URL}${o.appeal_document_url}`} 

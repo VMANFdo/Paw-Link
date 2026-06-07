@@ -60,13 +60,13 @@ export default function OrgSetup() {
   return (
     <div className="container py-12 max-w-2xl">
       <div className="text-center mb-12">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Shelter Setup 🏢</h1>
-        <p className="text-gray-500">Complete your profile to start helping animals.</p>
+        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">Shelter Setup 🏢</h1>
+        <p className="text-gray-500 dark:text-gray-400">Complete your profile to start helping animals.</p>
       </div>
 
       <div className="card p-8 shadow-xl">
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 text-red-700 text-sm">
+          <div className="bg-red-50 dark:bg-red-950/40 border-l-4 border-red-500 p-4 mb-6 text-red-700 dark:text-red-400 text-sm">
             {error}
           </div>
         )}
@@ -98,8 +98,8 @@ export default function OrgSetup() {
             <input type="text" name="address" className="input-field" value={formData.address} onChange={handleChange} required placeholder="Street address, etc." />
           </div>
 
-          <div className="card p-6 bg-gray-50 border border-gray-100 rounded-3xl">
-            <h3 className="font-bold text-gray-900 mb-4">Location</h3>
+          <div className="card p-6 bg-gray-50 dark:bg-dark-900 border border-gray-100 dark:border-gray-800 rounded-3xl">
+            <h3 className="font-bold text-gray-900 dark:text-white mb-4">Location</h3>
             <LocationPicker 
               position={formData.latitude && formData.longitude ? [formData.latitude, formData.longitude] : [6.9271, 79.8612]}
               onPositionChange={(pos) => setFormData({ ...formData, latitude: pos[0], longitude: pos[1] })}
@@ -129,7 +129,7 @@ export default function OrgSetup() {
                   className={`px-4 py-2 rounded-xl text-sm font-bold capitalize transition-all ${
                     formData.animal_types.includes(type)
                       ? 'bg-primary-500 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                      : 'bg-gray-100 dark:bg-dark-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-dark-900'
                   }`}
                 >
                   {type}s
