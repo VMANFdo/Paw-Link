@@ -3,6 +3,27 @@ const { sendSuccess, sendError } = require('../utils/responseHelper')
 
 /** userController.js — User Profile Management */
 
+const attachOrganizationState = async (user) => {
+  if (!user || user.role !== 'organization') return user
+
+  const [orgs] = await pool.query(
+    'SELECT status, profile_complete, is_permanently_banned, rejection_reason, appeal_message, appeal_document_url FROM organizations WHERE user_id = ?',
+    [user.id]
+  )
+
+  if (orgs.length === 0) return user
+
+  return {
+    ...user,
+    org_status: orgs[0].status,
+    org_profile_complete: orgs[0].profile_complete,
+    org_is_permanently_banned: orgs[0].is_permanently_banned,
+    org_rejection_reason: orgs[0].rejection_reason,
+    org_appeal_message: orgs[0].appeal_message,
+    org_appeal_document_url: orgs[0].appeal_document_url
+  }
+}
+
 const getMyProfile = async (req, res, next) => {
   try {
     const [users] = await pool.query(
@@ -10,7 +31,8 @@ const getMyProfile = async (req, res, next) => {
       [req.user.id]
     )
     if (!users.length) return sendError(res, 'User not found', 404)
-    sendSuccess(res, { user: users[0] })
+    const user = await attachOrganizationState(users[0])
+    sendSuccess(res, { user })
   } catch (err) { next(err) }
 }
 
@@ -39,7 +61,8 @@ const updateProfile = async (req, res, next) => {
       'SELECT id, name, email, role, profile_picture, bio, phone, created_at FROM users WHERE id = ?',
       [req.user.id]
     )
-    sendSuccess(res, { user: users[0] }, 'Profile updated')
+    const user = await attachOrganizationState(users[0])
+    sendSuccess(res, { user }, 'Profile updated')
   } catch (err) { next(err) }
 }
 
