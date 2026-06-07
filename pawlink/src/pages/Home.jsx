@@ -86,7 +86,7 @@ export default function Home() {
 
       {/* Stats Section */}
       <section className="container">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 bg-white p-10 rounded-3xl shadow-xl -mt-32 relative z-30">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 bg-white dark:bg-dark-800 p-10 rounded-3xl shadow-xl dark:shadow-none -mt-32 relative z-30 border border-gray-100 dark:border-gray-850/20">
           {[
             { label: 'Active Users',   value: stats.activeUsers },
             { label: 'Need Shelter',   value: stats.needShelter },
@@ -94,10 +94,10 @@ export default function Home() {
             { label: 'Saved Lives',    value: stats.livesSaved },
           ].map((stat, i) => (
             <div key={i} className="text-center">
-              <div className="text-3xl font-black text-gray-900 mb-1">
+              <div className="text-3xl font-black text-gray-900 dark:text-white mb-1">
                 {stat.value.toLocaleString()}
               </div>
-              <div className="text-sm text-gray-500 font-medium uppercase tracking-wider">{stat.label}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">{stat.label}</div>
             </div>
           ))}
         </div>
@@ -106,17 +106,17 @@ export default function Home() {
       {/* Guidelines Section */}
       <section className="container py-10">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-4xl font-black text-gray-900 mb-4 tracking-tight">How it Works</h2>
-          <p className="text-gray-600 text-lg">Follow these simple steps to start your journey with PawLink.</p>
+          <h2 className="text-4xl font-black text-gray-900 dark:text-white mb-4 tracking-tight">How it Works</h2>
+          <p className="text-gray-600 dark:text-gray-300 text-lg">Follow these simple steps to start your journey with PawLink.</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-12">
           {/* Adoption Guidelines */}
-          <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-500 group">
-            <div className="w-16 h-16 rounded-2xl bg-primary-100 text-primary-600 flex items-center justify-center text-3xl mb-8 group-hover:scale-110 transition-transform">
+          <div className="bg-white dark:bg-dark-800 rounded-[2.5rem] p-10 shadow-sm border border-gray-100 dark:border-gray-800/40 hover:shadow-xl dark:hover:shadow-none transition-all duration-500 group">
+            <div className="w-16 h-16 rounded-2xl bg-primary-100 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400 flex items-center justify-center text-3xl mb-8 group-hover:scale-110 transition-transform">
               🐕
             </div>
-            <h3 className="text-3xl font-black text-gray-900 mb-8">Want to adopt a pet?</h3>
+            <h3 className="text-3xl font-black text-gray-900 dark:text-white mb-8">Want to adopt a pet?</h3>
             <ul className="space-y-6">
               {[
                 { step: '1', text: 'Navigate to browse animals' },
@@ -124,21 +124,21 @@ export default function Home() {
                 { step: '3', text: 'Send an image with the animals in the poster to author and an adoption request' },
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-5">
-                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center font-black text-sm">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400 flex items-center justify-center font-black text-sm">
                     {item.step}
                   </span>
-                  <p className="text-gray-600 font-medium pt-1">{item.text}</p>
+                  <p className="text-gray-600 dark:text-gray-300 font-medium pt-1">{item.text}</p>
                 </li>
               ))}
             </ul>
           </div>
 
           {/* Rescue Guidelines */}
-          <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-500 group">
-            <div className="w-16 h-16 rounded-2xl bg-secondary-100 text-secondary-600 flex items-center justify-center text-3xl mb-8 group-hover:scale-110 transition-transform">
+          <div className="bg-white dark:bg-dark-800 rounded-[2.5rem] p-10 shadow-sm border border-gray-100 dark:border-gray-800/40 hover:shadow-xl dark:hover:shadow-none transition-all duration-500 group">
+            <div className="w-16 h-16 rounded-2xl bg-secondary-100 dark:bg-secondary-950/40 text-secondary-600 dark:text-secondary-400 flex items-center justify-center text-3xl mb-8 group-hover:scale-110 transition-transform">
               📢
             </div>
-            <h3 className="text-3xl font-black text-gray-900 mb-8">Want to report a Rescue?</h3>
+            <h3 className="text-3xl font-black text-gray-900 dark:text-white mb-8">Want to report a Rescue?</h3>
             <ul className="space-y-6">
               {[
                 { step: '1', text: 'Create a new account' },
@@ -146,10 +146,10 @@ export default function Home() {
                 { step: '3', text: 'Confirm adoption request upon the proof' },
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-5">
-                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary-50 text-secondary-600 flex items-center justify-center font-black text-sm">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary-50 dark:bg-secondary-950/40 text-secondary-600 dark:text-secondary-400 flex items-center justify-center font-black text-sm">
                     {item.step}
                   </span>
-                  <p className="text-gray-600 font-medium pt-1">{item.text}</p>
+                  <p className="text-gray-600 dark:text-gray-300 font-medium pt-1">{item.text}</p>
                 </li>
               ))}
             </ul>

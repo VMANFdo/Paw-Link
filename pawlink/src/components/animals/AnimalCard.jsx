@@ -7,10 +7,10 @@ export default function AnimalCard({ animal, actionButton }) {
     : 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
 
   const urgencyColors = {
-    low: 'bg-green-100 text-green-700',
-    medium: 'bg-yellow-100 text-yellow-700',
-    high: 'bg-orange-100 text-orange-700',
-    critical: 'bg-red-100 text-red-700'
+    low: 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-300',
+    medium: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-300',
+    high: 'bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-300',
+    critical: 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300'
   }
 
   return (
@@ -23,13 +23,13 @@ export default function AnimalCard({ animal, actionButton }) {
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />
         <div className="absolute top-4 left-4">
-          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm ${urgencyColors[animal.rescue_urgency] || 'bg-gray-100 text-gray-700'}`}>
+          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm ${urgencyColors[animal.rescue_urgency] || 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'}`}>
             {animal.rescue_urgency} Urgency
           </span>
         </div>
         {animal.status === 'pending' && (
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-            <span className="bg-white/90 text-gray-900 px-4 py-2 rounded-lg font-bold text-sm shadow-lg">
+            <span className="bg-white/90 dark:bg-dark-850/90 text-gray-900 dark:text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg">
               Rescue Pending
             </span>
           </div>
@@ -39,8 +39,8 @@ export default function AnimalCard({ animal, actionButton }) {
       {/* Content */}
       <div className="p-5">
         <div className="flex justify-between items-start mb-1">
-          <h3 className="text-xl font-bold text-gray-900 truncate pr-2">{animal.breed || animal.type}</h3>
-          <span className="text-xs font-bold text-primary-600 bg-primary-50 px-2 py-1 rounded capitalize">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white truncate pr-2">{animal.breed || animal.type}</h3>
+          <span className="text-xs font-bold text-primary-600 bg-primary-50 dark:bg-primary-950/30 px-2 py-1 rounded capitalize">
             {animal.type}
           </span>
         </div>
@@ -51,7 +51,7 @@ export default function AnimalCard({ animal, actionButton }) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider hover:text-primary-600 transition-colors"
+            className="inline-flex items-center text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
           >
             <svg className="w-3.5 h-3.5 mr-1 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -61,11 +61,11 @@ export default function AnimalCard({ animal, actionButton }) {
           </a>
         )}
         
-        <p className="text-gray-500 text-sm line-clamp-2 mb-4 h-10">
+        <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-2 mb-4 h-10">
           {animal.description || 'No description provided.'}
         </p>
 
-        <div className="flex items-center text-xs text-gray-400 mb-6">
+        <div className="flex items-center text-xs text-gray-450 dark:text-gray-500 mb-6">
           <span className="flex items-center mr-4">
             <span className="mr-1">🎂</span> {animal.age || 'Unknown age'}
           </span>
@@ -75,7 +75,7 @@ export default function AnimalCard({ animal, actionButton }) {
         </div>
 
         {animal.status === 'adopted' ? (
-          <div className="w-full py-3 bg-green-50 text-green-700 font-bold text-sm text-center rounded-xl border border-green-200">
+          <div className="w-full py-3 bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 font-bold text-sm text-center rounded-xl border border-green-200 dark:border-green-900/40">
             🎉 Adopted by {animal.adopter_name || 'Someone'}
           </div>
         ) : (
