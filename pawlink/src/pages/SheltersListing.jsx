@@ -26,14 +26,14 @@ export default function SheltersListing() {
   return (
     <div className="container py-12">
       <div className="mb-12">
-        <h1 className="text-4xl font-extrabold text-gray-900 mb-4">Rescue Shelters 🏠</h1>
-        <p className="text-gray-600 text-lg">Find a shelter to adopt from or hand over a found animal.</p>
+        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-4">Rescue Shelters 🏠</h1>
+        <p className="text-gray-600 dark:text-gray-400 text-lg">Find a shelter to adopt from or hand over a found animal.</p>
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 bg-gray-50 p-6 rounded-2xl border border-gray-100">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 bg-gray-50 dark:bg-dark-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-800">
         <div>
-          <label className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 block">Location</label>
+          <label className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2 block">Location</label>
           <input 
             type="text" 
             placeholder="Search by city..." 
@@ -43,7 +43,7 @@ export default function SheltersListing() {
           />
         </div>
         <div>
-          <label className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 block">Animal Type</label>
+          <label className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2 block">Animal Type</label>
           <select 
             className="input-field"
             value={filters.animal_type}
@@ -69,8 +69,8 @@ export default function SheltersListing() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-24 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-          <p className="text-gray-500 font-medium">No shelters found matching your search.</p>
+        <div className="text-center py-24 bg-gray-50 dark:bg-dark-800/50 rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-800">
+          <p className="text-gray-500 dark:text-gray-400 font-medium">No shelters found matching your search.</p>
         </div>
       )}
     </div>

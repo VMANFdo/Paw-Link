@@ -27,7 +27,7 @@ export default function ShelterDetails() {
 
   if (!shelter) return (
     <div className="container py-24 text-center">
-      <h2 className="text-2xl font-bold text-gray-900">Shelter not found</h2>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Shelter not found</h2>
       <Link to="/shelters" className="text-primary-600 font-bold hover:underline mt-4 block">Back to listings</Link>
     </div>
   )
@@ -35,30 +35,30 @@ export default function ShelterDetails() {
   return (
     <div className="container py-12">
       {handoverSuccess && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-6 py-4 rounded-2xl mb-8 animate-fade-in-up flex items-center justify-between">
+        <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900/30 text-green-700 dark:text-green-400 px-6 py-4 rounded-2xl mb-8 animate-fade-in-up flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-xl">🎉</span>
             <p className="font-bold">Handover request sent successfully! The shelter will review it soon.</p>
           </div>
-          <button onClick={() => setHandoverSuccess(false)} className="text-green-900 font-black">✕</button>
+          <button onClick={() => setHandoverSuccess(false)} className="text-green-900 dark:text-green-300 font-black">✕</button>
         </div>
       )}
 
       {/* Hero Section */}
-      <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row gap-8 items-start mb-12">
-        <div className="w-32 h-32 md:w-48 md:h-48 rounded-3xl overflow-hidden bg-gray-100 flex-shrink-0">
+      <div className="bg-white dark:bg-dark-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col md:flex-row gap-8 items-start mb-12">
+        <div className="w-32 h-32 md:w-48 md:h-48 rounded-3xl overflow-hidden bg-gray-100 dark:bg-dark-900 flex-shrink-0">
           {shelter.logo_url ? (
             <img src={shelter.logo_url} alt={shelter.name} className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-4xl text-gray-300">🏢</div>
+            <div className="w-full h-full flex items-center justify-center text-4xl text-gray-300 dark:text-gray-600">🏢</div>
           )}
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-extrabold text-gray-900">{shelter.name}</h1>
+            <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">{shelter.name}</h1>
             {shelter.verified && <VerifiedBadge />}
           </div>
-          <p className="text-gray-500 font-medium mb-6 flex items-center gap-2">
+          <p className="text-gray-500 dark:text-gray-400 font-medium mb-6 flex items-center gap-2">
             📍 {shelter.address}
           </p>
           <div className="flex flex-wrap gap-4">
@@ -92,48 +92,48 @@ export default function ShelterDetails() {
         <div className="lg:col-span-2 space-y-12">
           {/* About */}
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">About the Shelter</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{shelter.description || 'No description provided.'}</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">About the Shelter</h2>
+            <p className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap">{shelter.description || 'No description provided.'}</p>
           </section>
 
           {/* Animals */}
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Animals at this Shelter</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Animals at this Shelter</h2>
             {shelter.animals?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {shelter.animals.map(animal => (
-                  <Link key={animal.id} to={`/animals/${animal.id}`} className="group card overflow-hidden border border-gray-100 hover:shadow-lg transition-all">
+                  <Link key={animal.id} to={`/animals/${animal.id}`} className="group card overflow-hidden border border-gray-100 dark:border-gray-800 hover:shadow-lg transition-all">
                     <div className="aspect-video relative overflow-hidden">
                       {animal.thumbnail ? (
                         <img src={animal.thumbnail} alt={animal.breed} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                       ) : (
-                        <div className="w-full h-full bg-gray-100 flex items-center justify-center">🐾</div>
+                        <div className="w-full h-full bg-gray-100 dark:bg-dark-900 flex items-center justify-center">🐾</div>
                       )}
                     </div>
                     <div className="p-4">
-                      <h3 className="font-bold text-gray-900">{animal.breed || animal.type}</h3>
-                      <p className="text-xs text-gray-500">{animal.age} • {animal.gender}</p>
+                      <h3 className="font-bold text-gray-900 dark:text-white">{animal.breed || animal.type}</h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{animal.age} • {animal.gender}</p>
                     </div>
                   </Link>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 italic">No animals currently listed for adoption.</p>
+              <p className="text-gray-500 dark:text-gray-400 italic">No animals currently listed for adoption.</p>
             )}
           </section>
         </div>
 
         <div className="space-y-8">
-          <section className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-            <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-4">Quick Info</h3>
+          <section className="bg-gray-50 dark:bg-dark-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-800">
+            <h3 className="text-sm font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4">Quick Info</h3>
             <div className="space-y-4 text-sm font-medium">
               <div className="flex justify-between">
-                <span className="text-gray-500">Website</span>
+                <span className="text-gray-500 dark:text-gray-400">Website</span>
                 <a href={shelter.website} target="_blank" rel="noreferrer" className="text-primary-600 hover:underline">{shelter.website || 'N/A'}</a>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Accepts</span>
-                <span className="text-gray-900 capitalize">{(shelter.animal_types || []).join(', ') || 'Any'}</span>
+                <span className="text-gray-500 dark:text-gray-400">Accepts</span>
+                <span className="text-gray-900 dark:text-white capitalize">{(shelter.animal_types || []).join(', ') || 'Any'}</span>
               </div>
             </div>
           </section>
