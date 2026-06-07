@@ -51,18 +51,18 @@ export default function SuspendedPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 py-20">
-      <div className="max-w-xl w-full bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-gray-100">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex items-center justify-center p-6 py-20">
+      <div className="max-w-xl w-full bg-white dark:bg-dark-800 rounded-[3rem] shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800">
         <div className="p-10 md:p-16 text-center">
           <div className="text-6xl mb-8">
              {needsDocs ? '📂' : alreadyAppealed ? '⏳' : '🚫'}
           </div>
           
-          <h1 className="text-4xl font-black text-gray-900 mb-4">
+          <h1 className="text-4xl font-black text-gray-900 dark:text-white mb-4">
             {isPermanentlyBanned ? 'Permanently Banned' : needsDocs ? 'Action Required' : alreadyAppealed ? 'Under Review' : 'Account Restricted'}
           </h1>
           
-          <p className="text-gray-500 text-lg mb-10 leading-relaxed">
+          <p className="text-gray-500 dark:text-gray-400 text-lg mb-10 leading-relaxed">
             {isPermanentlyBanned 
               ? "Your account has been permanently suspended. Your appeal was reviewed and rejected. You can no longer access PawLink."
               : needsDocs 
@@ -73,9 +73,9 @@ export default function SuspendedPage() {
           </p>
 
           {!alreadyAppealed && (
-            <div className="bg-red-50 border border-red-100 rounded-3xl p-8 text-left mb-10">
+            <div className="bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-3xl p-8 text-left mb-10">
               <h3 className="text-[10px] font-black uppercase tracking-widest text-red-400 mb-2">Message from Admin</h3>
-              <p className="text-red-700 font-bold italic leading-relaxed">
+              <p className="text-red-700 dark:text-red-400 font-bold italic leading-relaxed">
                 "{reason || "No specific reason provided. Please contact support if you believe this is a mistake."}"
               </p>
             </div>
@@ -87,9 +87,9 @@ export default function SuspendedPage() {
             </div>
           ) : needsDocs ? (
             <div className="space-y-6">
-               <div className="bg-primary-50 p-6 rounded-2xl border border-primary-100 text-left">
+               <div className="bg-primary-50 dark:bg-primary-950/20 p-6 rounded-2xl border border-primary-100 dark:border-primary-900/30 text-left">
                   <h4 className="text-xs font-black text-primary-600 uppercase tracking-widest mb-1">What to do now?</h4>
-                  <p className="text-sm text-primary-800">Please email the requested documents to <span className="font-bold">verify@pawlink.com</span> along with your Shelter ID (#{user?.id}).</p>
+                  <p className="text-sm text-primary-800 dark:text-primary-300">Please email the requested documents to <span className="font-bold">verify@pawlink.com</span> along with your Shelter ID (#{user?.id}).</p>
                </div>
                <button onClick={handleLogout} className="btn-secondary w-full py-4 text-lg font-bold">Logout & Exit</button>
             </div>
@@ -97,17 +97,17 @@ export default function SuspendedPage() {
             <div className="space-y-8">
                {alreadyAppealed ? (
                  <div className="space-y-6">
-                    <div className="bg-yellow-50 border border-yellow-100 rounded-3xl p-8 text-left">
+                    <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-100 dark:border-yellow-900/30 rounded-3xl p-8 text-left">
                       <div className="flex items-center gap-4 mb-4">
                         <div className="w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center text-white animate-pulse">
                           <span className="text-xl">⌛</span>
                         </div>
                         <div>
-                          <h4 className="text-sm font-black text-yellow-800 uppercase tracking-widest">Verification Pending</h4>
-                          <p className="text-xs text-yellow-600 font-bold">Estimated review time: 24-48 hours</p>
+                          <h4 className="text-sm font-black text-yellow-800 dark:text-yellow-300 uppercase tracking-widest">Verification Pending</h4>
+                          <p className="text-xs text-yellow-600 dark:text-yellow-400 font-bold">Estimated review time: 24-48 hours</p>
                         </div>
                       </div>
-                      <p className="text-yellow-700 text-sm leading-relaxed">
+                      <p className="text-yellow-700 dark:text-yellow-400 text-sm leading-relaxed">
                         We've received your appeal. Our team is carefully reviewing the information provided. You will receive an email notification once the status of your account changes.
                       </p>
                     </div>
@@ -121,7 +121,7 @@ export default function SuspendedPage() {
                         required
                         value={appeal}
                         onChange={(e) => setAppeal(e.target.value)}
-                        className="w-full bg-gray-50 border-none rounded-2xl p-5 focus:ring-2 focus:ring-primary-500 font-medium min-h-[120px]"
+                        className="w-full bg-gray-50 dark:bg-dark-900 dark:text-white border-none rounded-2xl p-5 focus:ring-2 focus:ring-primary-500 font-medium min-h-[120px]"
                         placeholder="Explain why your account should be reinstated..."
                       ></textarea>
                     </div>
@@ -134,7 +134,7 @@ export default function SuspendedPage() {
                           onChange={(e) => setFile(e.target.files[0])}
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                         />
-                        <div className="w-full bg-gray-50 border-2 border-dashed border-gray-200 group-hover:border-primary-300 rounded-2xl p-6 transition-all text-center">
+                        <div className="w-full bg-gray-50 dark:bg-dark-900 border-2 border-dashed border-gray-200 dark:border-gray-700 group-hover:border-primary-300 rounded-2xl p-6 transition-all text-center">
                           <span className="text-gray-400 font-bold text-sm">
                             {file ? `📎 ${file.name}` : 'Click or drag to upload supporting files'}
                           </span>

@@ -58,8 +58,8 @@ export default function Dashboard() {
       
       {/* 1. Header & Stats */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">My Dashboard</h1>
-        <p className="text-gray-500 mb-8">Welcome back, <strong>{user?.name}</strong>!</p>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">My Dashboard</h1>
+        <p className="text-gray-500 dark:text-gray-400 mb-8">Welcome back, <strong>{user?.name}</strong>!</p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <StatCard label="Total Posts" value={stats.totalPosts} color="bg-blue-500" icon="🐾" />
@@ -73,7 +73,7 @@ export default function Dashboard() {
         {/* 2. My Recent Posts (Left Column) */}
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-800">My Animal Posts</h2>
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white">My Animal Posts</h2>
             {user?.role !== 'admin' && (
               <Link to="/add-animal" className="text-sm font-bold text-primary-600 hover:underline">+ New Post</Link>
             )}
@@ -96,18 +96,18 @@ export default function Dashboard() {
 
           {/* Handover Requests Sent */}
           <div className="pt-8">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">My Handover Requests</h2>
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">My Handover Requests</h2>
             <div className="space-y-4">
               {myHandovers.length > 0 ? (
                 myHandovers.map(req => (
                   <div key={req.id} className="card p-4 flex items-center justify-between border-l-4 border-secondary-500">
                     <div>
-                      <p className="text-sm font-bold text-gray-900">{req.description.slice(0, 50)}...</p>
-                      <p className="text-[10px] text-gray-500 mt-1">To: <span className="font-bold">{req.organization_name}</span> • {new Date(req.created_at).toLocaleDateString()}</p>
+                      <p className="text-sm font-bold text-gray-900 dark:text-white">{req.description.slice(0, 50)}...</p>
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">To: <span className="font-bold">{req.organization_name}</span> • {new Date(req.created_at).toLocaleDateString()}</p>
                     </div>
                     <span className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-full ${
-                      req.status === 'accepted' ? 'bg-green-100 text-green-700' : 
-                      req.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500'
+                      req.status === 'accepted' ? 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-300' : 
+                      req.status === 'rejected' ? 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300' : 'bg-gray-100 dark:bg-dark-800 text-gray-500 dark:text-gray-400'
                     }`}>
                       {req.status}
                     </span>
@@ -122,22 +122,22 @@ export default function Dashboard() {
 
         {/* 3. Recent Adoption Requests (Right Column) */}
         <div className="space-y-6">
-          <h2 className="text-xl font-bold text-gray-800">Recent Requests</h2>
-          <div className="card divide-y divide-gray-50">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white">Recent Requests</h2>
+          <div className="card divide-y divide-gray-50 dark:divide-gray-800">
             {recentRequests.length > 0 ? (
               recentRequests.map(req => (
-                <div key={req.id} className="p-4 hover:bg-gray-50 transition-colors">
+                <div key={req.id} className="p-4 hover:bg-gray-50 dark:hover:bg-dark-900/50 transition-colors">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm font-bold text-gray-800">{req.requester_name}</p>
+                    <p className="text-sm font-bold text-gray-800 dark:text-white">{req.requester_name}</p>
                     <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
-                      req.status === 'approved' ? 'bg-green-100 text-green-700' : 
-                      req.status === 'rejected' ? 'bg-red-100 text-red-700' : 
-                      'bg-yellow-100 text-yellow-700'
+                      req.status === 'approved' ? 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-300' : 
+                      req.status === 'rejected' ? 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300' : 
+                      'bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-300'
                     }`}>
                       {req.status}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 mb-2">Applied for {req.type} ({req.breed})</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Applied for {req.type} ({req.breed})</p>
                   <Link to="/messages" state={{ defaultTab: 'requests' }} className="text-[11px] font-bold text-primary-600 hover:underline">View Details</Link>
                 </div>
               ))
@@ -155,9 +155,9 @@ export default function Dashboard() {
       </div>
 
       {/* 4. My Adopted Animals Section */}
-      <div className="space-y-6 pt-6 border-t border-gray-100">
+      <div className="space-y-6 pt-6 border-t border-gray-100 dark:border-gray-800">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-black text-gray-900">My Adopted Furry Friends 🐾</h2>
+          <h2 className="text-2xl font-black text-gray-900 dark:text-white">My Adopted Furry Friends 🐾</h2>
         </div>
         
         {adoptedAnimals.length > 0 ? (
@@ -185,7 +185,7 @@ function StatCard({ label, value, color, icon }) {
       </div>
       <div>
         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{label}</p>
-        <p className="text-2xl font-black text-gray-800">{value}</p>
+        <p className="text-2xl font-black text-gray-800 dark:text-white">{value}</p>
       </div>
     </div>
   )
@@ -195,7 +195,7 @@ function AnimalListItem({ animal }) {
   return (
     <div className="card p-4 flex items-center justify-between hover:shadow-md transition-shadow">
       <div className="flex items-center space-x-4">
-        <div className="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
+        <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-dark-800 overflow-hidden flex-shrink-0">
           {animal.thumbnail ? (
             <img src={animal.thumbnail} alt={animal.breed} className="w-full h-full object-cover" />
           ) : (
@@ -203,7 +203,7 @@ function AnimalListItem({ animal }) {
           )}
         </div>
         <div>
-          <h4 className="font-bold text-gray-800 text-sm">{animal.breed || animal.type}</h4>
+          <h4 className="font-bold text-gray-800 dark:text-white text-sm">{animal.breed || animal.type}</h4>
           <div className="flex items-center space-x-2 mt-1">
             <span className={`badge-${animal.status}`}>{animal.status}</span>
             <span className="text-[10px] text-gray-400 font-medium">
@@ -224,8 +224,8 @@ function AnimalListItem({ animal }) {
 
 function EmptyState({ message }) {
   return (
-    <div className="card p-10 flex flex-col items-center justify-center text-center bg-gray-50/50 border-dashed border-2">
-      <p className="text-gray-400 text-sm font-medium">{message}</p>
+    <div className="card p-10 flex flex-col items-center justify-center text-center bg-gray-50/50 dark:bg-dark-800/20 border-dashed border-2 dark:border-gray-800">
+      <p className="text-gray-400 dark:text-gray-500 text-sm font-medium">{message}</p>
     </div>
   )
 }
@@ -233,15 +233,15 @@ function EmptyState({ message }) {
 function AdoptedAnimalCard({ request }) {
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
   return (
-    <div className="card p-4 flex flex-col items-center text-center hover:shadow-md transition-shadow border-2 border-green-100 bg-green-50/30">
-      <div className="w-24 h-24 rounded-full bg-gray-100 overflow-hidden mb-3 border-4 border-white shadow-sm">
+    <div className="card p-4 flex flex-col items-center text-center hover:shadow-md transition-shadow border-2 border-green-100 dark:border-green-900/30 bg-green-50/30 dark:bg-green-950/10">
+      <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-dark-800 overflow-hidden mb-3 border-4 border-white dark:border-dark-800 shadow-sm">
         {request.thumbnail ? (
           <img src={`${API_BASE}${request.thumbnail}`} alt={request.breed} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">No image</div>
         )}
       </div>
-      <h4 className="font-black text-gray-900">{request.breed || request.type}</h4>
+      <h4 className="font-black text-gray-900 dark:text-white">{request.breed || request.type}</h4>
       <span className="text-[10px] font-black uppercase px-3 py-1 rounded-full mt-2 bg-green-500 text-white shadow-sm">
         Adopted
       </span>

@@ -49,15 +49,15 @@ export default function OrgPending() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 py-20">
-      <div className="max-w-xl w-full bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-gray-100">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex items-center justify-center p-6 py-20">
+      <div className="max-w-xl w-full bg-white dark:bg-dark-800 rounded-[3rem] shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800">
         <div className="p-10 md:p-16 text-center">
           
           <div className="text-6xl mb-8">
             {isPermanentlyBanned ? '🚫' : needsDocs ? '📂' : isRejected ? '❌' : '⏳'}
           </div>
 
-          <h1 className="text-4xl font-black text-gray-900 mb-4">
+          <h1 className="text-4xl font-black text-gray-900 dark:text-white mb-4">
             {isPermanentlyBanned 
               ? 'Account Permanently Suspended' 
               : needsDocs 
@@ -67,7 +67,7 @@ export default function OrgPending() {
                   : 'Application Under Review'}
           </h1>
 
-          <p className="text-gray-500 text-lg mb-10 leading-relaxed">
+          <p className="text-gray-500 dark:text-gray-400 text-lg mb-10 leading-relaxed">
             {isPermanentlyBanned 
               ? "Your organization registration was permanently rejected by our safety team. You can no longer access the shelter dashboard."
               : needsDocs 
@@ -81,9 +81,9 @@ export default function OrgPending() {
 
           {/* Admin Note Section */}
           {(reason && !alreadyAppealed) && (
-            <div className="bg-orange-50 border border-orange-100 rounded-3xl p-8 text-left mb-10">
+            <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30 rounded-3xl p-8 text-left mb-10">
               <h3 className="text-[10px] font-black uppercase tracking-widest text-orange-400 mb-2">Message from Admin</h3>
-              <p className="text-orange-700 font-bold italic leading-relaxed">
+              <p className="text-orange-700 dark:text-orange-400 font-bold italic leading-relaxed">
                 "{reason}"
               </p>
             </div>
@@ -95,17 +95,17 @@ export default function OrgPending() {
             </div>
           ) : alreadyAppealed ? (
             <div className="space-y-6">
-              <div className="bg-yellow-50 border border-yellow-100 rounded-3xl p-8 text-left">
+              <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-100 dark:border-yellow-900/30 rounded-3xl p-8 text-left">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center text-white animate-pulse">
                     <span className="text-xl">⌛</span>
                   </div>
                   <div>
-                    <h4 className="text-sm font-black text-yellow-800 uppercase tracking-widest">Verification Pending</h4>
-                    <p className="text-xs text-yellow-600 font-bold">Estimated review: 24-48 hours</p>
+                    <h4 className="text-sm font-black text-yellow-800 dark:text-yellow-300 uppercase tracking-widest">Verification Pending</h4>
+                    <p className="text-xs text-yellow-600 dark:text-yellow-400 font-bold">Estimated review: 24-48 hours</p>
                   </div>
                 </div>
-                <p className="text-yellow-700 text-sm leading-relaxed">
+                <p className="text-yellow-700 dark:text-yellow-400 text-sm leading-relaxed">
                   We've received your updated submissions. Our admin team will notify you as soon as the review is complete.
                 </p>
               </div>
@@ -123,7 +123,7 @@ export default function OrgPending() {
                       required
                       value={appeal}
                       onChange={(e) => setAppeal(e.target.value)}
-                      className="w-full bg-gray-50 border-none rounded-2xl p-5 focus:ring-2 focus:ring-primary-500 font-medium min-h-[120px]"
+                      className="w-full bg-gray-50 dark:bg-dark-900 dark:text-white border-none rounded-2xl p-5 focus:ring-2 focus:ring-primary-500 font-medium min-h-[120px]"
                       placeholder={needsDocs ? "Type description of the uploaded files or answer admin requests here..." : "Explain why your application should be reviewed..."}
                     ></textarea>
                   </div>
@@ -136,7 +136,7 @@ export default function OrgPending() {
                         onChange={(e) => setFile(e.target.files[0])}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                       />
-                      <div className="w-full bg-gray-50 border-2 border-dashed border-gray-200 group-hover:border-primary-300 rounded-2xl p-6 transition-all text-center">
+                      <div className="w-full bg-gray-50 dark:bg-dark-900 border-2 border-dashed border-gray-200 dark:border-gray-700 group-hover:border-primary-300 rounded-2xl p-6 transition-all text-center">
                         <span className="text-gray-400 font-bold text-sm">
                           {file ? `📎 ${file.name}` : 'Click or drag to upload additional documents'}
                         </span>
@@ -153,7 +153,7 @@ export default function OrgPending() {
                   </button>
                 </form>
               ) : (
-                <div className="bg-blue-50 border border-blue-100 rounded-3xl p-8 text-left mb-6">
+                <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-3xl p-8 text-left mb-6">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white animate-pulse">
                       <span className="text-xl">✨</span>
@@ -163,7 +163,7 @@ export default function OrgPending() {
                       <p className="text-xs text-blue-600 font-bold">Shelter profile setup is complete!</p>
                     </div>
                   </div>
-                  <p className="text-blue-700 text-sm leading-relaxed mt-4">
+                  <p className="text-blue-700 dark:text-blue-400 text-sm leading-relaxed mt-4">
                     Your profile has been submitted and is currently in the moderation queue. We will check your contact details and shelter information to verify your account shortly.
                   </p>
                 </div>

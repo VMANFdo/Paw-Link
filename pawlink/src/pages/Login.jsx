@@ -54,15 +54,15 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center bg-gray-50 px-4 py-12">
+    <div className="min-h-[80vh] flex items-center justify-center bg-gray-50 dark:bg-dark-900 px-4 py-12">
       <div className="card p-8 w-full max-w-md shadow-xl border-t-4 border-primary-500">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Welcome Back 🐾</h1>
-          <p className="text-gray-500">Sign in to continue helping animals</p>
+          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">Welcome Back 🐾</h1>
+          <p className="text-gray-500 dark:text-gray-400">Sign in to continue helping animals</p>
         </div>
 
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 text-red-700 text-sm animate-pulse">
+          <div className="bg-red-50 dark:bg-red-950/40 border-l-4 border-red-500 p-4 mb-6 text-red-700 dark:text-red-400 text-sm animate-pulse">
             {error}
           </div>
         )}
@@ -128,8 +128,8 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="mt-8 text-center border-t border-gray-100 pt-6">
-          <p className="text-sm text-gray-600">
+        <div className="mt-8 text-center border-t border-gray-100 dark:border-gray-800 pt-6">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Don't have an account?{' '}
             <Link to="/register" className="text-primary-600 font-bold hover:underline">
               Create an account

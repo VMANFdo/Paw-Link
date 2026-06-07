@@ -84,16 +84,16 @@ export default function Messages() {
       {/* Page Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-black text-gray-900">Communication Hub</h1>
+          <h1 className="text-3xl font-black text-gray-900 dark:text-white">Communication Hub</h1>
           <p className="text-sm text-gray-400 mt-1">Manage your adoption requests and inquiries</p>
         </div>
 
         {/* Main Tab Toggle */}
-        <div className="flex bg-gray-100 p-1 rounded-2xl gap-1">
+        <div className="flex bg-gray-100 dark:bg-dark-800 p-1 rounded-2xl gap-1">
           <button
             onClick={() => setMainTab('requests')}
             className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all ${
-              mainTab === 'requests' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-500 hover:text-gray-700'
+              mainTab === 'requests' ? 'bg-white dark:bg-dark-900 shadow-sm text-primary-600' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
             🐾 Adoption Requests
@@ -101,7 +101,7 @@ export default function Messages() {
           <button
             onClick={() => { setMainTab('inquiries'); setCurrentThread(null); }}
             className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all ${
-              mainTab === 'inquiries' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-500 hover:text-gray-700'
+              mainTab === 'inquiries' ? 'bg-white dark:bg-dark-900 shadow-sm text-primary-600' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
             💬 Inquiries
@@ -118,16 +118,16 @@ export default function Messages() {
       {mainTab === 'inquiries' && (
         <div className="flex-grow flex flex-col" style={{ minHeight: '60vh' }}>
           {/* Sub-view toggle */}
-          <div className="flex bg-gray-100 p-1 rounded-xl w-fit mb-6">
+          <div className="flex bg-gray-100 dark:bg-dark-800 p-1 rounded-xl w-fit mb-6">
             <button
               onClick={() => { setView('inbox'); setCurrentThread(null); }}
-              className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${view === 'inbox' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400'}`}
+              className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${view === 'inbox' ? 'bg-white dark:bg-dark-900 shadow-sm text-primary-600' : 'text-gray-400 dark:text-gray-500'}`}
             >
               Inbox
             </button>
             <button
               onClick={() => { setView('sent'); setCurrentThread(null); }}
-              className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${view === 'sent' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-400'}`}
+              className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${view === 'sent' ? 'bg-white dark:bg-dark-900 shadow-sm text-primary-600' : 'text-gray-400 dark:text-gray-500'}`}
             >
               Sent
             </button>
@@ -135,21 +135,21 @@ export default function Messages() {
 
           <div className="flex-grow flex gap-6 overflow-hidden" style={{ minHeight: '50vh' }}>
             {/* Sidebar List */}
-            <div className="w-full md:w-1/3 bg-white rounded-3xl border border-gray-100 overflow-y-auto shadow-sm">
+            <div className="w-full md:w-1/3 bg-white dark:bg-dark-800 rounded-3xl border border-gray-100 dark:border-gray-800 overflow-y-auto shadow-sm">
               {loading ? (
                 <div className="p-10 flex justify-center"><div className="animate-spin h-6 w-6 border-b-2 border-primary-500 rounded-full"></div></div>
               ) : messages.length > 0 ? (
-                <div className="divide-y divide-gray-50">
+                <div className="divide-y divide-gray-50 dark:divide-gray-800">
                   {messages.map(msg => (
                     <button
                       key={msg.id}
                       onClick={() => handleSelectMessage(msg)}
-                      className={`w-full text-left p-6 hover:bg-primary-50/30 transition-colors group ${
-                        currentThread?.userId === (view === 'inbox' ? msg.sender_id : msg.receiver_id) ? 'bg-primary-50 border-r-4 border-primary-500' : ''
+                      className={`w-full text-left p-6 hover:bg-primary-50/30 dark:hover:bg-primary-950/10 transition-colors group ${
+                        currentThread?.userId === (view === 'inbox' ? msg.sender_id : msg.receiver_id) ? 'bg-primary-50 dark:bg-primary-950/20 border-r-4 border-primary-500' : ''
                       }`}
                     >
                       <div className="flex justify-between items-start mb-1">
-                        <p className="font-black text-gray-900 truncate">
+                        <p className="font-black text-gray-900 dark:text-white truncate">
                           {view === 'inbox' ? msg.sender_name : msg.receiver_name}
                         </p>
                         <span className="text-[10px] text-gray-300 font-bold">{new Date(msg.created_at).toLocaleDateString()}</span>
@@ -160,24 +160,24 @@ export default function Messages() {
                   ))}
                 </div>
               ) : (
-                <div className="p-10 text-center text-gray-300">No {view} yet.</div>
+                <div className="p-10 text-center text-gray-300 dark:text-gray-600">No {view} yet.</div>
               )}
             </div>
 
             {/* Thread View */}
-            <div className="hidden md:flex flex-1 flex-col bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
+            <div className="hidden md:flex flex-1 flex-col bg-white dark:bg-dark-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
               {currentThread ? (
                 <>
-                  <div className="p-6 border-b border-gray-50 bg-gray-50/30">
-                    <h3 className="font-black text-gray-900">{currentThread.name}</h3>
+                  <div className="p-6 border-b border-gray-50 dark:border-gray-800 bg-gray-50/30 dark:bg-dark-900/30">
+                    <h3 className="font-black text-gray-900 dark:text-white">{currentThread.name}</h3>
                     <p className="text-xs text-gray-400 uppercase tracking-widest font-bold">Conversation History</p>
                   </div>
 
-                  <div className="flex-grow overflow-y-auto p-6 space-y-4 bg-gray-50/10">
+                  <div className="flex-grow overflow-y-auto p-6 space-y-4 bg-gray-50/10 dark:bg-dark-900/10">
                     {currentThread.messages.map(m => (
                       <div key={m.id} className={`flex ${m.sender_id === user.id ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[70%] p-4 rounded-2xl text-sm ${
-                          m.sender_id === user.id ? 'bg-primary-500 text-white shadow-lg shadow-primary-100' : 'bg-white border border-gray-100 text-gray-700 shadow-sm'
+                          m.sender_id === user.id ? 'bg-primary-500 text-white shadow-lg shadow-primary-100 dark:shadow-none' : 'bg-white dark:bg-dark-900 border border-gray-100 dark:border-gray-800 text-gray-700 dark:text-gray-300 shadow-sm'
                         }`}>
                           <p className="leading-relaxed">{m.body}</p>
                           <p className={`text-[10px] mt-2 font-bold ${m.sender_id === user.id ? 'text-primary-100' : 'text-gray-300'}`}>
@@ -188,7 +188,7 @@ export default function Messages() {
                     ))}
                   </div>
 
-                  <form onSubmit={handleSendReply} className="p-6 border-t border-gray-50 bg-white">
+                  <form onSubmit={handleSendReply} className="p-6 border-t border-gray-50 dark:border-gray-800 bg-white dark:bg-dark-800">
                     <div className="flex gap-4">
                       <input
                         type="text"
