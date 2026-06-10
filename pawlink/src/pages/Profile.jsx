@@ -15,18 +15,18 @@ export default function Profile() {
   
   // Edit mode state
   const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState({ name: '', bio: '', phone: '' })
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
-  const fileInputRef = useRef(null)
+  const [orgMessage, setOrgMessage] = useState({ type: '', text: '' })
+  
+  // User profile fields
+  const [formData, setFormData] = useState({ name: '', bio: '', phone: '' })
+  const userProfileRef = useRef(null)
   const [selectedFile, setSelectedFile] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
+  
+  // Organization profile (unified)
   const [orgProfile, setOrgProfile] = useState(null)
-  const [isOrgEditing, setIsOrgEditing] = useState(false)
-  const [orgSaving, setOrgSaving] = useState(false)
-  const [orgMessage, setOrgMessage] = useState({ type: '', text: '' })
-  const [orgLogoFile, setOrgLogoFile] = useState(null)
-  const [orgLogoPreview, setOrgLogoPreview] = useState(null)
   const [orgFormData, setOrgFormData] = useState({
     name: '',
     description: '',
@@ -39,7 +39,9 @@ export default function Profile() {
     max_capacity: '',
     animal_types: []
   })
-  const orgLogoInputRef = useRef(null)
+  const orgLogoRef = useRef(null)
+  const [orgLogoFile, setOrgLogoFile] = useState(null)
+  const [orgLogoPreview, setOrgLogoPreview] = useState(null)
   const animalTypes = ['dog', 'cat', 'bird', 'rabbit', 'other']
 
   useEffect(() => {
@@ -104,18 +106,41 @@ export default function Profile() {
 
   const handleOrgLogoChange = (e) => {
     const file = e.target.files[0]
-    if (file) {
-      setOrgLogoFile(file)
-      setOrgLogoPreview(URL.createObjectURL(file))
+    if (!file) return
+
+    // Validation: File type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      setOrgMessage({ 
+        type: 'error', 
+        text: 'Invalid file type. Only JPG, PNG, and WebP are allowed.' 
+      })
+      e.target.value = ''
+      return
     }
+
+    // Validation: File size (5MB max)
+    const maxSizeMB = 5
+    if (file.size > maxSizeMB * 1024 * 1024) {
+      setOrgMessage({ 
+        type: 'error', 
+        text: `File size exceeds ${maxSizeMB}MB limit.` 
+      })
+      e.target.value = ''
+      return
+    }
+
+    setOrgMessage({ type: '', text: '' })
+    setOrgLogoFile(file)
+    setOrgLogoPreview(URL.createObjectURL(file))
   }
 
-  const triggerFileInput = () => {
-    fileInputRef.current.click()
+  const triggerUserProfileInput = () => {
+    userProfileRef.current.click()
   }
 
   const triggerOrgLogoInput = () => {
-    orgLogoInputRef.current.click()
+    orgLogoRef.current.click()
   }
 
   const handleSubmit = async (e) => {
@@ -132,14 +157,57 @@ export default function Profile() {
     }
 
     try {
-      const response = await userService.updateProfile(uploadData)
-      const updatedUser = response.data.data.user
+      // For organization users, update both user and org data
+      // For organization users, update both user and org data in parallel
+      if (profile.role === 'organization' && orgProfile) {
+        const orgUploadData = new FormData()
+        Object.entries(orgFormData).forEach(([key, value]) => {
+          if (key === 'animal_types') {
+            orgUploadData.append(key, JSON.stringify(value || []))
+          } else {
+            orgUploadData.append(key, value ?? '')
+          }
+        })
+        if (orgLogoFile) {
+          orgUploadData.append('logo', orgLogoFile)
+        }
+
+        try {
+          // Update org profile (shelter details + logo)
+          const orgResponse = await organizationService.updateProfile(orgUploadData)
+          const updatedOrganization = orgResponse.data.data.organization
+          setOrgProfile(updatedOrganization)
+          setOrgFormData(mapOrgToFormData(updatedOrganization))
+          setOrgLogoFile(null)
+          // Update preview with the actual server response
+          if (updatedOrganization.logo_url) {
+            const logoUrl = updatedOrganization.logo_url.startsWith('http') 
+              ? updatedOrganization.logo_url 
+              : `http://localhost:5000${updatedOrganization.logo_url}`
+            setOrgLogoPreview(logoUrl)
+          } else {
+            setOrgLogoPreview(null)
+          }
+        } catch (orgErr) {
+          setOrgMessage({ 
+            type: 'error', 
+            text: orgErr.response?.data?.message || 'Failed to update shelter profile.' 
+          })
+          setSaving(false)
+          return
+        }
+      }
+
+      // Update user profile (name, bio, phone) - always happens
+      const userResponse = await userService.updateProfile(uploadData)
+      const updatedUser = userResponse.data.data.user
       setProfile(updatedUser)
-      updateUser({ ...user, ...updatedUser }) // Preserve organization gate fields in global auth state.
+      updateUser({ ...user, ...updatedUser })
+
       setSelectedFile(null)
       setPreviewUrl(null)
       setIsEditing(false)
-      setMessage({ type: 'success', text: 'Profile updated successfully!' })
+      setMessage({ type: 'success', text: profile.role === 'organization' ? 'Shelter profile updated successfully!' : 'Profile updated successfully!' })
       
       // Clear success message after 3 seconds
       setTimeout(() => setMessage({ type: '', text: '' }), 3000)
@@ -150,43 +218,12 @@ export default function Profile() {
     }
   }
 
-  const handleOrgSubmit = async (e) => {
-    e.preventDefault()
-    setOrgSaving(true)
-    setOrgMessage({ type: '', text: '' })
-
-    const uploadData = new FormData()
-    Object.entries(orgFormData).forEach(([key, value]) => {
-      if (key === 'animal_types') {
-        uploadData.append(key, JSON.stringify(value || []))
-      } else {
-        uploadData.append(key, value ?? '')
-      }
-    })
-    if (orgLogoFile) {
-      uploadData.append('logo', orgLogoFile)
-    }
-
-    try {
-      const response = await organizationService.updateProfile(uploadData)
-      const updatedOrganization = response.data.data.organization
-      setOrgProfile(updatedOrganization)
-      setOrgFormData(mapOrgToFormData(updatedOrganization))
-      setOrgLogoFile(null)
-      setOrgLogoPreview(null)
-      setIsOrgEditing(false)
-      setOrgMessage({ type: 'success', text: 'Shelter profile updated successfully!' })
-      setTimeout(() => setOrgMessage({ type: '', text: '' }), 3000)
-    } catch (err) {
-      setOrgMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update shelter profile.' })
-    } finally {
-      setOrgSaving(false)
-    }
-  }
-
-  const cancelOrgEditing = () => {
-    setIsOrgEditing(false)
+  const cancelEditing = () => {
+    setIsEditing(false)
+    setFormData({ name: profile.name, bio: profile.bio || '', phone: profile.phone || '' })
     setOrgFormData(mapOrgToFormData(orgProfile))
+    setSelectedFile(null)
+    setPreviewUrl(null)
     setOrgLogoFile(null)
     setOrgLogoPreview(null)
   }
@@ -207,8 +244,8 @@ export default function Profile() {
       {/* Header Area */}
       <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-10 pb-10 border-b border-gray-100 dark:border-gray-800">
         <div 
-          onClick={isEditing ? triggerFileInput : undefined}
-          className={`w-32 h-32 rounded-full bg-primary-100 dark:bg-primary-950/40 flex items-center justify-center text-4xl font-black text-primary-600 shadow-inner flex-shrink-0 relative group overflow-hidden ${isEditing ? 'cursor-pointer' : ''}`}
+          onClick={isEditing && profile.role !== 'organization' ? triggerUserProfileInput : undefined}
+          className={`w-32 h-32 rounded-full bg-primary-100 dark:bg-primary-950/40 flex items-center justify-center text-4xl font-black text-primary-600 shadow-inner flex-shrink-0 relative group overflow-hidden ${isEditing && profile.role !== 'organization' ? 'cursor-pointer' : ''}`}
         >
           {previewUrl ? (
             <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -218,7 +255,7 @@ export default function Profile() {
             profile.name.charAt(0).toUpperCase()
           )}
           
-          {isEditing && (
+          {isEditing && profile.role !== 'organization' && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <span className="text-white text-xs font-bold">Change Photo</span>
             </div>
@@ -226,7 +263,7 @@ export default function Profile() {
           
           <input 
             type="file" 
-            ref={fileInputRef} 
+            ref={userProfileRef} 
             onChange={handleFileChange} 
             className="hidden" 
             accept="image/*"
@@ -238,7 +275,7 @@ export default function Profile() {
             <div>
               <h1 className="text-4xl font-black text-gray-900 dark:text-white mb-2">{profile.name}</h1>
               <span className="inline-block bg-primary-50 dark:bg-primary-950/30 text-primary-600 dark:text-primary-400 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
-                {profile.role}
+                {profile.role === 'organization' ? 'Shelter' : profile.role}
               </span>
             </div>
             
@@ -251,10 +288,7 @@ export default function Profile() {
               </button>
             ) : (
               <button 
-                onClick={() => {
-                  setIsEditing(false)
-                  setFormData({ name: profile.name, bio: profile.bio || '', phone: profile.phone || '' }) // Reset
-                }}
+                onClick={cancelEditing}
                 className="btn-outline px-6 py-2"
               >
                 Cancel Editing
@@ -273,236 +307,283 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Profile Content */}
-      <div className="bg-white dark:bg-dark-800 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800 p-8 md:p-12">
-        {!isEditing ? (
-          /* --- VIEW MODE --- */
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <InfoBlock label="Full Name" value={profile.name} icon="👤" />
-              <InfoBlock label="Email Address" value={profile.email} icon="✉️" readOnlyNotice="Cannot be changed" />
-              <InfoBlock label="Phone Number" value={profile.phone || 'Not provided'} icon="📱" />
-              <InfoBlock label="Member Since" value={new Date(profile.created_at).toLocaleDateString()} icon="📅" readOnlyNotice="Cannot be changed" />
-            </div>
-            
-            <div className="pt-6 border-t border-gray-50 dark:border-gray-800">
-              <InfoBlock 
-                label="Bio" 
-                value={profile.bio || 'No bio provided yet.'} 
-                icon="📝" 
-                fullWidth 
-              />
-            </div>
-          </div>
-        ) : (
-          /* --- EDIT MODE --- */
-          <form onSubmit={handleSubmit} className="space-y-8 animate-fade-in-up">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
-                <label className="form-label">Full Name</label>
-                <input 
-                  type="text" 
-                  name="name"
-                  value={formData.name} 
-                  onChange={handleInputChange}
-                  className="input-field" 
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="form-label flex justify-between">
-                  Email Address <span className="text-[10px] text-gray-400 font-normal">Read-only</span>
-                </label>
-                <input 
-                  type="email" 
-                  value={profile.email} 
-                  className="input-field bg-gray-50 dark:bg-dark-900 text-gray-400 dark:text-gray-500 cursor-not-allowed" 
-                  disabled 
-                />
-              </div>
-
-              <div>
-                <label className="form-label">Phone Number</label>
-                <input 
-                  type="tel" 
-                  name="phone"
-                  value={formData.phone} 
-                  onChange={handleInputChange}
-                  className="input-field" 
-                  placeholder="Ex: 071 012 3456"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="form-label">Bio / About Me</label>
-              <textarea 
-                name="bio"
-                value={formData.bio} 
-                onChange={handleInputChange}
-                className="input-field min-h-[120px] pt-4" 
-                placeholder="Tell the community a bit about yourself and your experience with pets..."
-              ></textarea>
-            </div>
-
-            <div className="pt-6 flex justify-end">
-              <button 
-                type="submit" 
-                disabled={saving}
-                className="btn-primary px-10 py-4 shadow-lg w-full md:w-auto"
-              >
-                {saving ? 'Saving Changes...' : 'Save Profile Changes'}
-              </button>
-            </div>
-          </form>
-        )}
-      </div>
-
-      {profile.role === 'organization' && orgProfile && (
-        <div className="bg-white dark:bg-dark-800 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800 p-8 md:p-12 mt-10">
-          <div className="flex flex-col md:flex-row md:items-start gap-8 mb-8 pb-8 border-b border-gray-100 dark:border-gray-800">
-            <div 
-              onClick={isOrgEditing ? triggerOrgLogoInput : undefined}
-              className={`w-full md:w-48 aspect-[16/10] rounded-3xl bg-secondary-50 dark:bg-secondary-950/30 flex items-center justify-center text-4xl font-black text-secondary-600 shadow-inner flex-shrink-0 relative group overflow-hidden ${isOrgEditing ? 'cursor-pointer' : ''}`}
-            >
-              {orgLogoPreview ? (
-                <img src={orgLogoPreview} alt="Shelter logo preview" className="w-full h-full object-cover" />
-              ) : orgProfile.logo_url ? (
-                <img src={orgProfile.logo_url} alt={orgProfile.name} className="w-full h-full object-cover" />
-              ) : (
-                orgProfile.name?.charAt(0)?.toUpperCase() || 'S'
-              )}
-              
-              {isOrgEditing && (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-white text-xs font-bold">Change Shelter Photo</span>
-                </div>
-              )}
-              
-              <input 
-                type="file" 
-                ref={orgLogoInputRef} 
-                onChange={handleOrgLogoChange} 
-                className="hidden" 
-                accept="image/*"
-              />
-            </div>
-
-            <div className="flex-1">
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2">Shelter Profile</h2>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">This image is shown on shelter cards and public shelter pages.</p>
-                </div>
-
-                {!isOrgEditing ? (
-                  <button 
-                    onClick={() => setIsOrgEditing(true)}
-                    className="btn-secondary px-6 py-2 shadow-sm"
-                  >
-                    Edit Shelter
-                  </button>
-                ) : (
-                  <button 
-                    onClick={cancelOrgEditing}
-                    className="btn-outline px-6 py-2"
-                  >
-                    Cancel Editing
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {orgMessage.text && (
-            <div className={`p-4 mb-8 rounded-2xl text-center font-bold text-sm ${
-              orgMessage.type === 'success' ? 'bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 border border-green-100 dark:border-green-900/30' : 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/30'
-            }`}>
-              {orgMessage.text}
-            </div>
-          )}
-
-          {!isOrgEditing ? (
+      {/* REGULAR USER PROFILE */}
+      {profile.role !== 'organization' && (
+        <div className="bg-white dark:bg-dark-800 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800 p-8 md:p-12">
+          {!isEditing ? (
             <div className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <InfoBlock label="Shelter Name" value={orgProfile.name} icon="Name" />
-                <InfoBlock label="Contact Number" value={orgProfile.contact_number || 'Not provided'} icon="Phone" />
-                <InfoBlock label="City" value={orgProfile.city || 'Not provided'} icon="City" />
-                <InfoBlock label="Capacity" value={`${orgProfile.current_occupancy || 0} / ${orgProfile.max_capacity || 0}`} icon="Capacity" />
-                <InfoBlock label="Website" value={orgProfile.website || 'Not provided'} icon="Web" />
-                <InfoBlock label="Address" value={orgProfile.address || 'Not provided'} icon="Address" />
+                <InfoBlock label="Full Name" value={profile.name} icon="👤" />
+                <InfoBlock label="Email Address" value={profile.email} icon="✉️" readOnlyNotice="Cannot be changed" />
+                <InfoBlock label="Phone Number" value={profile.phone || 'Not provided'} icon="📱" />
+                <InfoBlock label="Member Since" value={new Date(profile.created_at).toLocaleDateString()} icon="📅" readOnlyNotice="Cannot be changed" />
+              </div>
+              
+              <div className="pt-6 border-t border-gray-50 dark:border-gray-800">
+                <InfoBlock 
+                  label="Bio" 
+                  value={profile.bio || 'No bio provided yet.'} 
+                  icon="📝" 
+                  fullWidth 
+                />
+              </div>
+            </div>
+          ) : (
+            <form id="profile-edit-form" onSubmit={handleSubmit} className="space-y-8 animate-fade-in-up">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <label className="form-label">Full Name</label>
+                  <input 
+                    type="text" 
+                    name="name"
+                    value={formData.name} 
+                    onChange={handleInputChange}
+                    className="input-field" 
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="form-label flex justify-between">
+                    Email Address <span className="text-[10px] text-gray-400 font-normal">Read-only</span>
+                  </label>
+                  <input 
+                    type="email" 
+                    value={profile.email} 
+                    className="input-field bg-gray-50 dark:bg-dark-900 text-gray-400 dark:text-gray-500 cursor-not-allowed" 
+                    disabled 
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label">Phone Number</label>
+                  <input 
+                    type="tel" 
+                    name="phone"
+                    value={formData.phone} 
+                    onChange={handleInputChange}
+                    className="input-field" 
+                    placeholder="Ex: 071 012 3456"
+                  />
+                </div>
               </div>
 
-              <div className="pt-6 border-t border-gray-50 dark:border-gray-800">
-                <InfoBlock label="Description" value={orgProfile.description || 'No description provided yet.'} icon="About" fullWidth />
+              <div>
+                <label className="form-label">Bio / About Me</label>
+                <textarea 
+                  name="bio"
+                  value={formData.bio} 
+                  onChange={handleInputChange}
+                  className="input-field min-h-[120px] pt-4" 
+                  placeholder="Tell the community a bit about yourself..."
+                ></textarea>
               </div>
 
-              <div className="pt-6 border-t border-gray-50 dark:border-gray-800">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Animal Types Accepted</p>
+              <div className="pt-6 flex justify-end">
+                <button 
+                  type="submit" 
+                  disabled={saving}
+                  className="btn-primary px-10 py-4 shadow-lg w-full md:w-auto"
+                >
+                  {saving ? 'Saving Changes...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}
+
+      {/* UNIFIED ORGANIZATION PROFILE */}
+      {profile.role === 'organization' && orgProfile && (
+        <div className="bg-white dark:bg-dark-800 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800 p-8 md:p-12">
+          {!isEditing ? (
+            /* --- VIEW MODE --- */
+            <div className="space-y-8">
+              {/* Logo Display */}
+              <div className="flex flex-col md:flex-row md:items-start gap-8 pb-8 border-b border-gray-100 dark:border-gray-800">
+                <div className="w-full md:w-48 aspect-[16/10] rounded-3xl bg-secondary-50 dark:bg-secondary-950/30 flex items-center justify-center text-4xl font-black text-secondary-600 shadow-inner flex-shrink-0 overflow-hidden">
+                  {orgProfile.logo_url ? (
+                    <img src={`http://localhost:5000${orgProfile.logo_url}`} alt={orgProfile.name} className="w-full h-full object-cover" />
+                  ) : (
+                    orgProfile.name?.charAt(0)?.toUpperCase() || 'S'
+                  )}
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-1">Shelter Profile Picture</h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">This image is displayed on shelter cards and public pages.</p>
+                </div>
+              </div>
+
+              {/* Shelter Details */}
+              <div>
+                <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4">Contact Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <InfoBlock label="Shelter Name" value={orgProfile.name} icon="🏠" />
+                  <InfoBlock label="Contact Number" value={orgProfile.contact_number || 'Not provided'} icon="📞" />
+                  <InfoBlock label="Email" value={profile.email} icon="✉️" />
+                  <InfoBlock label="Website" value={orgProfile.website || 'Not provided'} icon="🌐" />
+                </div>
+              </div>
+
+              {/* Location */}
+              <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
+                <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4">Location</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <InfoBlock label="City" value={orgProfile.city || 'Not provided'} icon="🗺️" />
+                  <InfoBlock label="Address" value={orgProfile.address || 'Not provided'} icon="📍" fullWidth />
+                  <div className="grid grid-cols-2 gap-4">
+                    <InfoBlock label="Latitude" value={orgProfile.latitude || 'N/A'} icon="↕️" />
+                    <InfoBlock label="Longitude" value={orgProfile.longitude || 'N/A'} icon="↔️" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Operations */}
+              <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
+                <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4">Operations</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <InfoBlock label="Total Capacity" value={orgProfile.max_capacity || '0'} icon="🐾" />
+                  <InfoBlock label="Current Occupancy" value={orgProfile.current_occupancy || '0'} icon="🐕" />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
+                <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4">About</h3>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{orgProfile.description || 'No description provided yet.'}</p>
+              </div>
+
+              {/* Animal Types */}
+              <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
+                <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4">Animal Types Accepted</h3>
                 <div className="flex flex-wrap gap-2">
                   {(orgProfile.animal_types || []).length > 0 ? orgProfile.animal_types.map(type => (
-                    <span key={type} className="text-xs font-black uppercase tracking-wider bg-gray-100 dark:bg-dark-900 text-gray-500 dark:text-gray-400 px-3 py-1.5 rounded-lg">
+                    <span key={type} className="text-xs font-black uppercase tracking-wider bg-primary-100 dark:bg-primary-950/30 text-primary-600 dark:text-primary-400 px-3 py-1.5 rounded-lg">
                       {type}s
                     </span>
                   )) : (
-                    <span className="text-lg font-bold text-gray-900 dark:text-white">Not provided</span>
+                    <span className="text-gray-500 dark:text-gray-400">Not specified</span>
                   )}
                 </div>
               </div>
             </div>
           ) : (
-            <form onSubmit={handleOrgSubmit} className="space-y-8 animate-fade-in-up">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <label className="form-label">Shelter Name</label>
-                  <input type="text" name="name" value={orgFormData.name} onChange={handleOrgInputChange} className="input-field" required />
+            /* --- EDIT MODE --- */
+            <form id="profile-edit-form" onSubmit={handleSubmit} className="space-y-8 animate-fade-in-up">
+              {/* Logo Upload Section */}
+              <div className="flex flex-col md:flex-row md:items-start gap-8 pb-8 border-b border-gray-100 dark:border-gray-800">
+                <div 
+                  onClick={triggerOrgLogoInput}
+                  className="w-full md:w-48 aspect-[16/10] rounded-3xl bg-secondary-50 dark:bg-secondary-950/30 flex items-center justify-center text-4xl font-black text-secondary-600 shadow-inner flex-shrink-0 cursor-pointer relative group overflow-hidden"
+                >
+                  {orgLogoPreview ? (
+                    <img src={orgLogoPreview} alt="Shelter logo preview" className="w-full h-full object-cover" />
+                  ) : orgProfile.logo_url ? (
+                    <img src={`http://localhost:5000${orgProfile.logo_url}`} alt={orgProfile.name} className="w-full h-full object-cover" />
+                  ) : (
+                    orgProfile.name?.charAt(0)?.toUpperCase() || 'S'
+                  )}
+                  
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-white text-xs font-bold text-center px-2">Click to change photo</span>
+                  </div>
+                  
+                  <input 
+                    type="file" 
+                    ref={orgLogoRef} 
+                    onChange={handleOrgLogoChange} 
+                    className="hidden" 
+                    accept="image/*"
+                  />
                 </div>
 
-                <div>
-                  <label className="form-label">Contact Number</label>
-                  <input type="tel" name="contact_number" value={orgFormData.contact_number} onChange={handleOrgInputChange} className="input-field" required />
+                <div className="flex-1">
+                  <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Shelter Profile Picture</h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Upload an image that represents your shelter. This will be shown on shelter cards and public pages.</p>
+                  <div className="text-xs text-gray-400 dark:text-gray-500">Formats: JPG, PNG, WebP • Max size: 5MB</div>
                 </div>
+              </div>
 
-                <div>
-                  <label className="form-label">Website</label>
-                  <input type="url" name="website" value={orgFormData.website} onChange={handleOrgInputChange} className="input-field" placeholder="https://..." />
+              {/* Contact Information */}
+              <div>
+                <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4">Contact Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="form-label">Shelter Name</label>
+                    <input type="text" name="name" value={orgFormData.name} onChange={handleOrgInputChange} className="input-field" required />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Contact Number</label>
+                    <input type="tel" name="contact_number" value={orgFormData.contact_number} onChange={handleOrgInputChange} className="input-field" required />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="form-label flex justify-between">
+                      Email Address <span className="text-[10px] text-gray-400 font-normal">Read-only</span>
+                    </label>
+                    <input 
+                      type="email" 
+                      value={profile.email} 
+                      className="input-field bg-gray-50 dark:bg-dark-900 text-gray-400 dark:text-gray-500 cursor-not-allowed" 
+                      disabled 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Website (Optional)</label>
+                    <input type="url" name="website" value={orgFormData.website} onChange={handleOrgInputChange} className="input-field" placeholder="https://..." />
+                  </div>
                 </div>
+              </div>
 
+              {/* Location */}
+              <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
+                <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4">Location</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="form-label">City / Town</label>
+                    <input type="text" name="city" value={orgFormData.city} onChange={handleOrgInputChange} className="input-field" required />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Full Address</label>
+                    <input type="text" name="address" value={orgFormData.address} onChange={handleOrgInputChange} className="input-field" required />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Latitude</label>
+                    <input type="number" step="any" name="latitude" value={orgFormData.latitude} onChange={handleOrgInputChange} className="input-field" required />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Longitude</label>
+                    <input type="number" step="any" name="longitude" value={orgFormData.longitude} onChange={handleOrgInputChange} className="input-field" required />
+                  </div>
+                </div>
+              </div>
+
+              {/* Operations */}
+              <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
+                <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4">Operations</h3>
                 <div>
                   <label className="form-label">Total Shelter Capacity</label>
                   <input type="number" name="max_capacity" value={orgFormData.max_capacity} onChange={handleOrgInputChange} className="input-field" required min="0" />
-                </div>
-
-                <div>
-                  <label className="form-label">Latitude</label>
-                  <input type="number" step="any" name="latitude" value={orgFormData.latitude} onChange={handleOrgInputChange} className="input-field" required />
-                </div>
-
-                <div>
-                  <label className="form-label">Longitude</label>
-                  <input type="number" step="any" name="longitude" value={orgFormData.longitude} onChange={handleOrgInputChange} className="input-field" required />
-                </div>
-
-                <div>
-                  <label className="form-label">City / Town</label>
-                  <input type="text" name="city" value={orgFormData.city} onChange={handleOrgInputChange} className="input-field" required />
-                </div>
-
-                <div>
-                  <label className="form-label">Full Address</label>
-                  <input type="text" name="address" value={orgFormData.address} onChange={handleOrgInputChange} className="input-field" required />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Current occupancy: {orgProfile.current_occupancy || 0}</p>
                 </div>
               </div>
 
-              <div>
+              {/* Description */}
+              <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
+                <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4">About Your Shelter</h3>
                 <label className="form-label">Description</label>
-                <textarea name="description" value={orgFormData.description} onChange={handleOrgInputChange} className="input-field min-h-[120px] pt-4" placeholder="Tell the community about your shelter..."></textarea>
+                <textarea name="description" value={orgFormData.description} onChange={handleOrgInputChange} className="input-field min-h-[120px] pt-4" placeholder="Tell the community about your shelter's mission, services, and story..." required></textarea>
               </div>
 
-              <div>
-                <label className="form-label block mb-3">Animal Types Accepted</label>
-                <div className="flex flex-wrap gap-2">
+              {/* Animal Types */}
+              <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
+                <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4">Animal Types Accepted</h3>
+                <div className="flex flex-wrap gap-3">
                   {animalTypes.map(type => (
                     <button
                       key={type}
@@ -520,13 +601,14 @@ export default function Profile() {
                 </div>
               </div>
 
-              <div className="pt-6 flex justify-end">
+              {/* Submit Button */}
+              <div className="pt-8 border-t border-gray-100 dark:border-gray-800 flex justify-end">
                 <button 
                   type="submit" 
-                  disabled={orgSaving}
+                  disabled={saving}
                   className="btn-primary px-10 py-4 shadow-lg w-full md:w-auto"
                 >
-                  {orgSaving ? 'Saving Shelter...' : 'Save Shelter Profile'}
+                  {saving ? 'Saving Changes...' : 'Save All Changes'}
                 </button>
               </div>
             </form>
