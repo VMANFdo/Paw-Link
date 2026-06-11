@@ -14,6 +14,7 @@ const adminRoutes    = require('./routes/adminRoutes')
 const organizationRoutes = require('./routes/organizationRoutes')
 const handoverRoutes = require('./routes/handoverRoutes')
 const reportRoutes   = require('./routes/reportRoutes')
+const contactRoutes  = require('./routes/contactRoutes')
 
 // Import global error handler (must be last)
 const errorHandler = require('./middleware/errorHandler')
@@ -66,6 +67,7 @@ app.use('/api/admin',     adminRoutes)
 app.use('/api/organizations', organizationRoutes)
 app.use('/api/handovers',     handoverRoutes)
 app.use('/api/reports',       reportRoutes)
+app.use('/api/contact',       contactRoutes)
 
 // ─────────────────────────────────────────
 // 5. Health Check Route
