@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { userService } from '../services/userService'
 import organizationService from '../services/organizationService'
+import { getShelterImage } from '../utils/defaultImages'
 
 /**
  * Profile.jsx — User Profile Page
@@ -402,11 +403,14 @@ export default function Profile() {
               {/* Logo Display */}
               <div className="flex flex-col md:flex-row md:items-start gap-8 pb-8 border-b border-gray-100 dark:border-gray-800">
                 <div className="w-full md:w-48 aspect-[16/10] rounded-3xl bg-secondary-50 dark:bg-secondary-950/30 flex items-center justify-center text-4xl font-black text-secondary-600 shadow-inner flex-shrink-0 overflow-hidden">
-                  {orgProfile.logo_url ? (
-                    <img src={`http://localhost:5000${orgProfile.logo_url}`} alt={orgProfile.name} className="w-full h-full object-cover" />
-                  ) : (
-                    orgProfile.name?.charAt(0)?.toUpperCase() || 'S'
-                  )}
+                  <img
+                    src={getShelterImage(orgProfile.logo_url)}
+                    alt={orgProfile.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = getShelterImage()
+                    }}
+                  />
                 </div>
                 <div className="flex-1">
                   <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-1">Shelter Profile Picture</h2>
@@ -476,13 +480,14 @@ export default function Profile() {
                   onClick={triggerOrgLogoInput}
                   className="w-full md:w-48 aspect-[16/10] rounded-3xl bg-secondary-50 dark:bg-secondary-950/30 flex items-center justify-center text-4xl font-black text-secondary-600 shadow-inner flex-shrink-0 cursor-pointer relative group overflow-hidden"
                 >
-                  {orgLogoPreview ? (
-                    <img src={orgLogoPreview} alt="Shelter logo preview" className="w-full h-full object-cover" />
-                  ) : orgProfile.logo_url ? (
-                    <img src={`http://localhost:5000${orgProfile.logo_url}`} alt={orgProfile.name} className="w-full h-full object-cover" />
-                  ) : (
-                    orgProfile.name?.charAt(0)?.toUpperCase() || 'S'
-                  )}
+                  <img
+                    src={orgLogoPreview || getShelterImage(orgProfile.logo_url)}
+                    alt={orgLogoPreview ? 'Shelter logo preview' : orgProfile.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = getShelterImage()
+                    }}
+                  />
                   
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <span className="text-white text-xs font-bold text-center px-2">Click to change photo</span>

@@ -5,6 +5,7 @@ import { userService } from '../services/userService'
 import { animalService } from '../services/animalService'
 import { adoptionService } from '../services/adoptionService'
 import handoverService from '../services/handoverService'
+import { getAnimalImage, getDefaultAnimalImage } from '../utils/defaultImages'
 
 /**
  * Dashboard.jsx — User Dashboard
@@ -196,11 +197,14 @@ function AnimalListItem({ animal }) {
     <div className="card p-4 flex items-center justify-between hover:shadow-md transition-shadow">
       <div className="flex items-center space-x-4">
         <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-dark-800 overflow-hidden flex-shrink-0">
-          {animal.thumbnail ? (
-            <img src={animal.thumbnail} alt={animal.breed} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">No image</div>
-          )}
+          <img
+            src={getAnimalImage(animal.thumbnail, animal.type)}
+            alt={animal.breed || animal.type}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.src = getDefaultAnimalImage(animal.type)
+            }}
+          />
         </div>
         <div>
           <h4 className="font-bold text-gray-800 dark:text-white text-sm">{animal.breed || animal.type}</h4>
@@ -231,15 +235,17 @@ function EmptyState({ message }) {
 }
 
 function AdoptedAnimalCard({ request }) {
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
   return (
     <div className="card p-4 flex flex-col items-center text-center hover:shadow-md transition-shadow border-2 border-green-100 dark:border-green-900/30 bg-green-50/30 dark:bg-green-950/10">
       <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-dark-800 overflow-hidden mb-3 border-4 border-white dark:border-dark-800 shadow-sm">
-        {request.thumbnail ? (
-          <img src={`${API_BASE}${request.thumbnail}`} alt={request.breed} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">No image</div>
-        )}
+        <img
+          src={getAnimalImage(request.thumbnail, request.type)}
+          alt={request.breed || request.type}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            e.currentTarget.src = getDefaultAnimalImage(request.type)
+          }}
+        />
       </div>
       <h4 className="font-black text-gray-900 dark:text-white">{request.breed || request.type}</h4>
       <span className="text-[10px] font-black uppercase px-3 py-1 rounded-full mt-2 bg-green-500 text-white shadow-sm">

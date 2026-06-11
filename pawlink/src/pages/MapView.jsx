@@ -4,6 +4,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { animalService } from '../services/animalService'
 import { Link } from 'react-router-dom'
+import { getAnimalImage, getDefaultAnimalImage } from '../utils/defaultImages'
 
 // Fix for default marker icons in Leaflet
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
@@ -61,9 +62,12 @@ export default function MapView() {
             <Popup className="rounded-2xl overflow-hidden">
               <div className="w-48">
                 <img 
-                  src={animal.thumbnail ? `http://localhost:5000${animal.thumbnail}` : 'https://via.placeholder.com/200x120?text=No+Image'} 
-                  alt={animal.breed} 
+                  src={getAnimalImage(animal.thumbnail, animal.type)} 
+                  alt={animal.breed || animal.type} 
                   className="w-full h-24 object-cover rounded-lg mb-2"
+                  onError={(e) => {
+                    e.currentTarget.src = getDefaultAnimalImage(animal.type)
+                  }}
                 />
                 <h3 className="font-bold text-gray-900">{animal.breed || animal.type}</h3>
                 <p className="text-xs text-gray-500 mb-2 truncate">{animal.description}</p>

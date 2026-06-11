@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { adoptionService } from '../services/adoptionService'
 import { Link } from 'react-router-dom'
 import { useUI } from '../context/UIContext'
+import { getAnimalImage, getDefaultAnimalImage } from '../utils/defaultImages'
 
 /**
  * AdoptionRequests.jsx — Management page for adoption requests
@@ -128,17 +129,18 @@ function RequestCard({ request, isReceived, onStatusUpdate, onCancel }) {
     rejected: 'bg-red-100 text-red-700'
   }
 
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
-
   return (
     <div className="card p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-md transition-shadow">
       <div className="flex items-center space-x-6">
         <div className="w-20 h-20 rounded-2xl bg-gray-100 dark:bg-dark-800 overflow-hidden flex-shrink-0 border border-gray-100 dark:border-gray-800">
-          {request.thumbnail ? (
-            <img src={`${API_BASE}${request.thumbnail}`} className="w-full h-full object-cover" alt="thumbnail" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-300 dark:text-gray-600">No Image</div>
-          )}
+          <img
+            src={getAnimalImage(request.thumbnail, request.type)}
+            className="w-full h-full object-cover"
+            alt={request.breed || request.type}
+            onError={(e) => {
+              e.currentTarget.src = getDefaultAnimalImage(request.type)
+            }}
+          />
         </div>
         <div>
           <div className="flex items-center space-x-3 mb-1">

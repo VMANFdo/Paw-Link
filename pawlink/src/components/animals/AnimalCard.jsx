@@ -1,10 +1,8 @@
 import { Link } from 'react-router-dom'
+import { getAnimalImage, getDefaultAnimalImage } from '../../utils/defaultImages'
 
 export default function AnimalCard({ animal, actionButton }) {
-  // Use a default image if none is provided
-  const imageUrl = animal.thumbnail 
-    ? animal.thumbnail 
-    : 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+  const imageUrl = getAnimalImage(animal.thumbnail, animal.type)
 
   const urgencyColors = {
     low: 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-300',
@@ -19,8 +17,11 @@ export default function AnimalCard({ animal, actionButton }) {
       <div className="relative h-56 overflow-hidden">
         <img 
           src={imageUrl} 
-          alt={animal.breed} 
+          alt={animal.breed || animal.type}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          onError={(e) => {
+            e.currentTarget.src = getDefaultAnimalImage(animal.type)
+          }}
         />
         <div className="absolute top-4 left-4">
           <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm ${urgencyColors[animal.rescue_urgency] || 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'}`}>

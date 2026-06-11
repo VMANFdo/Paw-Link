@@ -4,6 +4,7 @@ import organizationService from '../services/organizationService'
 import CapacityBar from '../components/shelters/CapacityBar'
 import VerifiedBadge from '../components/shelters/VerifiedBadge'
 import HandoverForm from '../components/shelters/HandoverForm'
+import { getAnimalImage, getDefaultAnimalImage, getShelterImage } from '../utils/defaultImages'
 
 export default function ShelterDetails() {
   const { id } = useParams()
@@ -47,11 +48,14 @@ export default function ShelterDetails() {
       {/* Hero Section */}
       <div className="bg-white dark:bg-dark-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col md:flex-row gap-8 items-start mb-12">
         <div className="w-32 h-32 md:w-48 md:h-48 rounded-3xl overflow-hidden bg-gray-100 dark:bg-dark-900 flex-shrink-0">
-          {shelter.logo_url ? (
-            <img src={shelter.logo_url} alt={shelter.name} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-4xl text-gray-300 dark:text-gray-600">🏢</div>
-          )}
+          <img
+            src={getShelterImage(shelter.logo_url)}
+            alt={shelter.name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.src = getShelterImage()
+            }}
+          />
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
@@ -104,11 +108,14 @@ export default function ShelterDetails() {
                 {shelter.animals.map(animal => (
                   <Link key={animal.id} to={`/animals/${animal.id}`} className="group card overflow-hidden border border-gray-100 dark:border-gray-800 hover:shadow-lg transition-all">
                     <div className="aspect-video relative overflow-hidden">
-                      {animal.thumbnail ? (
-                        <img src={animal.thumbnail} alt={animal.breed} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                      ) : (
-                        <div className="w-full h-full bg-gray-100 dark:bg-dark-900 flex items-center justify-center">🐾</div>
-                      )}
+                      <img
+                        src={getAnimalImage(animal.thumbnail, animal.type)}
+                        alt={animal.breed || animal.type}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        onError={(e) => {
+                          e.currentTarget.src = getDefaultAnimalImage(animal.type)
+                        }}
+                      />
                     </div>
                     <div className="p-4">
                       <h3 className="font-bold text-gray-900 dark:text-white">{animal.breed || animal.type}</h3>
