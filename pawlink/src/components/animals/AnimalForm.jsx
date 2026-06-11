@@ -95,7 +95,7 @@ export default function AnimalForm({ onSuccess }) {
           <div>
             <label className="form-label">What kind of animal?</label>
             <div className="flex gap-4">
-              {['dog', 'cat', 'other'].map(t => (
+              {['dog', 'cat', 'bird', 'other'].map(t => (
                 <button
                   key={t}
                   type="button"

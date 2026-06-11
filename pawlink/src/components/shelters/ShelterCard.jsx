@@ -2,33 +2,14 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import CapacityBar from './CapacityBar'
 import VerifiedBadge from './VerifiedBadge'
+import { DEFAULT_SHELTER_IMAGE, getShelterImage } from '../../utils/defaultImages'
 
 export default function ShelterCard({ shelter }) {
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
 
-  const getImageUrl = (logoUrl) => {
-    if (!logoUrl) return null
-    // If it's already a full URL, use it; otherwise prepend the API base
-    if (logoUrl.startsWith('http')) return logoUrl
-    return `http://localhost:5000${logoUrl}`
-  }
-
   const renderImage = () => {
-    const imageUrl = getImageUrl(shelter.logo_url)
-    
-    if (!imageUrl || imageError) {
-      // Fallback: Show initials with gradient
-      const initials = (shelter.name || 'S').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
-      const colors = ['bg-gradient-to-br from-primary-400 to-primary-600', 'bg-gradient-to-br from-secondary-400 to-secondary-600', 'bg-gradient-to-br from-cyan-400 to-cyan-600']
-      const colorClass = colors[shelter.id % colors.length]
-      
-      return (
-        <div className={`w-full h-full flex items-center justify-center text-3xl font-black text-white ${colorClass}`}>
-          {initials}
-        </div>
-      )
-    }
+    const imageUrl = imageError ? DEFAULT_SHELTER_IMAGE : getShelterImage(shelter.logo_url)
 
     return (
       <>

@@ -6,6 +6,7 @@ import { messageService } from '../services/messageService'
 import { reportService } from '../services/reportService'
 import { useAuth } from '../context/AuthContext'
 import { useUI } from '../context/UIContext'
+import { getAnimalImage, getDefaultAnimalImage, getShelterImage } from '../utils/defaultImages'
 
 const MEDICAL_TYPE_ALIASES = {
   vaccination: ['vaccination', 'vaccinated', 'vaccine', 'vaccines'],
@@ -274,8 +275,8 @@ export default function AnimalDetails() {
   )
 
   const images = animal.images?.length > 0 
-    ? animal.images.map(img => img.image_url)
-    : ['https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80']
+    ? animal.images.map(img => getAnimalImage(img.image_url, animal.type))
+    : [getDefaultAnimalImage(animal.type)]
 
   const isAuthor = user?.id === animal.posted_by
   const canManage = isAuthor || user?.role === 'admin'
@@ -301,7 +302,10 @@ export default function AnimalDetails() {
             <img 
               src={images[activeImage]} 
               className="w-full h-full object-cover" 
-              alt={animal.breed}
+              alt={animal.breed || animal.type}
+              onError={(e) => {
+                e.currentTarget.src = getDefaultAnimalImage(animal.type)
+              }}
             />
           </div>
           <div className="flex gap-4 overflow-x-auto pb-2">
@@ -313,7 +317,14 @@ export default function AnimalDetails() {
                   activeImage === i ? 'border-primary-500 scale-105' : 'border-transparent opacity-60'
                 }`}
               >
-                <img src={img} className="w-full h-full object-cover" alt="thumbnail" />
+                <img
+                  src={img}
+                  className="w-full h-full object-cover"
+                  alt="thumbnail"
+                  onError={(e) => {
+                    e.currentTarget.src = getDefaultAnimalImage(animal.type)
+                  }}
+                />
               </button>
             ))}
           </div>
@@ -351,6 +362,7 @@ export default function AnimalDetails() {
                   <select name="type" value={editData.type} onChange={handleEditChange} className="input-field py-1 px-3 w-auto text-xs font-bold uppercase tracking-wider">
                     <option value="dog">Dog</option>
                     <option value="cat">Cat</option>
+                    <option value="bird">Bird</option>
                     <option value="other">Other</option>
                   </select>
                   <select name="rescue_urgency" value={editData.rescue_urgency} onChange={handleEditChange} className="input-field py-1 px-3 w-auto text-xs font-bold uppercase tracking-wider">
@@ -617,9 +629,16 @@ export default function AnimalDetails() {
             <div className="flex items-center">
               <div className="w-12 h-12 rounded-full bg-secondary-500 flex items-center justify-center text-white font-bold mr-4 flex-shrink-0 overflow-hidden">
                 {animal.org_logo ? (
-                  <img src={animal.org_logo} alt={animal.org_name} className="w-full h-full object-cover" />
+                  <img
+                    src={getShelterImage(animal.org_logo)}
+                    alt={animal.org_name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = getShelterImage()
+                    }}
+                  />
                 ) : (
-                  (animal.org_name || animal.poster_name)?.charAt(0)
+                  <img src={getShelterImage()} alt="" className="w-full h-full object-cover" />
                 )}
               </div>
               <div>

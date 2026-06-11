@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { rescueService } from '../services/rescueService'
+import { getAnimalImage, getDefaultAnimalImage } from '../utils/defaultImages'
 
 /**
  * RescueRequests.jsx — Rescue Case Management
@@ -80,8 +81,6 @@ function TabButton({ active, onClick, label }) {
 }
 
 function RescueCard({ rescue, showReporter }) {
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
-
   const urgencyColors = {
     low: 'bg-blue-100 text-blue-700',
     medium: 'bg-yellow-100 text-yellow-700',
@@ -92,11 +91,14 @@ function RescueCard({ rescue, showReporter }) {
   return (
     <div className="card group hover:shadow-xl transition-all duration-300 border-b-4 border-b-primary-500 flex flex-col h-full">
       <div className="relative h-48 overflow-hidden bg-gray-100">
-        {rescue.thumbnail ? (
-          <img src={`${API_BASE}${rescue.thumbnail}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="rescue" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">No Photo</div>
-        )}
+        <img
+          src={getAnimalImage(rescue.thumbnail, rescue.type)}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          alt={rescue.breed || rescue.type}
+          onError={(e) => {
+            e.currentTarget.src = getDefaultAnimalImage(rescue.type)
+          }}
+        />
         <div className="absolute top-4 left-4">
           <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${urgencyColors[rescue.rescue_urgency]}`}>
             {rescue.rescue_urgency}

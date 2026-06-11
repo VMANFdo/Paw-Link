@@ -3,6 +3,7 @@ import { adminService } from '../services/adminService'
 import { useAuth } from '../context/AuthContext'
 import { useUI } from '../context/UIContext'
 import { useLocation } from 'react-router-dom'
+import { getAnimalImage, getDefaultAnimalImage } from '../utils/defaultImages'
 
 /**
  * AdminDashboard.jsx — Master Platform Moderation
@@ -557,13 +558,19 @@ function UsersTable({ users, onToggle }) {
 }
 
 function AnimalsList({ animals, onDelete }) {
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {animals.map(a => (
         <div key={a.id} className="card p-4 flex flex-col">
           <div className="h-40 rounded-2xl bg-gray-100 overflow-hidden mb-4 relative">
-             <img src={`${API_BASE}${a.thumbnail}`} className="w-full h-full object-cover" alt="animal" />
+             <img
+               src={getAnimalImage(a.thumbnail, a.type)}
+               className="w-full h-full object-cover"
+               alt={a.breed || a.type}
+               onError={(e) => {
+                 e.currentTarget.src = getDefaultAnimalImage(a.type)
+               }}
+             />
              <div className="absolute top-2 right-2">
                <span className="bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-[10px] font-black uppercase">{a.status}</span>
              </div>

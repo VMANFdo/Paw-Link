@@ -53,6 +53,34 @@ export default function Contact() {
   const [ratingSubmitting, setRatingSubmitting] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
   const [previewUrl, setPreviewUrl] = useState('')
+  const [openFaq, setOpenFaq] = useState(null)
+
+  const FAQS = [
+    {
+      question: 'How do I report a stray animal?',
+      answer: 'Go to the "Report a Stray" page where you can pin the exact GPS location, upload up to 5 photos, select the animal type, breed, age, health condition, and urgency level. Your report will immediately appear on the rescue map for nearby shelters and rescuers to see.'
+    },
+    {
+      question: 'What happens after I submit feedback?',
+      answer: 'Our team reviews all feedback within 24-48 hours. You\'ll receive a response at the email associated with your account. For bug reports, we prioritize based on severity. Feature requests are added to our roadmap for consideration in future updates.'
+    },
+    {
+      question: 'Can I adopt directly through PawLink?',
+      answer: 'Yes! Browse available animals on the "Browse Animals" page, click on any animal to see details, and submit an adoption request. The shelter will review your application and contact you. You can track your adoption request status in your dashboard.'
+    },
+    {
+      question: 'How do I become a verified shelter?',
+      answer: 'Register as an organization through the registration page. You\'ll need to provide your shelter details, location, capacity, types of animals accepted, and verification documents. Our admin team reviews applications and approves verified shelters within 3-5 business days.'
+    },
+    {
+      question: 'Is my data secure?',
+      answer: 'Yes. We use JWT authentication with secure password hashing (bcrypt). All API communications are over HTTPS. Uploaded files are stored locally with access controls. We never share your personal information with third parties without your consent.'
+    },
+    {
+      question: 'What if I need to update my feedback?',
+      answer: 'You can send another message through this form referencing your original submission. Our team will link related submissions. For urgent changes, email support@pawlink.com directly with your reference number.'
+    }
+  ]
 
   const validate = () => {
     const newErrors = { subject: '', message: '' }
@@ -140,7 +168,8 @@ export default function Contact() {
       setRatingSubmitted(true)
       showToast('Thank you for rating!')
     } catch (err) {
-      const msg = err.response?.data?.message || 'Failed to submit rating'
+      console.error('Rating submission error:', err)
+      const msg = err.response?.data?.message || err.message || 'Failed to submit rating'
       showToast(msg, 'error')
     } finally {
       setRatingSubmitting(false)
@@ -355,6 +384,46 @@ export default function Contact() {
                       </button>
                     </div>
                   </form>
+
+                  {/* FAQ Accordion Section */}
+                  <div className="mt-8">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                      Frequently Asked Questions
+                    </h2>
+                    <div className="space-y-3">
+                      {FAQS.map((faq, index) => (
+                        <div key={index} className="card overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                            className="w-full px-6 py-4 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-inset"
+                            aria-expanded={openFaq === index}
+                          >
+                            <span className="font-medium text-gray-900 dark:text-white pr-4">
+                              {faq.question}
+                            </span>
+                            <svg
+                              className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-200 ${
+                                openFaq === index ? 'rotate-180' : ''
+                              }`}
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                          {openFaq === index && (
+                            <div className="px-6 pb-6 pt-0 border-t border-gray-100 dark:border-gray-800/40 animate-fade-in">
+                              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                                {faq.answer}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -451,10 +520,6 @@ export default function Contact() {
                   <a href="/about" className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-dark-950 transition-colors">
                     <span className="text-xl">📖</span>
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">About Us</span>
-                  </a>
-                  <a href="/faq" className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-dark-950 transition-colors">
-                    <span className="text-xl">❓</span>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">FAQ</span>
                   </a>
                   <a href="/shelters" className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-dark-950 transition-colors">
                     <span className="text-xl">🏪</span>
