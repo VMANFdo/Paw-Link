@@ -29,6 +29,23 @@ PawLink is a modern, full-stack platform designed to bridge the gap between stra
 *   **Direct Messaging:** REST-based inbox for communication between rescuers and adopters.
 *   **Real-time Feedback:** Toast notifications and success/error handling across all forms.
 
+### 6. **Contact & Feedback System**
+*   **Multi-Section Contact Form:** Feedback, Problem Report, and General Inquiry with real-time validation.
+*   **Star Rating Widget:** 1–5 star ratings with hover effects, multiple sizes, and ARIA accessibility.
+*   **FAQ Accordion:** Single-expand, closed-by-default accordion with 6 common questions.
+*   **File Uploads:** Screenshot attachment support (max 5MB) via FormData.
+
+### 7. **About Us Page**
+*   **Hero Section:** Full-width banner with tagline and CTA.
+*   **Mission & Values:** Cards highlighting core platform beliefs.
+*   **Platform Features:** Detailed feature breakdown with icons.
+*   **Success Stories:** Testimonials from rescued animals.
+*   **Impact Statistics:** Live counters for users, rescues, organizations, and lives saved.
+*   **Social Media Integration:** Links to Facebook, Twitter, Instagram, YouTube, and LinkedIn.
+
+### 8. **Smart Default Animal Images**
+*   **Type-Based Fallbacks:** Posts without uploaded images automatically display breed-appropriate defaults (dog, cat, bird) instead of broken placeholders.
+
 ---
 
 ## 🛠️ Technology Stack

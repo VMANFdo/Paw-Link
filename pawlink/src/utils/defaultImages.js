@@ -3,7 +3,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 export const DEFAULT_ANIMAL_IMAGES = {
   dog: '/images/dog.jpg',
   cat: '/images/cat.png',
-  bird: '/images/parrot.jpg',
+  bird: '/images/bird.jpg',
   other: '/images/dog.jpg'
 }
 

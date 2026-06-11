@@ -94,36 +94,6 @@ JOIN (
     SELECT 'Galle Animal Welfare Society',              'cat'
 ) t ON o.name = t.org_name;
 
--- ================================================================
--- 4. ORGANIZATION DOCUMENTS
--- ================================================================
-INSERT INTO organization_documents (organization_id, document_url, document_type)
-SELECT o.id, d.document_url, d.document_type
-FROM organizations o
-JOIN (
-    SELECT 'Happy Paws Rescue Foundation'  AS org_name, 'https://docs.pawlink.lk/happypaws/reg.pdf',    'Registration Certificate' UNION ALL
-    SELECT 'Happy Paws Rescue Foundation',              'https://docs.pawlink.lk/happypaws/tax.pdf',    'Tax Exemption Letter'     UNION ALL
-    SELECT 'Animal Lovers Shelter',                     'https://docs.pawlink.lk/animallovers/reg.pdf', 'Registration Certificate' UNION ALL
-    SELECT 'Safe Haven Rescues',                        'https://docs.pawlink.lk/safehaven/reg.pdf',    'Registration Certificate' UNION ALL
-    SELECT 'Paws & Claws Sanctuary',                    'https://docs.pawlink.lk/pawsclaws/reg.pdf',    'Registration Certificate' UNION ALL
-    SELECT 'Galle Animal Welfare Society',              'https://docs.pawlink.lk/galle/reg.pdf',        'Registration Certificate'
-) d ON o.name = d.org_name;
-
--- ================================================================
--- 5. ORGANIZATION GALLERY
--- ================================================================
-INSERT INTO organization_gallery (organization_id, image_url, caption)
-SELECT o.id, g.image_url, g.caption
-FROM organizations o
-JOIN (
-    SELECT 'Happy Paws Rescue Foundation'  AS org_name, 'https://gallery.pawlink.lk/happypaws/1.jpg',     'Our main kennels in Colombo 03'          UNION ALL
-    SELECT 'Happy Paws Rescue Foundation',              'https://gallery.pawlink.lk/happypaws/2.jpg',     'Adoption day — March 2024'                UNION ALL
-    SELECT 'Animal Lovers Shelter',                     'https://gallery.pawlink.lk/animallovers/1.jpg',  'Cat recovery ward — Kandy'                UNION ALL
-    SELECT 'Animal Lovers Shelter',                     'https://gallery.pawlink.lk/animallovers/2.jpg',  'Volunteer feeding session'                UNION ALL
-    SELECT 'Safe Haven Rescues',                        'https://gallery.pawlink.lk/safehaven/1.jpg',     'Rescue operation — Wellawatte Beach'      UNION ALL
-    SELECT 'Paws & Claws Sanctuary',                    'https://gallery.pawlink.lk/pawsclaws/1.jpg',     'Seaside sanctuary grounds — Negombo'      UNION ALL
-    SELECT 'Galle Animal Welfare Society',              'https://gallery.pawlink.lk/galle/1.jpg',         'Volunteers at Galle Fort cleanup drive'
-) g ON o.name = g.org_name;
 
 -- ================================================================
 -- 6. ANIMALS
@@ -223,26 +193,6 @@ SELECT 'dog', 'Beagle Mix', '~2 years', 'male', 'Healthy, vaccinated, neutered',
 FROM users u, organizations o
 WHERE u.email = 'shelter@pawlink.com' AND o.name = 'Happy Paws Rescue Foundation';
 
--- ================================================================
--- 7. ANIMAL IMAGES
--- ================================================================
-INSERT INTO animal_images (animal_id, image_url)
-SELECT a.id, i.image_url
-FROM animals a
-JOIN (
-    SELECT 'Labrador Mix found near Viharamahadevi Park'     AS desc_fragment, 'https://img.pawlink.lk/animals/labrador_vihara1.jpg'  UNION ALL
-    SELECT 'Labrador Mix found near Viharamahadevi Park',                       'https://img.pawlink.lk/animals/labrador_vihara2.jpg'  UNION ALL
-    SELECT 'Domestic Shorthair rescued from the Maradana',                      'https://img.pawlink.lk/animals/shorthair_maradana.jpg' UNION ALL
-    SELECT 'Mixed Breed dog found near Dehiwala junction',                      'https://img.pawlink.lk/animals/mixed_dehiwala.jpg'    UNION ALL
-    SELECT 'Persian Mix cat spotted near Kandy Lake',                           'https://img.pawlink.lk/animals/persian_kandy.jpg'     UNION ALL
-    SELECT 'domestic Dutch Rabbit whose owner is relocating',                   'https://img.pawlink.lk/animals/dutch_rabbit.jpg'      UNION ALL
-    SELECT 'Siamese Mix found near Peradeniya',                                 'https://img.pawlink.lk/animals/siamese_peradeniya.jpg' UNION ALL
-    SELECT 'German Shepherd Mix from Mount Lavinia',                            'https://img.pawlink.lk/animals/shepherd_mtlavinia.jpg' UNION ALL
-    SELECT 'Mixed Breed puppy found limping near Galle Bus Stand',              'https://img.pawlink.lk/animals/mixed_galle.jpg'       UNION ALL
-    SELECT 'Domestic Longhair cat brought in from the Negombo',                 'https://img.pawlink.lk/animals/longhair_negombo.jpg'  UNION ALL
-    SELECT 'Beagle Mix surrendered by a family who relocated',                  'https://img.pawlink.lk/animals/beagle_colombo1.jpg'   UNION ALL
-    SELECT 'Beagle Mix surrendered by a family who relocated',                  'https://img.pawlink.lk/animals/beagle_colombo2.jpg'
-) i ON a.description LIKE CONCAT('%', i.desc_fragment, '%');
 
 -- ================================================================
 -- 8. ADOPTION REQUESTS
