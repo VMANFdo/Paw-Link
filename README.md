@@ -115,7 +115,6 @@ PawLink/
 | **Admin** | `admin@pawlink.com` | `Admin@123` |
 | **Public User** | `user@pawlink.com` | `User@123` |
 | **Organization** | `shelter@pawlink.com` | `Shelter@123` |
-| **Sanctuary** | `sanctuary@pawlink.com` | `Shelter@123` |
 
 ---
 
