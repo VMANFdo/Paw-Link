@@ -6,24 +6,39 @@
  */
 
 export default function About() {
+  const aboutHeroImage =
+    "https://images.unsplash.com/photo-1450778869180-41d0601e046e?auto=format&fit=crop&fm=jpg&q=80&w=2400"
+
   return (
     <>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-dark-950 dark:to-dark-900 py-20 md:py-32">
-        <div className="container-section">
+      <section className="relative overflow-hidden bg-dark-950 py-20 md:py-32">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url("${aboutHeroImage}")` }}
+          aria-hidden="true"
+        />
+        <div
+          className="absolute inset-0 bg-gradient-to-b from-dark-950/80 via-dark-950/65 to-dark-950/85"
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 bg-primary-950/20 mix-blend-multiply" aria-hidden="true" />
+        <div className="container-section relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <div className="flex justify-center mb-6">
               <span className="text-6xl animate-bounce">🐾</span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 drop-shadow-lg">
               About PawLink
             </h1>
-            <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+            <p className="text-xl md:text-2xl text-gray-100 mb-8 leading-relaxed drop-shadow">
               Connecting stray animals with loving homes. Every paw deserves a chance.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button className="btn-primary">Join as a Rescuer</button>
-              <button className="btn-secondary">Browse Animals</button>
+              <button className="border-2 border-primary-400 bg-dark-950/35 text-primary-200 hover:bg-primary-500 hover:text-white font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 backdrop-blur-sm">
+                Browse Animals
+              </button>
             </div>
           </div>
         </div>
